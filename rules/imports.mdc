@@ -1,9 +1,0 @@
----
-description: Kotlin imports guidelines
-globs: "*.kt, *.java, *.kts"
-alwaysApply: true
----
-
-- Never use wildcard imports (e.g., `import foo.*`)
-- Always use explicit imports
-- Imports should be sorted alphabetically
