@@ -1,8 +1,4 @@
----
-description: Kotlin imports guidelines
-globs: "*.kt, *.java, *.kts"
-alwaysApply: true
----
+# Kotlin imports guidelines
 
 - Never use wildcard imports (e.g., `import foo.*`)
 - Always use explicit imports
