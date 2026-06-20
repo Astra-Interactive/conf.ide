@@ -13,5 +13,6 @@
 @.llm/docs/no-it.md
 @.llm/docs/no-pair.md
 @.llm/docs/notes.md
+@.llm/docs/region.md
 @.llm/docs/testing.md
 @.llm/docs/time-api.md
