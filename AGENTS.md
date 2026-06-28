@@ -15,4 +15,5 @@
 @.llm/docs/notes.md
 @.llm/docs/region.md
 @.llm/docs/testing.md
+@.llm/docs/testing-no-useless.md
 @.llm/docs/time-api.md
