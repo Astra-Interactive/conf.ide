@@ -1,12 +1,11 @@
-# TradingKt — Project Instructions
-
 @.llm/docs/clean-code.md
 @.llm/docs/code-ordering.md
+@.llm/docs/codebase-memory.md
 @.llm/docs/data-class-default-values.md
 @.llm/docs/di-manual-constructors.md
-@.llm/docs/di-manual.md
 @.llm/docs/error-handling.md
 @.llm/docs/imports.md
+@.llm/docs/javadoc.md
 @.llm/docs/kotlin-lsp.md
 @.llm/docs/ksrc.md
 @.llm/docs/nested-class.md
