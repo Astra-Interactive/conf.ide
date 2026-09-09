@@ -4,6 +4,7 @@
 @.llm/docs/data-class-default-values.md
 @.llm/docs/di-manual-constructors.md
 @.llm/docs/error-handling.md
+@.llm/docs/git-commits.md
 @.llm/docs/imports.md
 @.llm/docs/javadoc.md
 @.llm/docs/kotlin-lsp.md
