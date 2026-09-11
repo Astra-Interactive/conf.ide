@@ -1,4 +1,4 @@
 ## Notes
 
-- This workspace pins a stable toolchain (see `rust-toolchain.toml`); do not use nightly-only features
-- `clippy` runs with `-D warnings` in CI; fix lints rather than allowing them
+- Stay on stable Rust: do not use nightly-only language features or nightly-only `rustfmt`/`clippy` options. If the project pins a toolchain in `rust-toolchain.toml`, use that one.
+- `clippy` runs with `-D warnings` in CI; fix lints rather than allowing them.

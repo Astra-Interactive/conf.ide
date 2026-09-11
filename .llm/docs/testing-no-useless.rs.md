@@ -19,7 +19,7 @@ Write tests only when they verify meaningful project behavior, such as:
 
 * business logic
 * validation rules
-* edge cases (varint boundaries, string length limits, bit packing, truncated network input)
+* edge cases (boundaries, empty and oversized input, malformed input at parsing boundaries)
 * error handling
 * integration between components
 * regressions for known bugs

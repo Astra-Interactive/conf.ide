@@ -7,12 +7,12 @@ Dependencies must be created only at the composition root / application wiring l
 Bad:
 
 ```rust
-impl<D: Display> SceneRenderer<D> {
-    pub fn new(display: D) -> Self {
+impl<R: OrderRepository> OrderService<R> {
+    pub fn new(repository: R) -> Self {
         Self {
-            display,
-            rotator: Rotator::new(),           // hidden concrete dependency
-            trigonometry: Trigonometry::new(), // hidden concrete dependency
+            repository,
+            pricing: OrderPricing::new(DEFAULT_TAX_RATE), // hidden concrete dependency
+            clock: SystemClock::new(),                    // hidden concrete dependency
         }
     }
 }
@@ -21,12 +21,12 @@ impl<D: Display> SceneRenderer<D> {
 Good:
 
 ```rust
-impl<D: Display> SceneRenderer<D> {
-    pub fn new(display: D, rotator: Rotator, trigonometry: Trigonometry) -> Self {
+impl<R: OrderRepository, C: Clock> OrderService<R, C> {
+    pub fn new(repository: R, pricing: OrderPricing, clock: C) -> Self {
         Self {
-            display,
-            rotator,
-            trigonometry,
+            repository,
+            pricing,
+            clock,
         }
     }
 }

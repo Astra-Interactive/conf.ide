@@ -12,35 +12,37 @@ Model domain errors as dedicated error enums, one per domain, with a variant per
 
 ```rust
 #[derive(Debug, thiserror::Error)]
-pub enum PacketDecodeError {
-    #[error("buffer is empty")]
-    EmptyBuffer,
-    #[error("varint is longer than 5 bytes")]
-    VarIntTooWide,
-    #[error("string of {actual} bytes exceeds the {limit} byte limit")]
-    StringTooLong { actual: usize, limit: usize },
+pub enum OrderError {
+    #[error("cart is empty")]
+    EmptyCart,
+    #[error("order of {actual} items exceeds the {limit} item limit")]
+    TooManyItems { actual: usize, limit: usize },
+    #[error("customer {0} does not exist")]
+    UnknownCustomer(CustomerId),
 }
 ```
 
-Error types carry small, structured payloads. Prefer primitives and domain newtypes over free-form strings; a `String` payload is allowed only where the value genuinely is text (a channel name, a tag key). Never expose a raw third-party error type in a public domain error — wrap it.
+Error types carry small, structured payloads. Prefer primitives and domain newtypes over free-form strings; a `String` payload is allowed only where the value genuinely is text (a file name, a header key). Never expose a raw third-party error type in a public domain error — wrap it.
 
 Return errors explicitly:
 
 ```rust
-fn decode_handshake(buffer: &mut impl Buf) -> Result<Handshake, PacketDecodeError> {
-    if !buffer.has_remaining() {
-        return Err(PacketDecodeError::EmptyBuffer);
+fn validate_order(order: &Order) -> Result<(), OrderError> {
+    if order.items.is_empty() {
+        return Err(OrderError::EmptyCart);
     }
-    Ok(Handshake { /* ... */ })
+    Ok(())
 }
 ```
 
 Use `?` to propagate failures upward when the caller handles them:
 
 ```rust
-fn read_login_start(buffer: &mut impl Buf) -> Result<LoginStart, ConnectionError> {
-    let username = buffer.read_string(16).map_err(ConnectionError::Decode)?;
-    Ok(LoginStart { username })
+fn place_order(&self, command: PlaceOrderCommand) -> Result<OrderId, PlaceOrderError> {
+    let order = Order::from_command(command)?;
+    validate_order(&order)?;
+    let order_id = self.repository.save(order)?;
+    Ok(order_id)
 }
 ```
 
@@ -48,36 +50,36 @@ Provide `From` impls so `?` converts errors automatically at layer boundaries. `
 
 ```rust
 #[derive(Debug, thiserror::Error)]
-pub enum ConnectionError {
+pub enum PlaceOrderError {
     #[error(transparent)]
-    Decode(#[from] PacketDecodeError),
-    #[error("io failure")]
-    Io(#[from] std::io::Error),
+    Invalid(#[from] OrderError),
+    #[error("could not persist the order")]
+    Storage(#[from] OrderRepositoryError),
 }
 ```
 
 Consume a `Result` with `match` when you need to produce one final value:
 
 ```rust
-let response = match build_status(context) {
-    Ok(status) => Response::Ok(status),
+let response = match service.place_order(command) {
+    Ok(order_id) => Response::Created(order_id),
     Err(error) => Response::Rejected(error),
 };
 ```
 
-Use `map` to transform a success value, `and_then` to chain fallible operations, and `map_err` to convert error types at boundaries:
+Use `map` to transform a success value, `and_then` to chain fallible operations, and `map_err` to convert error types at boundaries. Pass the variant constructor itself to `map_err`; a closure that only forwards its argument fails `clippy::redundant_closure`:
 
 ```rust
-fn encode(&self, buffer: &mut BytesMut) -> Result<(), EncodeError> {
-    self.write_payload(buffer)
-        .map_err(|nbt_error| EncodeError::Nbt(nbt_error))
+fn load_order(&self, id: OrderId) -> Result<Order, OrderRepositoryError> {
+    let raw = fs::read_to_string(self.path_for(id)).map_err(OrderRepositoryError::Io)?;
+    serde_json::from_str(&raw).map_err(OrderRepositoryError::Deserialize)
 }
 ```
 
 Use `unwrap_or`, `unwrap_or_else`, or `or_else` to convert a failure into a success fallback:
 
 ```rust
-let protocol = ProtocolVersion::from_number(raw).unwrap_or(ProtocolVersion::UNDEFINED);
+let currency = Currency::from_code(raw_code).unwrap_or(Currency::DEFAULT);
 ```
 
 Rules:
@@ -90,10 +92,10 @@ Rules:
 * Use `map` for pure success-value transformations, `and_then` for chaining, `map_err` for error conversion.
 * Use `unwrap_or`/`unwrap_or_else`/`or_else` for fallback behavior.
 * Do not use `unwrap()`, `expect()`, `panic!`, `todo!`, or `unimplemented!` in library/application logic.
-* `unwrap`/`expect` are acceptable only in tests, in `build.rs`, and in the composition root where a failure to start (bad config, unbindable port, corrupt embedded resource) is unrecoverable and exiting is the intended behavior. Even there, prefer reporting the error and exiting with a non-zero code over a panic message.
-* Indexing (`slice[i]`) and integer division panic. In code that touches network input, use `get`, `checked_*`, or an explicit bounds guard.
+* `unwrap`/`expect` are acceptable only in tests, in `build.rs`, and in the composition root where a failure to start (bad config, unbindable port, missing embedded resource) is unrecoverable and exiting is the intended behavior. Even there, prefer reporting the error and exiting with a non-zero code over a panic message.
+* Indexing (`slice[i]`), division by zero, and integer overflow in debug builds panic. In code that handles untrusted input, use `get`, `checked_*`, or an explicit bounds guard.
 * Do not silently swallow failures. `let _ = fallible()` requires a comment explaining why ignoring is safe.
-* Convert third-party errors at the boundary. Domain layers must not depend on `std::io::Error`, `serde_yaml_ng::Error`, or NBT crate error types.
-* An error caused by a remote client is expected, not exceptional: log it at debug level, close the connection, and never let it take down the server or another connection.
+* Convert third-party errors at the boundary. Domain layers must not depend on `std::io::Error`, `serde_json::Error`, or any other crate's error type.
+* An error caused by an external caller (a client request, a malformed input file) is expected, not exceptional: log it at debug level, reject that one request, and never let it take down the process or other requests.
 * Make expected failure paths explicit, observable, and testable.
-* Panics are acceptable only for unexpected, unrecoverable, or programmer errors (broken invariants). A panic in a connection task must not be able to corrupt shared state.
+* Panics are acceptable only for unexpected, unrecoverable, or programmer errors (broken invariants). A panic in one task must not be able to corrupt shared state.

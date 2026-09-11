@@ -9,7 +9,7 @@ Example:
 ```rust
 // Bad
 fn position(&self) -> (i32, i32)
-fn readings(&self) -> [(u8, u16); 4]
+fn line_items(&self) -> Vec<(ProductId, u32)>
 
 // Good
 pub struct Point {
@@ -18,11 +18,17 @@ pub struct Point {
 }
 fn position(&self) -> Point
 
-pub struct SensorReading {
-    pub channel: u8,
-    pub value: u16,
+pub struct LineItem {
+    pub product_id: ProductId,
+    pub quantity: u32,
 }
-fn readings(&self) -> [SensorReading; 4]
+fn line_items(&self) -> Vec<LineItem>
 ```
 
-Tuples are acceptable only as transient local values (e.g. destructuring `enumerate()` inside a function body), never as a domain type crossing an API boundary.
+Not covered by this rule:
+
+* The unit type `()`. `Result<(), E>` is the normal signature of a fallible operation with no value.
+* Tuples produced by the standard library and consumed on the spot: destructuring `enumerate()`, `zip()`,
+  or a map's `(key, value)` pairs inside a function body.
+
+A tuple is a transient local value, never a domain type crossing an API boundary.

@@ -1,8 +1,9 @@
-## No Nested Types Rule
+## Module Organization Rule
 
-Do not declare types inside function bodies or bury helper types inside another type's file.
+Do not declare types inside function bodies, and do not bury helper types inside another type's file.
 
-All domain models, services, helpers, factories, and implementations must be top-level declarations — one primary type per file, re-exported through `mod.rs`.
+All domain models, services, helpers, factories, and implementations are top-level declarations: one
+primary type per file.
 
 Bad — type declared inside a function:
 
@@ -44,14 +45,27 @@ pub struct PredictionModel { /* ... */ }
 pub struct PredictionModelTrainer { /* ... */ }
 ```
 
-Allowed exception: `enum`s are Rust's sealed hierarchies — variants (including struct-like variants) belong together in one declaration, in one file:
+### Exceptions
 
-```rust
-// prediction_result.rs
-pub enum PredictionResult {
-    Success { value: f32 },
-    Failed { reason: FailureReason },
-}
-```
+* `enum`s are Rust's sealed hierarchies: variants, including struct-like variants, belong together in
+  one declaration, in one file.
 
-Do not use extra types or modules just for visual grouping. Only enum variants live together; everything else gets its own file. Follow the existing layout: one type per file, `mod.rs` declares and re-exports the module's files.
+  ```rust
+  // prediction_result.rs
+  pub enum PredictionResult {
+      Success { value: f32 },
+      Failed { reason: FailureReason },
+  }
+  ```
+
+* Test-only code is exempt. `#[cfg(test)] mod tests` at the bottom of a file, and the fakes and fixtures
+  declared inside it, are not buried helper types: they are compiled only for tests and belong next to
+  the code they exercise. The testing rule says where shared fakes live.
+
+### Module files
+
+Follow the layout the crate already uses: either `foo/mod.rs`, or `foo.rs` next to a `foo/` directory.
+Do not mix the two styles in one crate. A new crate uses `foo.rs` + `foo/`, the Rust 2018 convention.
+The module file declares the submodules and re-exports the types that form the module's API.
+
+Do not use extra types or modules just for visual grouping.
