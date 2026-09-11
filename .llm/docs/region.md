@@ -4,7 +4,7 @@ Do not add region markers or artificial section delimiters.
 
 Forbidden examples:
 
-```ts
+```text
 // region
 // endregion
 // #region
