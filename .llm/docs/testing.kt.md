@@ -9,11 +9,11 @@ When writing a test, make sure that:
 * Prefer fakes over mocks for repositories and gateways when behavior matters.
 * Tests should verify expected behavior, not implementation details.
 * Do not write tests that simply mirror the current code structure.
-* Test names must use `snake_case`.
-* Prefer `GIVEN_WHEN_THEN` structure in test names.
+* Test names use `GIVEN_<state>_WHEN_<action>_THEN_<outcome>`: the three keywords in upper case, everything between them in `snake_case`.
+* These names break detekt's `FunctionNaming` rule on purpose. Suppress it once per test file with `@file:Suppress("FunctionNaming")` at the top of the file; never rename the tests to satisfy the linter and never disable the rule in the detekt config.
 * You are testing the expected business logic, not the actual one.
 * Prefer splitting code into testable functions/chunks if that doesn't affect the public API.
-* New code MUST be covered by tests at 100%.
+* New code MUST be covered by tests at 100%. The coverage comes from behaviour tests as described here; the testing-no-useless rule does not lower this bar, it only forbids tests that exercise the language or a framework instead of project logic.
 * The aim of the tests is to validate the intended behavior/contract and reveal bugs, not to lock in incidental current behavior or implementation details.
 * If you're not sure what the business logic of the class is, ask the user.
 * Feel free to modify base classes to improve their testability, but ask the user first about all changes in base class.
@@ -24,6 +24,10 @@ When writing a test, make sure that:
 Example:
 
 ```kotlin
+@file:Suppress("FunctionNaming")
+
+package com.example.order
+
 @Test
 fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty() {
     val useCase = CreateOrderUseCase(

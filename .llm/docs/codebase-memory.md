@@ -2,13 +2,30 @@
 
 To navigate the codebase and project files you must use `codebase-memory-mcp`.
 
+## Make sure the server is connected
+
+The `mcp__codebase-memory-mcp__*` tools must be available before any code exploration. If they are not:
+
+1. Check whether the server is registered: `claude mcp list`.
+2. If it is missing, register the `codebase-memory-mcp` binary at user scope and reconnect:
+
+   ```
+   claude mcp add --scope user codebase-memory-mcp <path-to>/codebase-memory-mcp
+   ```
+
+   Then reload MCP servers in the current session (`/mcp`) or restart Claude Code.
+3. If the binary itself is not installed, stop and ask the user to install it. Do not fall back to
+   `ls`/`grep`/`find` for code exploration while the server is unavailable.
+
 ## Keep the index up-to-date
 
 Before navigating the codebase you must update the project index so the knowledge graph reflects the current state of the code:
 
 1. Check the project with `index_status` (run `list_projects` if you are not sure the project is registered).
-2. If the project is not indexed yet, or the working tree has changed since the last indexing (new branch, fresh pull, local edits), run `index_repository` first.
-3. Use `detect_changes` to verify whether re-indexing is needed instead of guessing.
+2. If the project is not registered or not indexed yet, run `index_repository` on the repository root.
+3. If the project is indexed, run `detect_changes` to verify whether the working tree has changed since
+   the last indexing (new branch, fresh pull, local edits). Re-index with `index_repository` only when it
+   reports changes; do not re-index a large repository unconditionally.
 
 Never explore stale graph data — re-index first, then navigate.
 

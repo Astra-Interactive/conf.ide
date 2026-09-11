@@ -14,3 +14,13 @@ automatically, so never spawn or configure the server manually. It is the tool f
 implementations and generic bounds, which text search cannot answer.
 
 Dependency (crate) sources are covered by the dependency-sources rule, not by the LSP.
+
+### When the LSP is not available
+
+There is no fallback. If the LSP tool is missing, `rust-analyzer` is not installed, or the server fails
+to start for this workspace, stop and ask the user to configure it before continuing with any task that
+needs code navigation. Do not substitute `grep`/`find`/`cat` for the missing LSP: text search cannot
+resolve trait implementations, generic bounds, or references, and the code you write on top of guesses
+will be wrong.
+
+Report exactly what failed (tool absent, server binary not found, server error) so the user can fix it.

@@ -13,6 +13,7 @@
 @.llm/docs/notes.rs.md
 @.llm/docs/region.md
 @.llm/docs/rust-lsp.rs.md
+@.llm/docs/rustdoc.rs.md
 @.llm/docs/struct-default-values.rs.md
 @.llm/docs/testing.rs.md
 @.llm/docs/testing-no-useless.rs.md

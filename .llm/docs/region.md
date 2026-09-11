@@ -1,6 +1,6 @@
 ## Code region rules
 
-Do not add region markers or artificial section delimiters.
+Region markers and artificial section delimiters are forbidden. There are no exceptions.
 
 Forbidden examples:
 
@@ -14,7 +14,8 @@ Forbidden examples:
 // === Helpers ===
 ```
 
-Do not add decorative comments, separator comments, or “section header” comments unless they already exist in the file and are part of the established style.
+Do not add decorative comments, separator comments, or "section header" comments. Existing markers in a
+file are not a reason to add new ones. When you refactor a file that already has them, delete them.
 
 Prefer simple, readable code structure instead:
 
@@ -24,5 +25,3 @@ Prefer simple, readable code structure instead:
 * rely on file/module structure instead of comment regions
 
 Comments should explain non-obvious behavior, not organize the file visually.
-
-Before editing a file, follow the style already used in that file. If the file does not use region markers, do not introduce them.
