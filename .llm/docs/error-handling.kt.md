@@ -1,225 +1,126 @@
 ## Kotlin: Error Handling — `Result`
 
-Never use exceptions for normal control flow in your own application logic. Functions that can fail should return Kotlin’s standard `Result<T>` instead of throwing.
+### Choosing the failure type
 
-Kotlin’s `Result` is not `Result<T, E>`. It has only one type parameter:
+| Situation                                                                               | Use                             |
+|-----------------------------------------------------------------------------------------|---------------------------------|
+| Absence is the only meaningful failure                                                  | nullable type                   |
+| Caller needs to know that it failed and why, but does not branch on the kind of failure | `Result<T>`                     |
+| Caller must handle several outcomes differently                                         | per-use-case `sealed interface` |
+| Programmer error or broken invariant (`require`, `check`, unreachable branch)           | throw                           |
+
+Never throw for an expected business or validation failure. Throwing is reserved for bugs.
+
+### Contract
+
+A function that can fail returns `Result<T>`. Kotlin's `Result` has a single type parameter, so the
+failure is always a `Throwable`. Model domain errors as a sealed hierarchy of exception classes. They
+are a payload for `Result.failure`; your own code never throws them.
 
 ```kotlin
-Result<T>
+sealed class OrderError(message: String, cause: Throwable?) : Exception(message, cause)
+
+class OrderParseError(message: String) : OrderError(message, null)
+class OrderValidationError(message: String) : OrderError(message, null)
+class OrderLoadError(message: String, cause: Throwable) : OrderError(message, cause)
 ```
-
-Failures are represented internally as `Throwable`, not as a typed error channel. Therefore, domain errors should be modeled as specific exception classes, preferably sealed when they belong to the same domain.
-
-```kotlin
-sealed class OrderError(message: String) : Exception(message)
-
-class OrderParseError(
-    message: String
-) : OrderError(message)
-
-class OrderValidationError(
-    message: String
-) : OrderError(message)
-```
-
-Create successful and failed results with the existing Kotlin API:
 
 ```kotlin
 fun parseOrder(raw: String): Result<Order> {
-    return if (raw.isBlank()) {
-        Result.failure(OrderParseError("Order payload is blank"))
-    } else {
-        Result.success(Order(/* ... */))
+    if (raw.isBlank()) {
+        return Result.failure(OrderParseError("Order payload is blank"))
     }
+    return Result.success(Order(/* ... */))
 }
-```
 
-Use `runCatching` only at boundaries where code may throw:
-
-```kotlin
-fun loadOrder(id: OrderId): Result<Order> =
-    runCatching {
-        thirdPartyClient.fetchOrder(id.value).toDomain()
-    }.recoverCatching { error ->
-        throw OrderLoadError("Could not load order ${id.value}", error)
-    }
-```
-
-`runCatching` catches thrown exceptions and converts them into `Result.failure`.
-
-Consume `Result` with `fold`, `onSuccess`, `onFailure`, or explicit checks.
-
-Use `fold` when you need to produce one final value:
-
-```kotlin
-val response: HttpResponse =
-    result.fold(
-        onSuccess = { order ->
-            HttpResponse.ok(order)
-        },
-        onFailure = { error ->
-            HttpResponse.badRequest(error.message ?: "Invalid order")
-        }
-    )
-```
-
-Use `onSuccess` and `onFailure` for side effects such as logging:
-
-```kotlin
-result
-    .onSuccess { order ->
-        logger.info("Loaded order ${order.id}")
-    }
-    .onFailure { error ->
-        logger.warn("Could not load order", error)
-    }
-```
-
-Use `map` to transform a success value.
-
-```kotlin
-val total: Result<Money> =
-    parseOrder(raw)
-        .map { order -> order.total }
-```
-
-Use `mapCatching` only when the transform itself may throw and you want thrown exceptions to become `Result.failure`.
-
-```kotlin
-val total: Result<Money> =
-    parseOrder(raw)
-        .mapCatching { order -> calculateTotal(order) }
-```
-
-To chain fallible operations, use `mapCatching` when the next operation throws:
-
-```kotlin
-val result: Result<Money> =
-    parseOrder(raw)
-        .mapCatching { order ->
-            validateOrder(order)
-            order.total
-        }
-```
-
-Where `validateOrder` throws a domain-specific exception on failure:
-
-```kotlin
-fun validateOrder(order: Order) {
-    if (order.items.isEmpty()) {
-        throw OrderValidationError("Order must contain at least one item")
-    }
-}
-```
-
-Alternatively, if both functions already return `Result`, combine them explicitly with `fold`:
-
-```kotlin
-val result: Result<Money> =
-    parseOrder(raw).fold(
-        onSuccess = { order ->
-            validateOrder(order).map { validOrder ->
-                validOrder.total
-            }
-        },
-        onFailure = { error ->
-            Result.failure(error)
-        }
-    )
-```
-
-Where `validateOrder` returns `Result<Order>`:
-
-```kotlin
 fun validateOrder(order: Order): Result<Order> {
-    return if (order.items.isEmpty()) {
-        Result.failure(OrderValidationError("Order must contain at least one item"))
-    } else {
-        Result.success(order)
+    if (order.items.isEmpty()) {
+        return Result.failure(OrderValidationError("Order must contain at least one item"))
     }
+    return Result.success(order)
 }
 ```
 
-Use `recover` or `recoverCatching` to convert a failure into a success fallback.
+### Boundaries: converting exceptions
+
+`runCatching` is allowed only around code you do not own that throws: third-party clients, I/O,
+serialization. Translate the caught exception into a domain error right there, so inner layers never
+see library exceptions.
 
 ```kotlin
-val total: Result<Money> =
-    parseOrder(raw)
-        .map { order -> order.total }
-        .recover { error ->
-            Money.zero()
-        }
-```
-
-Use `recoverCatching` when recovery itself may throw.
-
-```kotlin
-val order: Result<Order> =
-    loadOrder(id)
-        .recoverCatching { error ->
-            loadOrderFromBackup(id).getOrThrow()
-        }
-```
-
-Avoid `getOrThrow` in normal control flow. It rethrows the failure and defeats the purpose of returning `Result`.
-
-Prefer:
-
-```kotlin
-result.fold(
-    onSuccess = { value ->
-        // handle success
-    },
-    onFailure = { error ->
-        // handle failure
-    }
-)
-```
-
-Avoid:
-
-```kotlin
-val value = result.getOrThrow()
-```
-
-Use `getOrThrow` only at a hard boundary where throwing is intentional, such as tests, startup validation, or integration with an API that requires exceptions.
-
-Convert third-party exceptions at the boundary. Inner layers should not depend on raw library exceptions.
-
-```kotlin
-class OrderLoadError(
-    message: String,
-    cause: Throwable
-) : Exception(message, cause)
-
 fun loadOrder(id: OrderId): Result<Order> =
-    runCatching {
-        thirdPartyClient.fetchOrder(id.value)
-    }.mapCatching { dto ->
-        dto.toDomain()
-    }.recoverCatching { error ->
-        throw OrderLoadError("Could not load order ${id.value}", error)
-    }
+    runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
+        .fold(
+            onSuccess = { order -> Result.success(order) },
+            onFailure = { error ->
+                Result.failure(OrderLoadError("Could not load order ${id.value}", error))
+            }
+        )
 ```
 
-Rules:
+`mapCatching` and `recoverCatching` are boundary tools in the same sense: use them only when the
+transformation or the fallback calls code you do not own that throws.
 
-* Prefer:
-    * `Result<T>` for simple operations where failure does not need rich domain meaning.
-    * Nullable types only when absence is the only meaningful failure.
-    * A per-use-case `sealed interface` result when different outcomes must be handled explicitly.
-* Use `Result.success(value)` and `Result.failure(error)`.
-* Use `runCatching` to convert thrown exceptions into `Result`.
-* Use `map` for pure success-value transformations.
-* Use `mapCatching` when the transformation may throw.
-* Use `fold` to handle both success and failure explicitly.
-* Use `onSuccess` and `onFailure` for side effects.
-* Use `recover` and `recoverCatching` for fallback behavior.
-* Do not silently swallow failures.
-* Do not use `getOrThrow` to avoid handling errors.
-* Make expected failure paths explicit, observable, and testable.
-* Do not throw exceptions for expected business or validation failures.
-* Exceptions are acceptable for unexpected, unrecoverable, or programmer errors.
-* Avoid leaking infrastructure errors into domain or application layers.
-* Log failures at the boundary or call site where enough context exists.
-* Do not log and rethrow repeatedly.
+Do not wrap your own logic in `runCatching`, `mapCatching` or `recoverCatching`. If your code needs
+them, it is throwing where it should return `Result.failure`. Never `throw` inside these blocks to
+re-label an error; use `fold` as above.
+
+### Coroutines
+
+`runCatching` catches `CancellationException` and breaks structured concurrency. In `suspend` code
+rethrow it before doing anything else with the result:
+
+```kotlin
+suspend fun loadOrder(id: OrderId): Result<Order> =
+    runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
+        .onFailure { error -> if (error is CancellationException) throw error }
+        .fold(
+            onSuccess = { order -> Result.success(order) },
+            onFailure = { error ->
+                Result.failure(OrderLoadError("Could not load order ${id.value}", error))
+            }
+        )
+```
+
+### Composing fallible steps
+
+`Result` has no `flatMap`. Chain steps with `getOrElse` and an early return; the happy path stays
+flat and nothing is thrown.
+
+```kotlin
+fun orderTotal(raw: String): Result<Money> {
+    val order = parseOrder(raw).getOrElse { error -> return Result.failure(error) }
+    val validOrder = validateOrder(order).getOrElse { error -> return Result.failure(error) }
+    return Result.success(validOrder.total)
+}
+```
+
+Use `map` for a pure transformation of the success value and `recover` for a fallback value:
+
+```kotlin
+val total: Result<Money> = parseOrder(raw).map { order -> order.total }
+
+val totalOrZero: Result<Money> = total.recover { _ -> Money.zero() }
+```
+
+### Consuming a `Result`
+
+Use `fold` when you need one final value, and `onSuccess`/`onFailure` for side effects such as
+logging:
+
+```kotlin
+val response: HttpResponse = result.fold(
+    onSuccess = { order -> HttpResponse.ok(order) },
+    onFailure = { error -> HttpResponse.badRequest(error.message ?: "Invalid order") }
+)
+
+result
+    .onSuccess { order -> logger.info("Loaded order ${order.id}") }
+    .onFailure { error -> logger.warn("Could not load order", error) }
+```
+
+`getOrThrow` is allowed only where throwing is the intended contract: tests, startup validation, or
+integration with an API that requires exceptions. Never use it to skip handling a failure.
+
+Log a failure once, at the call site that has enough context. Do not log and rethrow, and do not
+discard a `Result` without consuming it.
