@@ -10,7 +10,6 @@
 @.llm/docs/imports.rs.md
 @.llm/docs/module-organization.rs.md
 @.llm/docs/no-tuples.rs.md
-@.llm/docs/notes.md
 @.llm/docs/notes.rs.md
 @.llm/docs/region.md
 @.llm/docs/rust-lsp.rs.md

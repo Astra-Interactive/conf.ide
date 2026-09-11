@@ -13,7 +13,7 @@
 @.llm/docs/nested-class.kt.md
 @.llm/docs/no-it.kt.md
 @.llm/docs/no-pair.kt.md
-@.llm/docs/notes.md
+@.llm/docs/notes.kt.md
 @.llm/docs/region.md
 @.llm/docs/testing.kt.md
 @.llm/docs/testing-no-useless.kt.md

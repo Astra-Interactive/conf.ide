@@ -2,6 +2,8 @@
 
 Do not add default values to constructor parameters of data classes.
 
+This rule applies to `data class` only. Other classes are not covered by it.
+
 Bad:
 
 ```kotlin

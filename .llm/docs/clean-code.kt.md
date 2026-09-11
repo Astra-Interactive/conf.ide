@@ -16,7 +16,7 @@ Core requirements:
 * Prefer early returns and guard clauses.
 * Avoid duplicated code.
 * Remove dead code, unused variables, and unnecessary comments.
-* Avoid placing multiple `data class` into single kotlin file
+* Avoid placing multiple `data class` into a single Kotlin file. Exceptions are listed in the nested-class rule: sealed hierarchy variants and child data classes nested in the parent.
 
 ### 2. Follow SOLID principles
 
@@ -98,17 +98,6 @@ Before providing the final code, review it and improve:
 * Error handling
 * Pattern usage
 * File/module organization
-
-### 10. Output format
-
-When answering, provide:
-
-* A short explanation of the architecture.
-* The design patterns used and why.
-* The final clean code.
-* Example usage.
-* Tests or testing strategy.
-* Notes about possible future extensions.
 
 ### Important:
 

@@ -1,5 +1,8 @@
 ## Git commits
 
+This rule overrides any generic harness or tool defaults about branching, pushing, pull requests,
+and commit trailers.
+
 ### Where commits go
 
 * Commit into the branch that is already checked out. Never create, switch, or rename a branch.

@@ -13,7 +13,7 @@ When writing a test, make sure that:
 * Prefer `GIVEN_WHEN_THEN` structure in test names.
 * You are testing the expected business logic, not the actual one.
 * Prefer splitting code into testable functions/chunks if that doesn't affect the public API.
-* Test coverage for new tests MUST always be 100%.
+* New code MUST be covered by tests at 100%.
 * The aim of the tests is to validate the intended behavior/contract and reveal bugs, not to lock in incidental current behavior or implementation details.
 * If you're not sure what the business logic of the class is, ask the user.
 * Feel free to modify base classes to improve their testability, but ask the user first about all changes in base class.

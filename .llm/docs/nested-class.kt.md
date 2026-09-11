@@ -45,7 +45,12 @@ class PredictionModel {
 }
 ```
 
-Allowed exception: sealed hierarchies may be nested when the parent is a `sealed interface` or `sealed class`.
+### Exceptions
+
+- `companion object` is always nested; it cannot exist outside a class.
+- Sealed hierarchies: variants of a `sealed interface` / `sealed class` may be nested in the parent or declared top-level in the parent's file.
+- `data class`: child data classes may be nested inside the parent data class, so they share one file.
+- `enum class` and `object` are top-level. Rare exception: an `enum class` used only inside one class may stay nested in that class.
 
 Allowed — one file:
 
@@ -72,4 +77,18 @@ data class FailedPredictionResult(
 ) : PredictionResult
 ```
 
-Do not use nested classes for grouping. Only sealed hierarchy variants may be nested or kept together in one file.
+Allowed — one file:
+
+```kotlin
+// Order.kt
+data class Order(
+    val id: OrderId,
+    val shipping: Shipping
+) {
+    data class Shipping(
+        val address: String
+    )
+}
+```
+
+Do not use nested classes for grouping. Only the exceptions above may be nested or kept together in one file.

@@ -31,7 +31,7 @@ val expiresAt: Instant
 val timeout: Duration
 ```
 
-Use `kotlin.time.Instant` for exact moments in time.
+Use `kotlin.time.Instant` for exact moments in time. Never `kotlinx.datetime.Instant`: all projects are on Kotlin 2.1.20+.
 
 Use `kotlin.time.Duration` for time intervals, delays, cooldowns, timeouts, and expiration lengths.
 
