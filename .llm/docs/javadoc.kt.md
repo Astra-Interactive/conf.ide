@@ -1,8 +1,8 @@
-# CLAUDE.md
-
 ## Code documentation (KDoc)
 
 This is a Kotlin project. Documentation is written in KDoc format. The core principle: **a comment exists only if it adds information not already present in the signature**. If the signature says everything on its own — no comment at all.
+
+This document covers only *how to write* a KDoc. It does not decide whether a function should throw or return `Result` — that is governed by the error-handling rules. `@throws` is documented whenever the function in question actually throws: a library API, an SDK wrapper, a boundary adapter. The examples below are generic API signatures, not templates for domain code.
 
 ### Mandatory self-check before writing
 
@@ -49,13 +49,22 @@ If the answer is "no" — the element is **not written**. A partially documented
 fun getUser(userId: Long): User
 ```
 
-**Good** (only what the signature doesn't say):
+**Good** (only what the signature doesn't say; a throwing library API, so the contract the caller must handle is the one thing worth writing down):
 
 ```kotlin
 /**
  * @throws UserNotFoundException if the user is deleted or does not exist
  */
 fun getUser(userId: Long): User
+```
+
+The same principle applied to a `Result`-returning function: document the failure cases only when the name and type do not make them obvious.
+
+```kotlin
+/**
+ * @return failure with [UserNotFoundError] for a deleted user as well as for an unknown id
+ */
+fun findUser(userId: Long): Result<User>
 ```
 
 **Bad**:
