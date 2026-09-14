@@ -1,3 +1,4 @@
+@.llm/docs/arch-package.md
 @.llm/docs/clean-code.kt.md
 @.llm/docs/code-ordering.kt.md
 @.llm/docs/codebase-memory.md

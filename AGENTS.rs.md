@@ -1,3 +1,4 @@
+@.llm/docs/arch-package.md
 @.llm/docs/clean-code.rs.md
 @.llm/docs/closure-naming.rs.md
 @.llm/docs/code-ordering.rs.md
