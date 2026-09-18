@@ -9,7 +9,6 @@
 - Within a group the order is whatever `cargo fmt` produces; run it and do not fight it
 - Allowed exceptions for wildcards:
     - a crate's documented prelude when it is the intended way to consume the crate
-    - `use super::*;` inside `#[cfg(test)] mod tests`
 
 ### Why the groups are kept by hand
 

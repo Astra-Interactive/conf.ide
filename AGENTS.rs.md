@@ -10,6 +10,7 @@
 @.llm/docs/git-commits.md
 @.llm/docs/imports.rs.md
 @.llm/docs/module-organization.rs.md
+@.llm/docs/crate-layout.rs.md
 @.llm/docs/no-tuples.rs.md
 @.llm/docs/notes.rs.md
 @.llm/docs/region.md

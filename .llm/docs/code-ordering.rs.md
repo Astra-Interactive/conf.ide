@@ -12,7 +12,7 @@ When writing or modifying code, order declarations by dependency, not by call-si
    - lower-level utilities come before higher-level orchestration functions.
 4. Never append private helpers after the public functions that depend on them.
 5. Trait implementations (`impl Trait for Type`) go after the type's inherent `impl` block.
-6. `#[cfg(test)] mod tests` is the last item in the file.
+6. In `src/lib.rs`, the `#[cfg(test)] #[path = "../test/lib.rs"] mod test;` declaration is the last item.
 7. Preserve this ordering when refactoring existing code.
 
 ### Inside an `impl` block

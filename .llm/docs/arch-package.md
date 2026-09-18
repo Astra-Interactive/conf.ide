@@ -14,8 +14,10 @@ Terms used below, whatever the language calls them:
 1. **Top level = business concept.** The first level of directories names bounded contexts, aggregates
    or features of the domain: `order`, `backup`, `snapshot`, `repository`. Never a technical layer
    (`models`, `services`, `dto`, `errors`, `utils`) and never a framework or tool.
-2. **Second level = layer, only if needed.** Inside a concept, split into `domain` / `application` /
-   `infrastructure` only when that concept has enough logic to need it. A CRUD-like concept stays flat.
+2. **Second level = the concept's parts.** Inside a concept, the next level names its sub-concepts,
+   its `model`, and the boundaries it sits on (`storage`, `command`); never a layer. How a Rust
+   crate that is one concept cuts that level, and what may stay at its root, is the crate-layout
+   rule.
 3. **A layer becomes a top-level unit only when it is a build unit.** A build unit named `domain`,
    `ports`, `application` or `<adapter>` exists so the compiler enforces the dependency rule: the domain
    cannot import the database because the database is not in its dependency list. Inside such a build
@@ -23,6 +25,9 @@ Terms used below, whatever the language calls them:
 
 ```
 <project>/                         build units = layers (only where the compiler must enforce them)
+├── library/                       reusable, plugin-agnostic code (the AstraLibs of this repository)
+│   ├── core/                      lifecycle, event flow, configuration files: no server API
+│   └── <server>/                  adapter of core to one server API
 ├── domain/
 │   ├── backup/                    package = concept; contains the plan, its progress, its summary
 │   ├── repository/                the id, the name, the config, the backends
@@ -34,7 +39,17 @@ Terms used below, whatever the language calls them:
 └── app/                           composition root
 ```
 
-A flat directory with dozens of files on one level means a concept level is missing. Group them.
+A flat directory with more than about seven files on one level means a concept level is missing.
+Group them.
+
+### Library versus plugin
+
+`library/` holds what any plugin could reuse: it must not mention this plugin, its features, its
+configuration files or its events. `modules/core/` holds what is shared by the modules of this
+plugin only: the feature gate, the core module, the list of host events the plugin listens to.
+Feature modules live in `modules/<feature>/`, entry points in `instances/<server>/`. When a type
+in `modules/core/` turns out to be plugin-agnostic, it moves to `library/`; the reverse move is a
+smell.
 
 ### What goes together
 
@@ -42,14 +57,16 @@ Apply Martin's component principles when deciding whether two types share a pack
 
 | Principle | Decision rule |
 |---|---|
-| Common Closure (CCP) | Types that change for the same reason and at the same time live together. A value, its error type, its parser, its builder are one concept. |
+| Common Closure (CCP) | Types that change for the same reason and at the same time live together. A value, its error type, its parser, its builder are one concept. An error of an operation lives with the operation that produces it, not with a value it mentions. |
 | Common Reuse (CRP) | Do not make a client depend on a package for one type and drag in ten it does not use. If only one type is shared, it is in the wrong package. |
 | Acyclic Dependencies (ADP) | Packages form a DAG. A cycle means two concepts are really one, or a shared piece must move down. |
 | Stable Dependencies (SDP) | Depend towards the stable side: adapters depend on ports, ports on domain, never back. |
 | Stable Abstractions (SAP) | Stable packages (domain, ports) hold abstractions and values; unstable ones (adapters, UI, main) hold concrete implementations. |
 
 Group by reason to change, never by kind of type. `errors/`, `dto/`, `types`, `utils` collect unrelated
-things that change independently and violate CCP.
+things that change independently and violate CCP. The one kind-named module a concept may have is
+`model`: inside one concept its plain data types all change with the shape of that concept, so the
+two groupings coincide there.
 
 ### Visibility is part of the layout
 

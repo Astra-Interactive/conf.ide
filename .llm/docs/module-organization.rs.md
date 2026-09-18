@@ -58,14 +58,40 @@ pub struct PredictionModelTrainer { /* ... */ }
   }
   ```
 
-* Test-only code is exempt. `#[cfg(test)] mod tests` at the bottom of a file, and the fakes and fixtures
-  declared inside it, are not buried helper types: they are compiled only for tests and belong next to
-  the code they exercise. The testing rule says where shared fakes live.
+* Test-only code lives in the crate's `test/` tree, never in a source file, as the testing rule
+  describes. Inside that tree fakes and fixtures used by one test module may share its file.
 
 ### Module files
 
-Follow the layout the crate already uses: either `foo/mod.rs`, or `foo.rs` next to a `foo/` directory.
-Do not mix the two styles in one crate. A new crate uses `foo.rs` + `foo/`, the Rust 2018 convention.
-The module file declares the submodules and re-exports the types that form the module's API.
+A module is declared as an inline block in `src/lib.rs`; its files live in a directory of the same
+name. Never create `foo/mod.rs` and never create `foo.rs` next to a `foo/` directory: the only
+files under `src/` are the crate root (`lib.rs` or `main.rs`) and files that hold a type, and the
+crate-layout rule says which single type file may sit directly next to the crate root.
+
+```rust
+// src/lib.rs
+pub mod configuration {
+    //! Module-level docs go here, inside the block.
+
+    mod configuration_error;
+    mod yaml_file;
+
+    pub use configuration_error::ConfigurationError;
+    pub use yaml_file::YamlFile;
+}
+
+pub mod lifecycle;
+```
+
+The compiler resolves `mod yaml_file;` inside `mod configuration { ... }` to
+`src/configuration/yaml_file.rs`, so the block does the job of a module file without one more file
+on disk. The block declares the submodules and re-exports the types that form the module's API, so
+that callers write `crate::configuration::YamlFile`, never `crate::configuration::yaml_file::YamlFile`.
+Nested concepts nest their blocks: `mod backend { ... }` inside `mod repository { ... }` reads
+`src/repository/backend/`.
+
+A concept that fits in a single file needs no block: `pub mod lifecycle;` loads `src/lifecycle.rs`.
+That is a shape for the small crates the crate-layout rule exempts; past the exemption a file
+joins a module.
 
 Do not use extra types or modules just for visual grouping.

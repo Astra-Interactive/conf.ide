@@ -16,7 +16,7 @@ Core requirements:
 * Prefer early returns, guard clauses, and the `?` operator.
 * Avoid duplicated code.
 * Remove dead code, unused variables, and unnecessary comments. `#[allow(dead_code)]` is a smell, not a fix.
-* One primary type per file. The exceptions are listed in the module-organization rule: enum variants, and test-only code under `#[cfg(test)]`.
+* One primary type per file. The exceptions are listed in the module-organization rule: enum variants, and test-only code in the crate's `test/` tree.
 
 ### 2. Follow SOLID principles
 
