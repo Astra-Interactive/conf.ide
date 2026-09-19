@@ -14,10 +14,9 @@ Terms used below, whatever the language calls them:
 1. **Top level = business concept.** The first level of directories names bounded contexts, aggregates
    or features of the domain: `order`, `backup`, `snapshot`, `repository`. Never a technical layer
    (`models`, `services`, `dto`, `errors`, `utils`) and never a framework or tool.
-2. **Second level = the concept's parts.** Inside a concept, the next level names its sub-concepts,
-   its `model`, and the boundaries it sits on (`storage`, `command`); never a layer. How a Rust
-   crate that is one concept cuts that level, and what may stay at its root, is the crate-layout
-   rule.
+2. **Second level = the concept's parts.** Inside a concept, the next level names its parts with
+   the fixed vocabulary of the crate-layout rule (`di`, `model`, `command`, `event`, `service`,
+   `storage`, `mapping`, `permission`); never `domain` / `application` / `infrastructure`.
 3. **A layer becomes a top-level unit only when it is a build unit.** A build unit named `domain`,
    `ports`, `application` or `<adapter>` exists so the compiler enforces the dependency rule: the domain
    cannot import the database because the database is not in its dependency list. Inside such a build
@@ -64,9 +63,10 @@ Apply Martin's component principles when deciding whether two types share a pack
 | Stable Abstractions (SAP) | Stable packages (domain, ports) hold abstractions and values; unstable ones (adapters, UI, main) hold concrete implementations. |
 
 Group by reason to change, never by kind of type. `errors/`, `dto/`, `types`, `utils` collect unrelated
-things that change independently and violate CCP. The one kind-named module a concept may have is
-`model`: inside one concept its plain data types all change with the shape of that concept, so the
-two groupings coincide there.
+things that change independently and violate CCP. Inside a plugin crate the crate-layout rule
+names a fixed vocabulary of modules (`model`, `command`, `event`, `service`, `storage`, ...): each
+of them is one reason to change within the crate's single concept, which is why they do not fall
+under this ban.
 
 ### Visibility is part of the layout
 

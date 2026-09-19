@@ -64,9 +64,9 @@ pub struct PredictionModelTrainer { /* ... */ }
 ### Module files
 
 A module is declared as an inline block in `src/lib.rs`; its files live in a directory of the same
-name. Never create `foo/mod.rs` and never create `foo.rs` next to a `foo/` directory: the only
-files under `src/` are the crate root (`lib.rs` or `main.rs`) and files that hold a type, and the
-crate-layout rule says which single type file may sit directly next to the crate root.
+name. Never create `foo/mod.rs`, and never create `foo.rs` at the crate root at all: `src/` holds
+`lib.rs` and nothing else, in every crate of the workspace, `library/*` included (crate-layout
+rule). Every other file under `src/` sits in a module directory and holds a type.
 
 ```rust
 // src/lib.rs
@@ -80,7 +80,13 @@ pub mod configuration {
     pub use yaml_file::YamlFile;
 }
 
-pub mod lifecycle;
+pub mod permission {
+    //! One sentence on what the concept is for, even when it holds a single type.
+
+    mod permission_registration_error;
+
+    pub use permission_registration_error::PermissionRegistrationError;
+}
 ```
 
 The compiler resolves `mod yaml_file;` inside `mod configuration { ... }` to
@@ -90,8 +96,29 @@ that callers write `crate::configuration::YamlFile`, never `crate::configuration
 Nested concepts nest their blocks: `mod backend { ... }` inside `mod repository { ... }` reads
 `src/repository/backend/`.
 
-A concept that fits in a single file needs no block: `pub mod lifecycle;` loads `src/lifecycle.rs`.
-That is a shape for the small crates the crate-layout rule exempts; past the exemption a file
-joins a module.
+A concept with one type still gets its directory and its block, as `permission` does above. The
+block costs four lines, and there is no shape in between for a concept to wait in.
+
+Bad — a concept parked at the crate root:
+
+```rust
+// src/permission.rs
+pub struct PermissionRegistrationError { /* ... */ }
+```
+
+Good — the concept's directory, from its first file:
+
+```rust
+// src/permission/permission_registration_error.rs
+pub struct PermissionRegistrationError { /* ... */ }
+```
+
+A file is named after the type it holds, always. When that name would repeat the module's name,
+`clippy::module_inception` refuses the file — and the lint is right: the module has been named
+after its type instead of after the area the type belongs to. Widen the module; never decorate the
+file to get past the lint. `library/core/src/time/` holds `Clock` and `SystemClock`;
+`library/pumpkin/src/scheduling/` holds `Scheduler`, `ScheduledTask`, `TaskHandle` and
+`HostScheduler`. A suffix invented for the file instead (`scheduler_port.rs`) claims a role the
+type may not have and leaves the file name disagreeing with what is in it.
 
 Do not use extra types or modules just for visual grouping.
