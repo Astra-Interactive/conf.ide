@@ -140,9 +140,9 @@ single-unit project a new feature is a concept package in that unit unless B2 or
 | app (Android or Compose Multiplatform, features as units) | always `feature/<name>/api` + `feature/<name>/impl`. `api` holds the contracts other units call (the screen entry or route, repository contracts) and the models in their signatures; `impl` holds everything else and depends on `api`; only the composition root depends on `impl`. |
 | plugin or bot, one platform | one unit `modules/<name>` (the project's container for feature units). With B3 (another unit calls or implements its contracts): `<name>/api` (contracts and the models in their signatures) + `<name>/impl` (everything else). With B2: `<name>/api` (everything that compiles without the platform: contracts, models, use cases, domain kinds, platform-free implementations) + `<name>/<platform>` (commands, listeners, menus, platform adapters, its DI module). |
 | plugin, ≥ 2 platforms | `<name>/api` (contracts and models) + `<name>/impl` (the platform-free implementation the platform units share) + one unit per platform (`bukkit`, `fabric`, `velocity`) when the feature has platform code. |
+| Rust workspace | one crate per independent feature, in the workspace's container (`modules/<name>`), crate name = directory name; fakes other crates need in `<name>-test-support`. |
 
 `<name>/` itself is a container: no build file, no sources. A unit never sits inside another unit's directory.
-| Rust workspace | one crate per independent feature, in the workspace's container (`modules/<name>`), crate name = directory name; fakes other crates need in `<name>-test-support`. |
 
 **Root package** = the unit path, 1:1 (the Kotlin rule gives the mapping). An `api` unit that holds only contracts
 and models is a leaf root: `…feature.profile.api.ProfileRepository`, `…feature.profile.api.Profile`. Above 20
