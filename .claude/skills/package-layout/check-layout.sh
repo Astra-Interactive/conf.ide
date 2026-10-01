@@ -60,11 +60,19 @@ for file in $NEW_SOURCES; do
         report "LOOSE" "$file (src/ holds only lib.rs and main.rs)"
         continue
     fi
+    if [ "${file##*.}" = "kt" ] && grep -qE "$ENTRY" "$file"; then
+        continue
+    fi
     if [ -n "$(find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
-        if [ "${file##*.}" = "kt" ] && grep -qE "$ENTRY" "$file"; then
-            continue
-        fi
         report "LOOSE" "$file (its package also holds packages)"
+        continue
+    fi
+    unit="${file%%/src/*}"
+    if [ "${file##*.}" = "kt" ] && [ "$unit" != "$file" ]; then
+        root_tail=$(printf '%s' "$unit" | sed -E 's#^(modules|components)/##; s#-##g')
+        case "$dir" in
+            */"$root_tail") report "LOOSE" "$file (it lies in the unit root package: put it into a kind package)" ;;
+        esac
     fi
 done
 
@@ -118,7 +126,13 @@ for file in $(printf '%s\n' "$NEW_KT" | grep -E '/src/[A-Za-z]*[Mm]ain/'); do
     while read -r hit; do
         [ -n "$hit" ] && report "EXPLICIT-PUBLIC" "$file:${hit%%(*} (public is the default: drop the modifier)"
     done < <(grep -nE '^public ' "$file")
-    case "$file" in
+    # The package path below the unit root package: a unit named `impl` is not the `impl` kind.
+    root_tail=$(printf '%s' "${file%%/src/*}" | sed -E 's#^(modules|components)/##; s#-##g')
+    package_path="/${file#*/kotlin/}"
+    case "$package_path" in
+        */"$root_tail"/*) package_path="/${package_path#*/"$root_tail"/}" ;;
+    esac
+    case "$package_path" in
         */impl/*) public_label="" ;;
         */internal/*) public_label="PUBLIC-IN-INTERNAL"; public_hint="write internal, or move a public implementation to impl/" ;;
         *) public_label="PUBLIC?"; public_hint="only the entry point and what another unit uses stay without a modifier" ;;
