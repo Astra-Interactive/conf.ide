@@ -71,8 +71,10 @@ Answer each item in one line with its evidence, from the listing and the plan:
    Kotlin, `pub` in Rust) only on the entry point and on what another unit uses; no Kotlin file contains the
    keyword `public`.
 6. **Units.** Every new unit has its written criterion, is registered in the build, depends only in the
-   allowed direction (impl → api, platform → api/shared, feature → owner unit), is wired into the composition
+   allowed direction (impl → api, platform → api/impl, feature → owner unit), is wired into the composition
    root, and, for a Rust crate, has `unreachable_pub` switched on (a Kotlin unit never enables `explicitApi()`).
+   No unit's directory holds another unit. In a refactor the user asked for, every old unit passes the same
+   check and has the shape of §4.1.
 7. **Gates.** Every new interface, `mapping/` file, use case and DI module passes §4.5.
 8. **Tests.** Every new test mirrors the package of the class it tests; fakes sit in `fake/` inside the concept of
    the contract they replace; fakes other units use sit in `testFixtures`, in a `<feature>/fake` sibling unit
@@ -136,8 +138,10 @@ single-unit project a new feature is a concept package in that unit unless B2 or
 | Project | New feature unit |
 |---|---|
 | app (Android or Compose Multiplatform, features as units) | always `feature/<name>/api` + `feature/<name>/impl`. `api` holds the contracts other units call (the screen entry or route, repository contracts) and the models in their signatures; `impl` holds everything else and depends on `api`; only the composition root depends on `impl`. |
-| plugin or bot, one platform | one unit `modules/<name>` (the project's container for feature units). With B2: `<name>/api` (everything that compiles without the platform: contracts, models, use cases, domain kinds, platform-free implementations) + `<name>/<platform>` (commands, listeners, menus, platform adapters, its DI module). |
-| plugin, ≥ 2 platforms | `<name>/api` (contracts and models) + `<name>/shared` (the platform-free implementation the platform units share) + one unit per platform (`bukkit`, `fabric`, `velocity`). |
+| plugin or bot, one platform | one unit `modules/<name>` (the project's container for feature units). With B3 (another unit calls or implements its contracts): `<name>/api` (contracts and the models in their signatures) + `<name>/impl` (everything else). With B2: `<name>/api` (everything that compiles without the platform: contracts, models, use cases, domain kinds, platform-free implementations) + `<name>/<platform>` (commands, listeners, menus, platform adapters, its DI module). |
+| plugin, ≥ 2 platforms | `<name>/api` (contracts and models) + `<name>/impl` (the platform-free implementation the platform units share) + one unit per platform (`bukkit`, `fabric`, `velocity`) when the feature has platform code. |
+
+`<name>/` itself is a container: no build file, no sources. A unit never sits inside another unit's directory.
 | Rust workspace | one crate per independent feature, in the workspace's container (`modules/<name>`), crate name = directory name; fakes other crates need in `<name>-test-support`. |
 
 **Root package** = the unit path, 1:1 (the Kotlin rule gives the mapping). An `api` unit that holds only contracts

@@ -131,12 +131,20 @@ is not a criterion.
    file or store) with operations on it. This holds even when its UI is shown inside an existing screen or menu:
    the existing unit then calls the new unit's contract, and the persistence still goes to the owner unit (rule 1).
    - an app feature is always an `api` + `impl` pair (`feature/profile/api`, `feature/profile/impl`);
-   - a plugin feature is one unit, split into `<feature>/api` + `<feature>/<platform>` only when its platform
-     code must be isolated (≥ 2 platforms, logic tested without the server API, or the user asks).
+   - a plugin feature is one unit until another unit must call or implement its contracts, or its platform code
+     must be isolated (≥ 2 platforms, logic tested without the server API, or the user asks). Then it is split
+     into `<feature>/api` (the contracts and the models in their signatures) + `<feature>/impl` (the
+     platform-free implementation), plus `<feature>/<platform>` for each platform whose code must be isolated.
+   - a unit's directory never holds another unit: a split feature's directory is a container with no build file
+     and no sources (`modules/onboarding/api` + `modules/onboarding/impl`, never a `modules/onboarding` unit with
+     `api/` inside it).
 3. A change with no entry point and no state of its own (a new subcommand, a new field an existing screen shows)
    joins the unit that holds its concept.
 
 A new unit's root package is its path, 1:1. The skill has the criteria in full and the scaffold steps.
+
+When the user asks to re-lay out existing code, every existing unit is decided again by these rules, like every
+package: a unit in the wrong shape is split, merged or moved, and the final message names each one.
 
 ### Existing code
 
