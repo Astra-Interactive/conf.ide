@@ -188,14 +188,22 @@ Applied to the files the task creates inside one concept.
 6. **Existing files count, and a group is never split.** When a group already has files in the concept, new files
    of the group go where those are. When old and new files together reach the threshold and no sub-concept exists,
    the final message suggests it; the task does not create it for the new files alone.
-7. **A refactor the user asked for decides every old sub-concept again.** All files count as new, so steps 1–5 run
-   over the whole concept. An old sub-concept whose group is below the threshold, in particular one that would hold
-   a single kind package, is dissolved: `onboarding/check/command/CheckCommand.kt` becomes
-   `onboarding/command/CheckCommand.kt`, and a contract alone in its sub-concept (`audience/api/KAudience.kt`)
-   becomes `api/KAudience.kt` of the parent. The one exception is mirroring: when sibling units implement the same
-   concept (`core`, `core-bukkit`, `core-minecraft`) and the concept passes the threshold in at least one of them,
-   it keeps its sub-concept in all of them, so the matching path finds the implementation
-   (`core/…/location/{api,model}/` and `core-bukkit/…/location/mapping/`). Screens follow §4.3 regardless.
+7. **A refactor the user asked for decides every old sub-concept again, by its size.** All files count as new, so
+   steps 1–5 run over the whole concept, but an old package that groups files under a domain noun (a sub-concept,
+   or a top-level package of a one-feature unit) is decided by the number of its files, not by step 5:
+   - **3 or more files: it stays**, its files split into kinds, even when they are all one kind.
+     `limbo-packet/src/play/` with 20 packets becomes `play/model/`; `plugin/file/` with three world-file readers
+     and their registry becomes `file/internal/`; `packets/c2s/` and `packets/s2c/` stay apart. A domain grouping
+     a reader already relies on is worth one extra directory level.
+   - **1 or 2 files: it is dissolved** into its parent's kinds. `onboarding/check/command/CheckCommand.kt` becomes
+     `onboarding/command/CheckCommand.kt`, and a contract alone in its sub-concept (`audience/api/KAudience.kt`)
+     becomes `api/KAudience.kt` of the parent.
+   - The one exception is mirroring: when sibling units implement the same concept (`core`, `core-bukkit`,
+     `core-minecraft`) and the concept is kept in at least one of them, it keeps its sub-concept in all of them, so
+     the matching path finds the implementation (`core/…/location/{api,model}/` and
+     `core-bukkit/…/location/mapping/`).
+
+   Screens follow §4.3 regardless.
 
 **Name**, first rule that yields one:
 

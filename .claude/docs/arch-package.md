@@ -16,7 +16,8 @@ Terms used below:
 ### Shape
 
 Every source path reads `<unit root>/<concept>[/<sub-concept>…]/<kind>/<File>`. A unit that is one feature has
-its kinds directly under its root package.
+its kinds directly under its root package; in a refactor, its old domain packages of 3 or more files stay as
+concepts next to those kinds (see Existing code).
 
 1. Concept packages hold only packages. Kind packages hold only files. A one-file kind package is normal.
 
@@ -138,10 +139,13 @@ A new unit's root package is its path, 1:1. The skill has the criteria in full a
 ### Existing code
 
 - Never move, rename or delete a file that existed before the task, unless the user asks.
-- When the user asks to re-lay out existing code, every file counts as new and every old sub-concept is decided
-  again by the skill's threshold: one that would hold a single kind package (`onboarding/check/command/`) is
-  dissolved into its parent's package of that kind. It stays only to mirror a sibling unit where the same concept
-  passes the threshold (`core-bukkit/…/location/mapping/` next to `core/…/location/{api,model}/`).
+- When the user asks to re-lay out existing code, every file counts as new, and every old package that groups
+  files under a domain noun (a sub-concept, or a top-level package of a one-feature unit) is decided again by its
+  size. One of 3 or more files stays, with its files split into kinds even when they are all one kind
+  (`limbo-packet/src/play/model/`, `plugin/file/internal/`). One of 1 or 2 files is dissolved into its parent's
+  package of that kind (`onboarding/check/command/CheckCommand.kt` → `onboarding/command/`); it stays only to
+  mirror a sibling unit where the same concept is kept (`core-bukkit/…/location/mapping/` next to
+  `core/…/location/{api,model}/`).
 - Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a new
   line of wiring, and a new nested type, variant or property of an old type, which goes into the old type's file.
   Leave every other old line as it is: no renames, no code moved out into new files, no reformatting, and no
