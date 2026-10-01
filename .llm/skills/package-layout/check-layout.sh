@@ -11,7 +11,9 @@ PREFIX="${2:-.}"
 
 KINDS='api|model|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
 PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
-BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|impl|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|dao|daos|repository|repositories|persistence|db|table|tables|exposed|krate|prefs|datastore|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presentation|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
+# `presentation` is absent: it is banned as a kind but is a mandated layer directory (SKILL.md §4.4);
+# `domain` and `data` are layer or unit words for the same reason.
+BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|impl|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|table|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
 ENTRY='fun main\(|: *JavaPlugin\(\)|: *Application\(\)|: *Plugin\(\)|ModInitializer|@Mod\('
 NOT_WORD='([^A-Za-z0-9_]|$)'
 FOUND=0
@@ -23,6 +25,14 @@ report() {
 
 existed_at_base() {
     git cat-file -e "$BASE:$1" 2>/dev/null
+}
+
+# A banned spelling the build unit already used at BASE is the unit's word for that role, and the rule
+# says new files reuse it (`nickname/impl/` in a unit whose implementations live in `impl/`).
+unit_used_name_at_base() {
+    local unit="${1%%/src/*}"
+    [ "$unit" = "$1" ] && unit="."
+    git ls-tree -r --name-only "$BASE" -- "$unit" 2>/dev/null | grep -qE "(^|/)$2/"
 }
 
 crate_root_of() {
@@ -72,7 +82,7 @@ for dir in $NEW_DIRS; do
         src|main|test|tests|kotlin|java|testFixtures|*Main|*Test) continue ;;
     esac
     if printf '%s\n' "$name" | grep -qxE "$BANNED"; then
-        report "BANNED-NAME" "$dir (see the replacement table)"
+        unit_used_name_at_base "$dir" "$name" || report "BANNED-NAME" "$dir (see the replacement table)"
     elif printf '%s\n' "$name" | grep -qE '[A-Z-]'; then
         report "NAME-CASE" "$dir (lowercase, one segment)"
     elif ! printf '%s\n' "$name" | grep -qxE "$KINDS" && [ -z "$(find "$dir" -mindepth 1 -maxdepth 1 -type d)" ]; then
@@ -155,6 +165,10 @@ for file in $NEW_RS; do
             base=$(basename "$file" .rs)
             case "$base" in
                 fake_*|lib) continue ;;
+            esac
+            case "$base" in
+                *_test) ;;
+                *) report "TEST-NAME" "$file (test files are named <source>_test.rs)" ;;
             esac
             crate=$(crate_root_of "$file" test)
             rel=${file#"$crate"/}

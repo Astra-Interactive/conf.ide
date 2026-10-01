@@ -74,7 +74,8 @@ Answer each item in one line with its evidence, from the listing and the plan:
    root, and has the compiler checks switched on.
 7. **Gates.** Every new interface, `mapping/` file, use case and DI module passes §4.5.
 8. **Tests.** Every new test mirrors the package of the class it tests; fakes sit in `fake/` inside the concept of
-   the contract they replace; fakes other units use sit in `testFixtures` or a `<name>-test-support` crate.
+   the contract they replace; fakes other units use sit in `testFixtures`, in a `<feature>/fake` sibling unit
+   (Kotlin Multiplatform) or in a `<name>-test-support` crate (Rust).
 9. **Old code.** The second command printed nothing: no pre-existing file was moved, renamed or deleted. In
    `git diff "$BASE" -- <old files>` every changed line is an integration point (a call, a branch, a
    constructor argument, wiring); a rename, a moved helper, a reformatted or restyled old line is reverted.

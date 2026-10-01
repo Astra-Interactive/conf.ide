@@ -74,7 +74,7 @@ impl OrderRepository for FakeOrderRepository {
 
 ### Where tests live
 
-* Tests never live in a source file. Each crate has a `test/` directory next to `src/`, the way a Gradle unit has `src/test` next to `src/main`, and the two trees mirror each other: `src/order/pricing.rs` is tested by `test/order/pricing_test.rs`.
+* Tests never live in a source file. Each crate has a `test/` directory next to `src/`, the way a Gradle unit has `src/test` next to `src/main`, and the two trees mirror each other: `src/order/pricing.rs` is tested by `test/order/pricing_test.rs`. A test file is always named after the source file with the `_test` suffix.
 * The test tree is declared once, as the last item of `src/lib.rs`, with nested blocks exactly like the source tree:
 
   ```rust

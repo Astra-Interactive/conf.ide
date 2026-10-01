@@ -139,8 +139,8 @@ modules that still use `mod.rs`.
 - Tests live in `test/`, next to `src/`, mirroring it directory for directory. A source file holds no
   `#[cfg(test)]`, no `mod tests` and no `#[test]`.
 - The test tree is declared once, as the last item of `src/lib.rs`: `#[cfg(test)] #[path = "../test"] mod test
-  { … }`, with nested blocks exactly like the source tree. `test/command/whitelist_command_test.rs` tests
-  `src/command/whitelist_command.rs`.
+  { … }`, with nested blocks exactly like the source tree. A test file is named after the source file with the
+  `_test` suffix: `test/command/whitelist_command_test.rs` tests `src/command/whitelist_command.rs`.
 - Test files import what they test by path (`use crate::command::WhitelistCommand;`) and see `pub(crate)` items,
   the analog of Kotlin `internal`. A private function that needs its own test becomes `pub(crate)`.
 - A fake lives in `fake/` inside the concept of the contract it replaces: `test/fake/fake_whitelist_repository.rs`

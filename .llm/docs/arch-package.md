@@ -71,8 +71,9 @@ The first row whose condition the file meets decides its kind.
 | `util` | is a stateless helper with no domain noun in its name, used by ≥ 2 kinds or ≥ 2 concepts |
 
 `models`, `impl`, `dto`, `utils`, `errors`, `exception`, `service`, `manager`, `controller`, `repository`, `dao`,
-`ui`, `gui`, `presentation` are not kind names: the skill's replacement table gives the row to use. A role no
-row describes goes through the skill's new-kind procedure and is reported in the final message.
+`ui`, `gui`, `presentation` are not kind names, and neither are the layer words `domain` and `data` used as kinds:
+the skill's replacement table gives the row to use. A role no row describes goes through the skill's new-kind
+procedure and is reported in the final message.
 
 ### Files
 
