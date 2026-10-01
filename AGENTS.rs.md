@@ -1,4 +1,5 @@
 @.llm/docs/arch-package.md
+@.llm/docs/arch-package.rs.md
 @.llm/docs/clean-code.rs.md
 @.llm/docs/closure-naming.rs.md
 @.llm/docs/code-ordering.rs.md
@@ -9,8 +10,6 @@
 @.llm/docs/error-handling.rs.md
 @.llm/docs/git-commits.md
 @.llm/docs/imports.rs.md
-@.llm/docs/module-organization.rs.md
-@.llm/docs/crate-layout.rs.md
 @.llm/docs/no-tuples.rs.md
 @.llm/docs/notes.rs.md
 @.llm/docs/region.md

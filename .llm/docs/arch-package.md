@@ -1,96 +1,150 @@
 ## Package layout
 
-Where a source file lives is an architectural decision, not a filing decision. A package is a unit of
-change and a unit of visibility. This rule says which package a type belongs to. Language-specific rules
-say how files inside a package are cut.
+**Before the first new file of a task, load the `package-layout` skill, record `BASE=$(git rev-parse HEAD)` and
+print the planned tree.** The skill holds the procedure, the thresholds and the examples. This rule holds what
+the finished tree must look like; the Kotlin and Rust rules add the language mechanics.
 
-Terms used below, whatever the language calls them:
+Terms used below:
 
-- **package** — a named group of source files that share a namespace and a visibility boundary.
-- **build unit** — a separately compiled part of the project with its own declared dependency list.
+- **build unit**: a Gradle module or a Cargo crate;
+- **package**: a directory of sources (a Kotlin package, a Rust module);
+- **DI module**: a wiring class such as `LinkModule` or `RootModule`;
+- **concept**: a package named with a singular domain noun (`link`, `code`, `player`, `nickname`);
+- **kind**: a package named with a role word from the table below (`api`, `model`, `database`, `di`);
+- **entry point**: the class the platform manifest names (plugin main class, `Application`) or `main`.
 
-### The rule of two levels
+### Shape
 
-1. **Top level = business concept.** The first level of directories names bounded contexts, aggregates
-   or features of the domain: `order`, `backup`, `snapshot`, `repository`. Never a technical layer
-   (`models`, `services`, `dto`, `errors`, `utils`) and never a framework or tool.
-2. **Second level = the concept's parts.** Inside a concept, the next level names its parts with
-   the fixed vocabulary of the crate-layout rule (`di`, `model`, `command`, `event`, `service`,
-   `storage`, `mapping`, `permission`); never `domain` / `application` / `infrastructure`.
-3. **A layer becomes a top-level unit only when it is a build unit.** A build unit named `domain`,
-   `ports`, `application` or `<adapter>` exists so the compiler enforces the dependency rule: the domain
-   cannot import the database because the database is not in its dependency list. Inside such a build
-   unit, go back to rule 1: packages are concepts again.
+Every source path reads `<unit root>/<concept>[/<sub-concept>…]/<kind>/<File>`. A unit that is one feature has
+its kinds directly under its root package.
 
-```
-<project>/                         build units = layers (only where the compiler must enforce them)
-├── library/                       reusable, plugin-agnostic code (the AstraLibs of this repository)
-│   ├── core/                      lifecycle, event flow, configuration files: no server API
-│   └── <server>/                  adapter of core to one server API
-├── domain/
-│   ├── backup/                    package = concept; contains the plan, its progress, its summary
-│   ├── repository/                the id, the name, the config, the backends
-│   │   └── backend/               a sub-concept large enough to get its own package
-│   └── restore/
-├── ports/
-├── application/
-├── <adapter>/                     one build unit per external technology
-└── app/                           composition root
-```
+1. Concept packages hold only packages. Kind packages hold only files. A one-file kind package is normal.
 
-A flat directory with more than about seven files on one level means a concept level is missing.
-Group them.
+   ```
+   link/api/LinkApi.kt              contract other units call
+   link/model/UnlinkResponse.kt     data it returns
+   link/code/api/CodeApi.kt         sub-concept: the same shape one level down
+   link/code/internal/CodeApiImpl.kt
+   ```
 
-### Library versus plugin
+2. Every concept package the task creates is split into kinds, whatever its size.
+3. Three unit roots are the only places where a file lies outside a kind package:
+   - the entry point, in the root package of the unit that starts the application, next to its `di/`
+     (`AstraRating.kt` + `di/RootModule.kt`);
+   - a unit whose path ends in `api` and that holds only contracts and the models in their signatures: the unit
+     is the `api` kind, so the files lie in its root package (`feature/profile/api` →
+     `…feature.profile.api.ProfileRepository`, `…feature.profile.api.Profile`);
+   - a unit that owns one kind (`modules/command`, `gui/bukkit`, `core/database`): a feature's concept package in
+     it holds that kind's files directly (`…command.nickname.NickCommand`).
+4. Name a new concept with the singular noun the task uses for the feature (`nickname`). Package names are
+   lowercase, singular, one segment; words are concatenated (`usecase`, `viewmodel`, `permissiongroup`).
+5. Layers (`domain/`, `data/`, `presentation/`) appear only when the skill's layer trigger fires, the user asks
+   for them, or the concept already has them.
 
-`library/` holds what any plugin could reuse: it must not mention this plugin, its features, its
-configuration files or its events. `modules/core/` holds what is shared by the modules of this
-plugin only: the feature gate, the core module, the list of host events the plugin listens to.
-Feature modules live in `modules/<feature>/`, entry points in `instances/<server>/`. When a type
-in `modules/core/` turns out to be plugin-agnostic, it moves to `library/`; the reverse move is a
-smell.
+### Kinds
 
-### What goes together
+The first row whose condition the file meets decides its kind.
 
-Apply Martin's component principles when deciding whether two types share a package:
-
-| Principle | Decision rule |
+| Kind | The file |
 |---|---|
-| Common Closure (CCP) | Types that change for the same reason and at the same time live together. A value, its error type, its parser, its builder are one concept. An error of an operation lives with the operation that produces it, not with a value it mentions. |
-| Common Reuse (CRP) | Do not make a client depend on a package for one type and drag in ten it does not use. If only one type is shared, it is in the wrong package. |
-| Acyclic Dependencies (ADP) | Packages form a DAG. A cycle means two concepts are really one, or a shared piece must move down. |
-| Stable Dependencies (SDP) | Depend towards the stable side: adapters depend on ports, ports on domain, never back. |
-| Stable Abstractions (SAP) | Stable packages (domain, ports) hold abstractions and values; unstable ones (adapters, UI, main) hold concrete implementations. |
+| `fake` | lives in the test tree: a hand-written fake or fixture of the concept's contracts |
+| `di` | is a DI module, including `RootModule`, or a factory only the wiring calls |
+| `database` | imports a database library: tables, rows, DAO implementations, migrations |
+| `network` | imports an HTTP, WebSocket or RPC client, or declares wire DTOs |
+| `storage` | saves state the program writes itself to files or key-value stores (YAML state, krate, DataStore) |
+| `config` | declares or loads what an admin or user edits: config file models, translations |
+| `argument` | converts a typed command argument into a model value, and the concept has ≥ 2 such converters |
+| `command` | declares a chat or CLI command: executor, registration, tab completion, a single argument converter |
+| `event` | listens to platform events |
+| `menu` | is a game-server menu a player clicks through: inventory GUI, book or chat menu |
+| `composable` | is Compose UI |
+| `view` | is UI of another toolkit (Android View, terminal UI) |
+| `viewmodel` | holds the state of one screen or menu and handles its intents, with its state and event types |
+| `permission` | declares permission nodes and registers them |
+| `discord`, `luckperms`, … | adapts one external system, and ≥ 2 files of the concept do; a single adapter is `internal` |
+| `mapping` | converts between two representations and has ≥ 2 callers |
+| `usecase` | is one operation that decides something or combines ≥ 2 contracts |
+| `check`, `policy`, … | ends in a role noun no row names, shared by ≥ 2 files of the concept |
+| `api` | declares a contract: an interface, a trait, an abstract class |
+| `model` | declares domain data: values, entities, sealed results, errors |
+| `internal` | implements a contract without a technology row above, or helps the concept's other files |
+| `util` | is a stateless helper with no domain noun in its name, used by ≥ 2 kinds or ≥ 2 concepts |
 
-Group by reason to change, never by kind of type. `errors/`, `dto/`, `types`, `utils` collect unrelated
-things that change independently and violate CCP. Inside a plugin crate the crate-layout rule
-names a fixed vocabulary of modules (`model`, `command`, `event`, `service`, `storage`, ...): each
-of them is one reason to change within the crate's single concept, which is why they do not fall
-under this ban.
+`models`, `impl`, `dto`, `utils`, `errors`, `exception`, `service`, `manager`, `controller`, `repository`, `dao`,
+`ui`, `gui`, `presentation` are not kind names: the skill's replacement table gives the row to use. A role no
+row describes goes through the skill's new-kind procedure and is reported in the final message.
 
-### Visibility is part of the layout
+### Files
 
-A package boundary only means something when most of what is inside is hidden.
+A file holds one type family. The sealed type comes first:
 
-- Each package exposes a minimal API: the types other packages actually use. Everything else is private
-  to the package, using whatever the language offers for that.
-- The composition root is the only place that sees every concrete implementation.
-- Prefer the compiler over reviews: a build-unit boundary is enforced for free; a package-only boundary
-  needs an architecture test or a linter.
+```kotlin
+// model/LinkResponse.kt: the sealed interface and every variant, one file
+public sealed interface LinkResponse {
+    public data class Linked(val player: LinkedPlayer) : LinkResponse
+    public data object CodeExpired : LinkResponse
+}
+```
 
-### Naming
+- A sealed type or an enum and all its variants are one file named after the parent.
+- A data class that is a property type of exactly one class is nested in it (`Order.Shipping`), however many
+  other files read it or pass it on.
+- A result a function returns to another class (a sealed outcome, a summary, a page of items) is its own family
+  in `model/`, never nested in the class that returns it: `RenameUseCase` returns `model/RenameResult.kt`, so the
+  tree shows what the feature can answer.
+- The companion, private helpers and the extensions every client uses stay in the type's file.
+- A file is split only above 400 lines, by moving a whole group of variants or extensions into a second file of
+  the same package; one variant or one nested class never gets a file of its own.
 
-- The package name is the qualifier, the type name is the concept: `order.Error`, not
-  `order.OrderError`.
-- Package names are domain words from the ubiquitous language, in the casing the language prescribes.
-  No `common`, `shared`, `misc`, `helpers` unless the content really is a shared kernel with a documented
-  reason to exist.
+### Visibility
 
-### Checklist before adding or moving a file
+Write the modifier while writing the declaration. Everything is private to its build unit (Kotlin `internal`,
+Rust `pub(crate)`) except:
 
-1. Which business concept does this type belong to? That is its package.
-2. Does the package's existing content change for the same reasons as this type? If not, new package.
-3. After adding it, does any dependency now point from a stable package towards a less stable one, or
-   form a cycle? If yes, the type belongs one level down or behind a port.
-4. Does the type need to be visible outside the package? If not, it is not public.
-5. Is the top level of the tree still readable as a description of the domain, not of the tech stack?
+- the entry point;
+- declarations another build unit uses: the contents of an `api` unit, a DI module another unit constructs, the
+  models in their signatures.
+
+A unit nothing depends on (an app, an instance, a plugin jar, a binary crate) makes only its entry point public.
+Class members are `private` unless another class uses them. The compiler checks (`explicitApi()`,
+`unreachable_pub`) are switched on only in units the task creates.
+
+### Build units
+
+Decide the build unit of every new file before writing the first one. The number of units the project has now
+is not a criterion.
+
+1. A file of a kind that an existing unit owns goes to that unit, under a concept named after the feature:
+   persistence to the unit that owns the database schema, commands to the command unit, menus to the GUI unit.
+2. In a project with more than one build unit besides its entry-point units, a new feature gets its own unit
+   when it has entry points of its own (commands, screens, menus, listeners) or state of its own (a new table,
+   file or store) with operations on it. This holds even when its UI is shown inside an existing screen or menu:
+   the existing unit then calls the new unit's contract, and the persistence still goes to the owner unit (rule 1).
+   - an app feature is always an `api` + `impl` pair (`feature/profile/api`, `feature/profile/impl`);
+   - a plugin feature is one unit, split into `<feature>/api` + `<feature>/<platform>` only when its platform
+     code must be isolated (≥ 2 platforms, logic tested without the server API, or the user asks).
+3. A change with no entry point and no state of its own (a new subcommand, a new field an existing screen shows)
+   joins the unit that holds its concept.
+
+A new unit's root package is its path, 1:1. The skill has the criteria in full and the scaffold steps.
+
+### Existing code
+
+- Never move, rename or delete a file that existed before the task, unless the user asks.
+- Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a new
+  line of wiring, and a new nested type, variant or property of an old type, which goes into the old type's file.
+  Leave every other old line as it is: no renames, no code moved out into new files, no reformatting, and no
+  style rules (`no-it`, naming, ordering) applied to lines the task does not otherwise need.
+- New files follow these rules inside old packages too: a new kind package next to old loose files is correct.
+- When the build unit already names a role with another word (`commands/`, `utils/`, `impl/`, `exception/`), new
+  files of that role use that word, in the parent package and in new sub-concepts alike (`nickname/impl/`, not
+  `nickname/database/`, in a unit whose DAO implementations live in `impl/`). Only the word is borrowed, not the
+  old shape: the new contract still goes to `nickname/api/`, and nothing new lies loose.
+- The final message lists the old files the rules would move, and where.
+
+### Before the final message
+
+List the files the task added since `BASE` and answer the skill's checklist in one line per item. A finding is
+fixed by moving the new file, never an old one.
+
+**Load the `package-layout` skill before the first new file of a task.**

@@ -56,7 +56,7 @@ The second test verifies an implementation detail. The first verifies the expect
 Example fake:
 
 ```rust
-struct FakeOrderRepository {
+pub(crate) struct FakeOrderRepository {
     orders: RefCell<HashMap<OrderId, Order>>,
 }
 
@@ -74,36 +74,22 @@ impl OrderRepository for FakeOrderRepository {
 
 ### Where tests live
 
-Tests never live in a source file. Each crate has a `test/` directory next to `src/`, the way a
-Gradle module has `src/test` next to `src/main`, and the directories mirror each other:
-`src/order/pricing.rs` is tested by `test/order/pricing.rs`.
-
-* The test tree is one module, declared once, as the last item of `src/lib.rs`:
+* Tests never live in a source file. Each crate has a `test/` directory next to `src/`, the way a Gradle unit has `src/test` next to `src/main`, and the two trees mirror each other: `src/order/pricing.rs` is tested by `test/order/pricing_test.rs`.
+* The test tree is declared once, as the last item of `src/lib.rs`, with nested blocks exactly like the source tree:
 
   ```rust
   #[cfg(test)]
-  #[path = "../test/lib.rs"]
-  mod test;
+  #[path = "../test"]
+  mod test {
+      mod order {
+          mod pricing_test;
+      }
+  }
   ```
 
-  `test/lib.rs` declares the mirrored submodules as inline blocks, the way `src/lib.rs` does:
-  `mod order { mod pricing; }` loads `test/order/pricing.rs`, which holds the tests. There is no
-  `test/order.rs`. A source file never contains `#[cfg(test)]`, a `mod tests`, or a `#[test]`.
-* Visibility follows Kotlin: the test tree is part of the crate, so it sees `pub` and `pub(crate)`
-  items, the analog of `internal`, and imports them explicitly (`use crate::order::Pricing;`).
-  Private items are not visible, exactly as a Kotlin `private` member is not visible from a test.
-  A private function that needs its own test is made `pub(crate)`, not tested through a `super::*`
-  import; the imports rule allows no wildcard in the test tree.
-* A fake or fixture used by one test module stays in that module's file. Fakes shared by several
-  test modules go to `test/support/`, one fake per file, re-exported from the `mod support { ... }`
-  block in `test/lib.rs`.
-  Fakes shared across crates go to a dedicated `<name>-test-support` crate pulled in as a
-  dev-dependency.
-* Integration tests, which see only the public API, live in the crate's `tests/` directory. The
-  two directories are distinct on purpose: Cargo compiles every file under `tests/` as its own
-  crate, so the mirrored unit-test tree must not be placed there.
-* `test/lib.rs` is the only file in the tree named after a module rather than a type; the
-  module-organization and code-ordering rules otherwise apply unchanged inside the test tree.
+* The test tree is part of the crate: it sees `pub(crate)` items, the analog of Kotlin `internal`, and imports them by path (`use crate::order::Pricing;`). A private function that needs its own test becomes `pub(crate)`.
+* A fake lives in `fake/` inside the concept of the trait it replaces: `test/order/fake/fake_order_repository.rs`, declared in the test block and re-exported with `pub(crate) use` for the tests that need it. A fake that other crates need lives in a `<name>-test-support` crate pulled in as a dev-dependency, instead of a copy in each crate.
+* Integration tests, which see only the public API, live in Cargo's `tests/` directory. The mirrored unit-test tree never goes there: Cargo compiles `tests/*.rs` and `tests/*/main.rs` as separate crates.
 
 **Frameworks**: the built-in `#[test]` harness. `tokio::test` for async tests; `tokio::io::duplex` for
 in-process client/server pairs instead of real sockets.

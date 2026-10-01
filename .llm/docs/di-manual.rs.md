@@ -2,14 +2,24 @@
 
 Manual constructor injection — no DI frameworks or service-locator crates.
 
-Group related services into module structs (e.g. `DomainModule`, `InfrastructureModule`) that own their
-services as fields. A module constructs its concrete instances and receives other modules as constructor
-parameters.
+Group related services into DI module structs (e.g. `WhitelistModule`) that own their services as fields. A DI
+module constructs its concrete instances and receives other DI modules as constructor parameters. Every DI module
+lives in the `di` module of the concept it wires (`src/di/whitelist_module.rs`); it is `pub` only when another
+crate constructs it.
 
-The binary crate's `main.rs` is the composition root: it loads configuration, owns the entry-point
-resources (the async runtime, listeners, connection pools, file handles), and instantiates all modules in
-dependency order. A library crate exposes a constructor for its top-level module and leaves the wiring to
-the binary that uses it.
+The composition root is `RootModule` in `src/di/root_module.rs` of the binary crate: it loads configuration,
+owns the entry-point resources (the async runtime, listeners, connection pools, file handles), and instantiates
+all DI modules in dependency order. The same file holds `pub fn run() -> ExitCode`, which builds `RootModule` and
+starts the application; `src/main.rs` only calls it:
+
+```rust
+// src/main.rs
+fn main() -> std::process::ExitCode {
+    limbo::di::run()
+}
+```
+
+A library crate exposes a constructor for its top-level DI module and leaves the wiring to the binary that uses it.
 
 - Prefer generic parameters (static dispatch) over `dyn` trait objects by default; reach for `dyn`
   deliberately when it removes generic infection across many types, not by habit.

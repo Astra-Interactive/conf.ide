@@ -7,8 +7,10 @@
     2. external crates
     3. `crate` / `super` / `self`
 - Within a group the order is whatever `cargo fmt` produces; run it and do not fight it
-- Allowed exceptions for wildcards:
-    - a crate's documented prelude when it is the intended way to consume the crate
+- Import a type through the kind module that re-exports it (`use crate::profile::api::ProfileClient;`), never
+  through its file module
+- Files in the `test/` tree import what they test the same way (`use crate::command::WhitelistCommand;`)
+- Allowed exception for wildcards: a crate's documented prelude when it is the intended way to consume the crate
 
 ### Why the groups are kept by hand
 

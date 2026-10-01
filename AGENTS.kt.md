@@ -1,4 +1,5 @@
 @.llm/docs/arch-package.md
+@.llm/docs/arch-package.kt.md
 @.llm/docs/clean-code.kt.md
 @.llm/docs/code-ordering.kt.md
 @.llm/docs/codebase-memory.md
@@ -11,7 +12,6 @@
 @.llm/docs/javadoc.kt.md
 @.llm/docs/kotlin-lsp.kt.md
 @.llm/docs/ksrc.kt.md
-@.llm/docs/nested-class.kt.md
 @.llm/docs/no-it.kt.md
 @.llm/docs/no-pair.kt.md
 @.llm/docs/notes.kt.md

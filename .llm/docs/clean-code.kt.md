@@ -16,7 +16,7 @@ Core requirements:
 * Prefer early returns and guard clauses.
 * Avoid duplicated code.
 * Remove dead code, unused variables, and unnecessary comments.
-* Avoid placing multiple `data class` into a single Kotlin file. Exceptions are listed in the nested-class rule: sealed hierarchy variants and child data classes nested in the parent.
+* A file holds one type family: a sealed hierarchy with all its variants, a data class with the data classes nested in it. The Kotlin package-layout rule says what goes in one file.
 
 ### 2. Follow SOLID principles
 
@@ -24,7 +24,7 @@ Core requirements:
 * Open/Closed Principle: code should be extendable without modifying existing logic too much.
 * Liskov Substitution Principle: subclasses should be safely replaceable by their parent type.
 * Interface Segregation Principle: avoid large interfaces with unrelated methods.
-* Dependency Inversion Principle: depend on abstractions, not concrete implementations.
+* Dependency Inversion Principle: depend on abstractions, not concrete implementations. An interface exists where the package-layout skill's gate A1 allows one: another concept or unit calls it, it has two or more implementations, or a test replaces it with a fake.
 
 ### 3. Use design patterns when appropriate
 
@@ -46,13 +46,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Organize the code into clear layers or modules when appropriate:
-
-* Domain/business logic
-* Application/service logic
-* Infrastructure/external APIs/database/files
-* Presentation/controllers/UI/commands
-* Configuration
+Keep each responsibility in its own class and each class in the package its role gives it: contracts in `api/`, domain data in `model/`, persistence in `database/`, commands in `command/`, wiring in `di/`. The package-layout rule and skill decide the packages, when a concept is layered into `domain/`, `data/`, `presentation/`, and when a feature gets its own build unit.
 
 Do not mix unrelated responsibilities in one class or function.
 
@@ -97,8 +91,8 @@ Before providing the final code, review it and improve:
 * Testability
 * Error handling
 * Pattern usage
-* File/module organization
+* File and package organization: answer the package-layout skill's checklist
 
 ### Important:
 
-Do not produce quick-and-dirty code unless explicitly asked. Treat every coding task as production-quality software design.
+Do not produce quick-and-dirty code unless explicitly asked. Treat every coding task as production-quality software design. Production quality includes the right amount of structure: the packages, layers, interfaces and build units the package-layout rules call for, and no more.
