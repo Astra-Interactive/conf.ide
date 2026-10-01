@@ -29,14 +29,14 @@ concepts next to those kinds (see Existing code).
    ```
 
 2. Every concept package the task creates is split into kinds, whatever its size.
-3. Three unit roots are the only places where a file lies outside a kind package:
+3. Two unit roots are the only places where a file lies outside a kind package:
    - the entry point, in the root package of the unit that starts the application, next to its `di/`
      (`AstraRating.kt` + `di/RootModule.kt`);
-   - a unit whose path ends in `api` and that holds only contracts and the models in their signatures: the unit
-     is the `api` kind, so the files lie in its root package (`feature/profile/api` →
-     `…feature.profile.api.ProfileRepository`, `…feature.profile.api.Profile`);
    - a unit that owns one kind (`modules/command`, `gui/bukkit`, `core/database`): a feature's concept package in
      it holds that kind's files directly (`…command.nickname.NickCommand`).
+
+   A unit whose path ends in `api` is not one of them: its root package holds kinds like any other unit
+   (`feature/profile/api` → `…feature.profile.api.api.ProfileRepository`, `…feature.profile.api.model.Profile`).
 4. Name a new concept with the singular noun the task uses for the feature (`nickname`). Package names are
    lowercase, singular, one segment; words are concatenated (`usecase`, `viewmodel`, `permissiongroup`).
 5. Layers (`domain/`, `data/`, `presentation/`) appear only when the skill's layer trigger fires, the user asks

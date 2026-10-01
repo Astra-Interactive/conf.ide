@@ -144,11 +144,10 @@ single-unit project a new feature is a concept package in that unit unless B2 or
 
 `<name>/` itself is a container: no build file, no sources. A unit never sits inside another unit's directory.
 
-**Root package** = the unit path, 1:1 (the Kotlin rule gives the mapping). An `api` unit that holds only contracts
-and models is a leaf root: `…feature.profile.api.ProfileRepository`, `…feature.profile.api.Profile`. Above 20
-files it becomes a branch of sub-concept leaves, one per contract group (`…profile.api.avatar.AvatarRepository`).
-An `api` unit that also holds platform-free implementation (the one-platform plugin split) is a branch of kinds:
-`…nickname.api.api.NicknameDao`, `…nickname.api.usecase.RenameUseCase`.
+**Root package** = the unit path, 1:1 (the Kotlin rule gives the mapping). An `api` unit is laid out like any
+other unit: its root package holds kinds, never loose files, however few contracts it has
+(`…feature.profile.api.api.ProfileRepository`, `…feature.profile.api.model.Profile`,
+`…nickname.api.usecase.RenameUseCase`).
 
 **Scaffold: Gradle.**
 
@@ -425,10 +424,9 @@ Decisions: app project, so `api` + `impl` (always). The cache entity and its Roo
 `impl` has 6 children and 9 files: L1.
 
 ```
-feature/profile/api/src/main/kotlin/com/example/feature/profile/api/     leaf root: the unit is the api kind
-├── ProfileRepository.kt               public interface
-├── Profile.kt                         public data class + nested Avatar
-└── ProfileRoute.kt                    public navigation key
+feature/profile/api/src/main/kotlin/com/example/feature/profile/api/
+├── api/ProfileRepository.kt           public interface
+└── model/Profile.kt, ProfileRoute.kt  public data class + nested Avatar; public navigation key
 feature/profile/impl/src/main/kotlin/com/example/feature/profile/impl/
 ├── network/ProfileClient.kt, ProfileDto.kt
 ├── internal/ProfileRepositoryImpl.kt
