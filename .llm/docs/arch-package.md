@@ -67,10 +67,15 @@ The first row whose condition the file meets decides its kind.
 | `check`, `policy`, … | ends in a role noun no row names, shared by ≥ 2 files of the concept |
 | `api` | declares a contract: an interface, a trait, an abstract class |
 | `model` | declares domain data: values, entities, sealed results, errors |
-| `internal` | implements a contract without a technology row above, or helps the concept's other files |
+| `impl` | implements a contract without a technology row above and is public: another unit, or a project that uses the published library, constructs it or names it |
+| `internal` | implements a contract without a technology row above and stays inside its unit, or helps the concept's other files |
 | `util` | is a stateless helper with no domain noun in its name, used by ≥ 2 kinds or ≥ 2 concepts |
 
-`models`, `impl`, `dto`, `utils`, `errors`, `exception`, `service`, `manager`, `controller`, `repository`, `dao`,
+The package name tells the truth about visibility: everything in `internal/` is `internal` / `pub(crate)`, and a
+public implementation lives in `impl/` (`core-bukkit/…/player/impl/BukkitKPlayer.kt` in a library whose plugins
+create Bukkit players).
+
+`models`, `dto`, `utils`, `errors`, `exception`, `service`, `manager`, `controller`, `repository`, `dao`,
 `ui`, `gui`, `presentation` are not kind names, and neither are the layer words `domain` and `data` used as kinds:
 the skill's replacement table gives the row to use. A role no row describes goes through the skill's new-kind
 procedure and is reported in the final message.
@@ -104,7 +109,8 @@ Rust `pub(crate)`) except:
 
 - the entry point;
 - declarations another build unit uses: the contents of an `api` unit, a DI module another unit constructs, the
-  models in their signatures.
+  models in their signatures, the implementations in `impl/`. In a published library, a declaration the projects
+  that use the library need counts as used by another unit.
 
 A unit nothing depends on (an app, an instance, a plugin jar, a binary crate) makes only its entry point public.
 Class members are `private` unless another class uses them. The compiler checks (`explicitApi()`,

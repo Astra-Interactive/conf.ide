@@ -9,11 +9,11 @@ set -u
 BASE="${1:?usage: check-layout.sh <BASE commit> [path prefix]}"
 PREFIX="${2:-.}"
 
-KINDS='api|model|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
+KINDS='api|model|impl|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
 PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
 # `presentation` is absent: it is banned as a kind but is a mandated layer directory (SKILL.md §4.4);
 # `domain` and `data` are layer or unit words for the same reason.
-BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|impl|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|table|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
+BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|table|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
 ENTRY='fun main\(|: *JavaPlugin\(\)|: *Application\(\)|: *Plugin\(\)|ModInitializer|@Mod\('
 NOT_WORD='([^A-Za-z0-9_]|$)'
 FOUND=0
@@ -118,8 +118,13 @@ for file in $(printf '%s\n' "$NEW_KT" | grep -E '/src/[A-Za-z]*[Mm]ain/'); do
     while read -r hit; do
         [ -n "$hit" ] && report "NO-MODIFIER" "$file:$hit"
     done < <(grep -nE '^((abstract|annotation|const|data|enum|expect|actual|fun|inline|lateinit|open|operator|sealed|suspend|tailrec|value) )*(class|interface|object|fun|val|var|typealias) ' "$file")
+    case "$file" in
+        */impl/*) public_label="" ;;
+        */internal/*) public_label="PUBLIC-IN-INTERNAL"; public_hint="a public implementation lives in impl/" ;;
+        *) public_label="PUBLIC?"; public_hint="only the entry point and what another unit uses" ;;
+    esac
     while read -r hit; do
-        [ -n "$hit" ] && report "PUBLIC?" "$file:${hit%%(*} (only the entry point and what another unit uses)"
+        [ -n "$hit" ] && [ -n "$public_label" ] && report "$public_label" "$file:${hit%%(*} ($public_hint)"
     done < <(grep -nE '^public ' "$file" | grep -vE "$ENTRY")
 done
 

@@ -27,6 +27,7 @@ it. Write one of these on every top-level declaration:
 |---|---|
 | the entry point (`class NicknamePlugin : JavaPlugin()`) | `public` |
 | the contents of an `api` unit; a DI module another unit constructs; a model in their signatures | `public` |
+| an implementation in `impl/`: another unit, or a project that uses the published library, constructs it | `public` |
 | every other top-level declaration | `internal` |
 | a helper used only in its own file | `private` |
 | a class member used only by its class | `private` |
