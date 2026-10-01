@@ -14,7 +14,7 @@ PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|v
 # `presentation` is absent: it is banned as a kind but is a mandated layer directory (SKILL.md §4.4);
 # `domain` and `data` are layer or unit words for the same reason.
 BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|table|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
-ENTRY='fun main\(|: *JavaPlugin\(\)|: *Application\(\)|: *Plugin\(\)|ModInitializer|@Mod\('
+ENTRY='fun main\(|: *JavaPlugin\(\)|: *LifecyclePlugin\(\)|: *Application\(\)|: *Plugin\(\)|ModInitializer|@Mod\('
 NOT_WORD='([^A-Za-z0-9_]|$)'
 FOUND=0
 
