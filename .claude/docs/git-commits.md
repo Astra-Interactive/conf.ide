@@ -43,7 +43,6 @@ and nobody else.
 ### Title
 
 `[TAG] Imperative summary of the change`, up to 72 characters, capitalised, no trailing period.
-
 Say what the change does, not which files moved.
 
 Default tags: `[FEAT]`, `[FIX]`, `[CHORE]`, `[DOCS]`, `[TEST]`. The list is open — add your own
@@ -52,23 +51,43 @@ word per meaning: do not add a second spelling of a tag that is already in use.
 
 ### Body
 
-Short. One paragraph, three or four lines, wrapped at 80 columns — and only when the title leaves a
-real question open. A self-evident change ships with no body at all.
+**Most commits are the title alone.** Write a body only when someone who reads the title and the
+diff would otherwise undo the change or repeat a mistake: a workaround for a bug outside the
+repository, a version pinned on purpose, an obvious approach that does not work. Then the body is
+one sentence, two at most, wrapped at 72 columns.
 
-Write down the *why* a reader cannot recover from the diff: the constraint that forced the approach,
-the alternative that was rejected, the trap the next person would fall into. Never an inventory of
-the files, never a restatement of the title, never a bullet list of everything in the diff.
+Never in a message:
 
-If the body needs more than one paragraph, that is a sign the commit needs splitting.
+* what the diff already says: the text of the rule or comment it adds, the list of files or steps;
+* the story of the task: how the problem was found, what was tried, eval scores, counts, the
+  projects it was tested on;
+* build and test results, "This commit…", the title said again.
 
-The whole shape, title and body together:
+Three complete messages:
+
+```
+[FEAT] Add the package-layout skill
+[FIX] Order Kotlin imports the way detekt checks them
+[CHORE] Bump Kotlin to 2.2.20
+```
+
+A body, because a reader would otherwise put the tests back:
 
 ```
 [CHORE] Stop repeating the tests on a release
 
-They gate the pull request, which is where a change is reviewed. Running them
-again on the push to master doubles the slowest part of a release without a
-second opinion to show for it.
+The pull request already ran them on the same commit.
+```
+
+Too long: the rule the diff adds already gives the reason, and the count comes from the session
+that wrote it. The title alone was the message.
+
+```
+[FIX] Name the Rust impl kind imp
+
+impl is a keyword, so a module named after the kind has to be written r#impl in
+every path; the NanoLimbo refactor needed it 92 times. imp is the name Rust
+crates already use for implementation modules.
 ```
 
 **Before the final message: commit, then list the commits.**
