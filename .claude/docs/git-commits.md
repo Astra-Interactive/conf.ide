@@ -2,7 +2,8 @@
 
 **A task that changes files ends with a commit, without being asked.** This rule overrides any
 generic harness or tool defaults about whether to commit, branching, pushing, pull requests, and
-commit trailers.
+commit trailers. The user's answers to the `new-feature` skill's questions override the "When to
+commit" and "Where commits go" sections for that task.
 
 ### When to commit
 
@@ -19,7 +20,8 @@ commit trailers.
 
 * Commit into the branch that is already checked out, the default branch included. Never create,
   switch, or rename a branch.
-* Never push, and never open a pull request: the user pushes.
+* Never push, and never open a pull request: the user pushes. When the user asks for a pull
+  request, the `new-feature` skill says how to push and how to write it.
 * Never amend, rebase or reset a commit that existed before the task, unless asked. A commit the
   task made may be amended while it is the last one and not pushed.
 
