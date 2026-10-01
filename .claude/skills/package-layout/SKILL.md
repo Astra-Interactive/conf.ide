@@ -58,8 +58,8 @@ List what the task added and whether an old file moved:
 
 Answer each item in one line with its evidence, from the listing and the plan:
 
-1. **Loose files.** Every new source file lies in a kind package, or is the entry point, or lies in an `api`-unit
-   root or an owner-unit concept (the three exceptions of the Shape rule).
+1. **Loose files.** Every new source file lies in a kind package, or is the entry point, or lies in an owner-unit
+   concept (the two exceptions of the Shape rule); no file lies in the root package of an `api` unit.
 2. **Mixed packages.** No package the task created holds both files and packages.
 3. **Names.** Every new package is lowercase, singular, one segment, a kind row or a reported new kind or a concept
    noun; a role the unit already names with another word (`impl/`, `commands/`) uses that word, in new
