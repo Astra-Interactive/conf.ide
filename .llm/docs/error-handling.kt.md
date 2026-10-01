@@ -18,6 +18,7 @@ failure is always a `Throwable`. Model domain errors as a sealed hierarchy of ex
 are a payload for `Result.failure`; your own code never throws them.
 
 ```kotlin
+// model/OrderError.kt: the sealed class and every subclass, one file
 sealed class OrderError(message: String, cause: Throwable?) : Exception(message, cause)
 
 class OrderParseError(message: String) : OrderError(message, null)
@@ -40,6 +41,17 @@ fun validateOrder(order: Order): Result<Order> {
     return Result.success(order)
 }
 ```
+
+### Where error types live
+
+- An error type that a contract's signature names, or that its implementations return in `Result.failure`,
+  lives in the `model/` package of that contract's concept, in one file with its whole hierarchy:
+  `model/OrderError.kt` holds `OrderError` and every subclass.
+- A per-use-case sealed result (`CreateOrderResult`) lives in the same `model/`, with its failure variants
+  nested next to the success ones.
+- An error that never leaves one implementation is `private` in that implementation's file.
+- When the concept already has an `exception/` package, new error types of that concept go there instead of
+  `model/`.
 
 ### Boundaries: converting exceptions
 

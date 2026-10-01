@@ -11,6 +11,7 @@ Result<T, E>
 Model domain errors as dedicated error enums, one per domain, with a variant per failure mode. Use `thiserror` to derive `Display` and `Error`:
 
 ```rust
+// src/model/order_error.rs: the enum, every variant and the payload structs only it uses
 #[derive(Debug, thiserror::Error)]
 pub enum OrderError {
     #[error("cart is empty")]
@@ -81,6 +82,13 @@ Use `unwrap_or`, `unwrap_or_else`, or `or_else` to convert a failure into a succ
 ```rust
 let currency = Currency::from_code(raw_code).unwrap_or(Currency::DEFAULT);
 ```
+
+Where error types live:
+
+* An error enum that a trait's signatures name lives in the `model` module of that trait's concept, one file
+  per enum (`src/model/order_error.rs`), re-exported next to the result types it accompanies.
+* A per-use-case result enum lives in the same `model` module.
+* An error that never leaves one implementation stays private in that implementation's file.
 
 Rules:
 
