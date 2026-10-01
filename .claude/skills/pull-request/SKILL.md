@@ -1,7 +1,7 @@
 ---
 name: pull-request
 description: Open a pull request and write its title and description. Use it whenever a pull request is to be opened, updated or described — the user asks for a PR, the new-feature skill's answers ask for one, or a PR description needs rewriting. Checks the branch, bumps the project version, pushes only the feature branch, writes a short title and a description that says only what the diff cannot, and creates or edits the PR with gh.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Pull request
@@ -31,14 +31,15 @@ Read the whole change before writing, not only the last commit: `git log --oneli
 ## 2. Bump the version
 
 A pull request that changes what the project's users get (a fix, a feature, a dependency they receive) raises the
-project version, unless the branch already raises it over the base (`git diff <base>...HEAD -- <version file>`).
+project version, unless the branch already raises its minor number over the base
+(`git diff <base>...HEAD -- <version file>`).
 
 - The version is where the build reads it: the version key of `gradle.properties`, `[package] version` of
   `Cargo.toml` (`[workspace.package]` in a workspace), `version` of `package.json`.
-- A fix raises the patch number (1.38.1 → 1.38.2), a feature the minor (1.38.2 → 1.39.0), a change users have to
-  act on (a renamed config key, a broken API) the major.
-- The bump is its own commit, the last one on the branch: `[CHORE] Bump version to 1.38.2`. The description says
-  the new version in one line (`Version 1.38.2.`).
+- The bump raises the minor number and resets the patch (1.38.2 → 1.39.0), for a fix as for a feature. A patch or a
+  major bump is made only when the user asks for one.
+- The bump is its own commit, the last one on the branch: `[CHORE] Bump version to 1.39.0`. The description says
+  the new version in one line (`Version 1.39.0.`).
 - A pull request that changes nothing users get (docs, CI, tests, agent rules) keeps the version, and so does a
   project that keeps no version in its files.
 
