@@ -138,6 +138,10 @@ A new unit's root package is its path, 1:1. The skill has the criteria in full a
 ### Existing code
 
 - Never move, rename or delete a file that existed before the task, unless the user asks.
+- When the user asks to re-lay out existing code, every file counts as new and every old sub-concept is decided
+  again by the skill's threshold: one that would hold a single kind package (`onboarding/check/command/`) is
+  dissolved into its parent's package of that kind. It stays only to mirror a sibling unit where the same concept
+  passes the threshold (`core-bukkit/…/location/mapping/` next to `core/…/location/{api,model}/`).
 - Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a new
   line of wiring, and a new nested type, variant or property of an old type, which goes into the old type's file.
   Leave every other old line as it is: no renames, no code moved out into new files, no reformatting, and no
