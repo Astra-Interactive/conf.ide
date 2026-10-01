@@ -21,7 +21,7 @@ commit" and "Where commits go" sections for that task.
 * Commit into the branch that is already checked out, the default branch included. Never create,
   switch, or rename a branch.
 * Never push, and never open a pull request: the user pushes. When the user asks for a pull
-  request, the `new-feature` skill says how to push and how to write it.
+  request, the `pull-request` skill says how to push and how to write it.
 * Never amend, rebase or reset a commit that existed before the task, unless asked. A commit the
   task made may be amended while it is the last one and not pushed.
 
