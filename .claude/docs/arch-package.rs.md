@@ -112,9 +112,11 @@ modules that still use `mod.rs`.
 ### Visibility
 
 - **R-V1.** Items are `pub(crate)` by default. An item is `pub` only when another crate uses it, and then its kind
-  module and the concept modules above it are `pub mod`. Only concept, layer, `api`, `model`, `impl` and `di`
+  module and the concept modules above it are `pub mod`. Only concept, layer, `api`, `model`, `imp` and `di`
   modules may ever be `pub mod`; every other kind module, `internal` included, is `pub(crate) mod`. A public
-  implementation of a trait lives in `impl`, never in `internal`.
+  implementation of a trait lives in `imp`, never in `internal`.
+- **R-V1a.** The kind the package-layout rule calls `impl` is named `imp` in Rust, because `impl` is a keyword:
+  `src/traffic/imp/traffic_limiter.rs`, imported as `limbo_net::traffic::imp::TrafficLimiter`. Never `r#impl`.
 - **R-V2.** An `unused import` or `dead_code` warning on a `pub(crate)` item means it is not wired yet: wire it
   into its DI module in the same task, or delete it. A warning is never silenced by widening `pub(crate)` to `pub`,
   by turning a `pub(crate) mod` into `pub mod`, or with `#[allow]`.

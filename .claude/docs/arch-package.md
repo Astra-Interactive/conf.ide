@@ -68,7 +68,7 @@ The first row whose condition the file meets decides its kind.
 | `check`, `policy`, … | ends in a role noun no row names, shared by ≥ 2 files of the concept |
 | `api` | declares a contract: an interface, a trait, an abstract class |
 | `model` | declares domain data: values, entities, sealed results, errors |
-| `impl` | implements a contract without a technology row above and is public: another unit, or a project that uses the published library, constructs it or names it |
+| `impl` | implements a contract without a technology row above and is public: another unit, or a project that uses the published library, constructs it or names it (Rust names this kind `imp`: `impl` is a keyword) |
 | `internal` | implements a contract without a technology row above and stays inside its unit, or helps the concept's other files |
 | `util` | is a stateless helper with no domain noun in its name, used by ≥ 2 kinds or ≥ 2 concepts |
 

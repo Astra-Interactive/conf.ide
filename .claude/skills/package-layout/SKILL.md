@@ -283,7 +283,7 @@ never another layer. A unit root that holds ≥ 2 concepts never holds a layer.
 |---|---|
 | `models`, `entity`, `entities`, `types`, `domain` or `data` as a kind | `model`; `database` for database rows |
 | `error`, `errors`, `exception`, `exceptions`, `failure` | `model` |
-| `implementation`, `service`, `services`, `manager`, `controller`, `handler`, `provider`, `helper`, `helpers` | `impl` for a public implementation, `internal` for one its unit keeps, `api` for its contract, `usecase` for an operation |
+| `implementation`, `service`, `services`, `manager`, `controller`, `handler`, `provider`, `helper`, `helpers` | `impl` for a public implementation (Rust: `imp`, since `impl` is a keyword), `internal` for one its unit keeps, `api` for its contract, `usecase` for an operation |
 | `interfaces`, `contract`, `port`, `ports` | `api` |
 | `dto`, `dtos`, `remote`, `client`, `http` | `network` |
 | `dao`, `repository`, `persistence`, `db`, `table`, `exposed`, `room` | `database` for the implementation, `api` for the contract |

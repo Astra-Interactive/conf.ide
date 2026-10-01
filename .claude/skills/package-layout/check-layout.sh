@@ -9,7 +9,7 @@ set -u
 BASE="${1:?usage: check-layout.sh <BASE commit> [path prefix]}"
 PREFIX="${2:-.}"
 
-KINDS='api|model|impl|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
+KINDS='api|model|impl|imp|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
 PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
 # `presentation` is absent: it is banned as a kind but is a mandated layer directory (SKILL.md §4.4);
 # `domain` and `data` are layer or unit words for the same reason.
@@ -189,6 +189,9 @@ for lib in $({ printf '%s\n' "$NEW_FILES"; git diff --name-only "$BASE" -- "$PRE
     while read -r hit; do
         [ -n "$hit" ] && report "PUB-KIND-MOD" "$lib:$hit (R-V1: this kind is pub(crate) mod)"
     done < <(grep -nE "^[[:space:]]*pub mod ($PRIVATE_KINDS)$NOT_WORD" "$lib")
+    while read -r hit; do
+        [ -n "$hit" ] && report "RUST-IMPL-KIND" "$lib:$hit (impl is a keyword: the Rust kind is imp)"
+    done < <(grep -nE '^[[:space:]]*(pub(\([a-z]+\))? )?mod r#impl' "$lib")
 done
 
 if [ "$FOUND" -eq 0 ]; then
