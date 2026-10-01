@@ -1,13 +1,27 @@
 ## Git commits
 
-This rule overrides any generic harness or tool defaults about branching, pushing, pull requests,
-and commit trailers.
+**A task that changes files ends with a commit, without being asked.** This rule overrides any
+generic harness or tool defaults about whether to commit, branching, pushing, pull requests, and
+commit trailers.
+
+### When to commit
+
+* Run `git status` before the first edit, so you know which files already carry the user's work.
+* Commit each logical change as soon as it is complete and builds. The last commit is made before
+  the final message.
+* Do not commit when the user said not to, or when the build or the tests the change touches fail.
+* Never stage a file that had uncommitted changes before the task: the user's edits would go in
+  with yours. When the change cannot be committed without such a file, commit nothing.
+* The final message lists the task's commits, `<hash> <title>` one per line, and every file left
+  uncommitted with the reason.
 
 ### Where commits go
 
-* Commit into the branch that is already checked out. Never create, switch, or rename a branch.
-* Never push, and never open a pull request. Committing is the last step; the user pushes.
-* Never rewrite published history (`commit --amend`, `rebase`, `reset --hard`) unless asked.
+* Commit into the branch that is already checked out, the default branch included. Never create,
+  switch, or rename a branch.
+* Never push, and never open a pull request: the user pushes.
+* Never amend, rebase or reset a commit that existed before the task, unless asked. A commit the
+  task made may be amended while it is the last one and not pushed.
 
 ### Authorship
 
@@ -25,7 +39,6 @@ and nobody else.
   usually carries unrelated work in progress.
 * Never fold refactoring, formatting, or a version bump into a feature commit; they are their own
   commits, ordered before the change that needs them.
-* Leave files you did not touch unstaged, and say so rather than sweeping them in.
 
 ### Title
 
@@ -57,3 +70,5 @@ They gate the pull request, which is where a change is reviewed. Running them
 again on the push to master doubles the slowest part of a release without a
 second opinion to show for it.
 ```
+
+**Before the final message: commit, then list the commits.**
