@@ -67,11 +67,12 @@ Answer each item in one line with its evidence, from the listing and the plan:
 4. **Families.** Every sealed type and enum the task created is one file with all its variants; every new data
    class that is a property type of exactly one class is nested in it; every result a function returns to
    another class is its own file in `model/`; no new file passes 400 lines.
-5. **Visibility.** Every new top-level declaration carries the modifier the visibility rule gives; `public` /
-   `pub` only on the entry point and on what another unit uses.
+5. **Visibility.** Every new top-level declaration has the visibility the rule gives; public (no modifier in
+   Kotlin, `pub` in Rust) only on the entry point and on what another unit uses; no Kotlin file contains the
+   keyword `public`.
 6. **Units.** Every new unit has its written criterion, is registered in the build, depends only in the
    allowed direction (impl → api, platform → api/shared, feature → owner unit), is wired into the composition
-   root, and has the compiler checks switched on.
+   root, and, for a Rust crate, has `unreachable_pub` switched on (a Kotlin unit never enables `explicitApi()`).
 7. **Gates.** Every new interface, `mapping/` file, use case and DI module passes §4.5.
 8. **Tests.** Every new test mirrors the package of the class it tests; fakes sit in `fake/` inside the concept of
    the contract they replace; fakes other units use sit in `testFixtures`, in a `<feature>/fake` sibling unit
@@ -150,7 +151,7 @@ An `api` unit that also holds platform-free implementation (the one-platform plu
 1. Add the unit to `settings.gradle.kts` in the style the file already uses (`include(":modules:nickname")`).
 2. Copy `build.gradle.kts` of the closest sibling unit of the same shape; keep its convention plugins, replace its
    dependencies with the new unit's.
-3. Add `kotlin { explicitApi() }` unless a convention plugin already enables it.
+3. Leave the explicit API mode off: public declarations carry no modifier.
 4. Create `src/main/kotlin/<root package path>/` and `src/test/kotlin/<root package path>/`.
 5. Add the dependency where the unit is consumed: `implementation(projects.modules.nickname)`; an `impl` unit is
    consumed only by the composition root.

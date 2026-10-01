@@ -116,16 +116,16 @@ done
 
 for file in $(printf '%s\n' "$NEW_KT" | grep -E '/src/[A-Za-z]*[Mm]ain/'); do
     while read -r hit; do
-        [ -n "$hit" ] && report "NO-MODIFIER" "$file:$hit"
-    done < <(grep -nE '^((abstract|annotation|const|data|enum|expect|actual|fun|inline|lateinit|open|operator|sealed|suspend|tailrec|value) )*(class|interface|object|fun|val|var|typealias) ' "$file")
+        [ -n "$hit" ] && report "EXPLICIT-PUBLIC" "$file:${hit%%(*} (public is the default: drop the modifier)"
+    done < <(grep -nE '^public ' "$file")
     case "$file" in
         */impl/*) public_label="" ;;
-        */internal/*) public_label="PUBLIC-IN-INTERNAL"; public_hint="a public implementation lives in impl/" ;;
-        *) public_label="PUBLIC?"; public_hint="only the entry point and what another unit uses" ;;
+        */internal/*) public_label="PUBLIC-IN-INTERNAL"; public_hint="write internal, or move a public implementation to impl/" ;;
+        *) public_label="PUBLIC?"; public_hint="only the entry point and what another unit uses stay without a modifier" ;;
     esac
     while read -r hit; do
         [ -n "$hit" ] && [ -n "$public_label" ] && report "$public_label" "$file:${hit%%(*} ($public_hint)"
-    done < <(grep -nE '^public ' "$file" | grep -vE "$ENTRY")
+    done < <(grep -nE '^((abstract|annotation|const|data|enum|expect|actual|fun|inline|lateinit|open|operator|sealed|suspend|tailrec|value) )*(class|interface|object|fun|val|var|typealias) ' "$file" | grep -vE "$ENTRY")
 done
 
 while IFS="$(printf '\t')" read -r name home; do

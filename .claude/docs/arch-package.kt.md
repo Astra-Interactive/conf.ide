@@ -21,13 +21,14 @@ The package-layout rule says which package a file goes to. This rule says how Ko
 ### Visibility
 
 Kotlin has no package-private visibility: `internal` means the build unit, and the unit's `test` source set sees
-it. Write one of these on every top-level declaration:
+it. Public is the default, so a public declaration carries no modifier: never write the keyword `public`. Each
+top-level declaration gets this visibility:
 
 | Declaration | Modifier |
 |---|---|
-| the entry point (`class NicknamePlugin : JavaPlugin()`) | `public` |
-| the contents of an `api` unit; a DI module another unit constructs; a model in their signatures | `public` |
-| an implementation in `impl/`: another unit, or a project that uses the published library, constructs it | `public` |
+| the entry point (`class NicknamePlugin : JavaPlugin()`) | none (public) |
+| the contents of an `api` unit; a DI module another unit constructs; a model in their signatures | none (public) |
+| an implementation in `impl/`: another unit, or a project that uses the published library, constructs it | none (public) |
 | every other top-level declaration | `internal` |
 | a helper used only in its own file | `private` |
 | a class member used only by its class | `private` |
@@ -43,16 +44,8 @@ internal data class Nickname(
 }
 ```
 
-Every unit the task creates enables the explicit API mode, so a missing modifier is a compile error:
-
-```kotlin
-kotlin {
-    explicitApi()
-}
-```
-
-An explicit-API error is fixed with the modifier the table gives for that declaration. In an existing unit the
-task leaves the mode as it is and writes the modifiers from the table anyway.
+Never switch on the explicit API mode (`kotlin { explicitApi() }`): it forces `public` onto every public
+declaration. In an existing unit the task writes `internal` and `private` from the table and adds no `public`.
 
 ### What goes in one file
 
@@ -60,10 +53,10 @@ A file holds one type family; the sealed type and its variants come first.
 
 ```kotlin
 // model/LinkResponse.kt
-public sealed interface LinkResponse {
-    public data class Linked(val player: LinkedPlayer) : LinkResponse
-    public data class AlreadyLinked(val existing: LinkedPlayer) : LinkResponse
-    public data object CodeExpired : LinkResponse
+sealed interface LinkResponse {
+    data class Linked(val player: LinkedPlayer) : LinkResponse
+    data class AlreadyLinked(val existing: LinkedPlayer) : LinkResponse
+    data object CodeExpired : LinkResponse
 }
 ```
 

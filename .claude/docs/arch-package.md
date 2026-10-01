@@ -87,9 +87,9 @@ A file holds one type family. The sealed type comes first:
 
 ```kotlin
 // model/LinkResponse.kt: the sealed interface and every variant, one file
-public sealed interface LinkResponse {
-    public data class Linked(val player: LinkedPlayer) : LinkResponse
-    public data object CodeExpired : LinkResponse
+sealed interface LinkResponse {
+    data class Linked(val player: LinkedPlayer) : LinkResponse
+    data object CodeExpired : LinkResponse
 }
 ```
 
@@ -105,7 +105,7 @@ public sealed interface LinkResponse {
 
 ### Visibility
 
-Write the modifier while writing the declaration. Everything is private to its build unit (Kotlin `internal`,
+Decide the visibility while writing the declaration. Everything is private to its build unit (Kotlin `internal`,
 Rust `pub(crate)`) except:
 
 - the entry point;
@@ -114,8 +114,10 @@ Rust `pub(crate)`) except:
   that use the library need counts as used by another unit.
 
 A unit nothing depends on (an app, an instance, a plugin jar, a binary crate) makes only its entry point public.
-Class members are `private` unless another class uses them. The compiler checks (`explicitApi()`,
-`unreachable_pub`) are switched on only in units the task creates.
+Class members are `private` unless another class uses them. Public is Kotlin's default, so a public Kotlin
+declaration carries no modifier: the keyword `public` is never written, and the explicit API mode
+(`explicitApi()`) is never switched on. The Rust check `unreachable_pub` is switched on only in crates the task
+creates.
 
 ### Build units
 
