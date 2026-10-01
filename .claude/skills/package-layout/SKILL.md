@@ -304,7 +304,9 @@ never another layer. A unit root that holds ≥ 2 concepts never holds a layer.
 
 `util/` sits at `<concept>/util/` when ≥ 2 kinds of that concept use the helper and at `<unit root>/util/` when ≥ 2
 concepts do; a helper one file uses is a `private` function in that file. A helper whose name carries a domain noun
-is not `util`: it goes to its kind or to `internal/`.
+is not `util`: it goes to its kind or to `internal/`. A helper over one value of a type is an extension of that type
+named without a domain noun (`Throwable.describe()`, not `describeConfigError(error)`), so a generic helper never
+hides in a domain kind under a domain name.
 
 ### 4.7 Caps
 

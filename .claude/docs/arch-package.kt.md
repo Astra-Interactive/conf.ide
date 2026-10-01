@@ -100,6 +100,11 @@ sealed interface LinkResponse {
   a second file of the same package named after the group.
 - **Naming.** A file with one primary type is named after it. A file of top-level functions only is named after
   what they do (`DurationFormat.kt`), never `Utils.kt`.
+- **Extensions.** A function that works on one value of a type is an extension of that type, never a top-level
+  function that takes the value as a parameter: `fun Throwable.describe(): String`, not
+  `fun describeConfigError(error: Throwable): String`. Name it after what it does to that type, without the domain
+  noun of one caller, so that every caller can use it. An extension ≥ 2 kinds or concepts use goes to `util/`
+  (`core/api/util/ThrowableDescription.kt`); one used by a single file is `private` in that file.
 
 ### Tests
 
