@@ -10,7 +10,7 @@ Terms used below:
 - **package**: a directory of sources (a Kotlin package, a Rust module);
 - **DI module**: a wiring class such as `LinkModule` or `RootModule`;
 - **concept**: a package named with a singular domain noun (`link`, `code`, `player`, `nickname`);
-- **kind**: a package named with a role word from the table below (`api`, `model`, `database`, `di`);
+- **kind**: a package named with a role word from the table below (`api`, `model`, `table`, `di`);
 - **entry point**: the class the platform manifest names (plugin main class, `Application`) or `main`.
 
 ### Shape
@@ -32,8 +32,8 @@ concepts next to those kinds (see Existing code).
 3. Two unit roots are the only places where a file lies outside a kind package:
    - the entry point, in the root package of the unit that starts the application, next to its `di/`
      (`AstraRating.kt` + `di/RootModule.kt`);
-   - a unit that owns one kind (`modules/command`, `gui/bukkit`, `core/database`): a feature's concept package in
-     it holds that kind's files directly (`…command.nickname.NickCommand`).
+   - a unit that owns one kind (`modules/command`, `gui/bukkit`): a feature's concept package in it holds that
+     kind's files directly (`…command.nickname.NickCommand`).
 
    A unit whose path ends in `api` is not one of them: its root package holds kinds like any other unit
    (`feature/profile/api` → `…feature.profile.api.api.ProfileRepository`, `…feature.profile.api.model.Profile`).
@@ -50,9 +50,9 @@ The first row whose condition the file meets decides its kind.
 |---|---|
 | `fake` | lives in the test tree: a hand-written fake or fixture of the concept's contracts |
 | `di` | is a DI module, including `RootModule`, or a factory only the wiring calls |
-| `database` | imports a database library: tables, rows, DAO implementations, migrations |
+| `table` | declares a database table or the row type that mirrors one: an Exposed `Table` object, a Room entity, a Diesel `table!` |
 | `network` | imports an HTTP, WebSocket or RPC client, or declares wire DTOs |
-| `storage` | saves state the program writes itself to files or key-value stores (YAML state, krate, DataStore) |
+| `storage` | saves state the program writes itself to files or key-value stores, not to a database (YAML state, krate, DataStore) |
 | `config` | declares or loads what an admin or user edits: config file models, translations |
 | `argument` | converts a typed command argument into a model value, and the concept has ≥ 2 such converters |
 | `command` | declares a chat or CLI command: executor, registration, tab completion, a single argument converter |
@@ -76,10 +76,14 @@ The package name tells the truth about visibility: everything in `internal/` is 
 public implementation lives in `impl/` (`core-bukkit/…/player/impl/BukkitKPlayer.kt` in a library whose plugins
 create Bukkit players).
 
+A table and the code that queries it never share a package, even where old code keeps them together: the DAO or
+repository implementation is `internal`, or `impl` (Rust `imp`) when public, whatever database library it imports
+(`link/player/table/PlayerTable.kt`, `link/player/internal/LinkingDaoImpl.kt`).
+
 `models`, `dto`, `utils`, `errors`, `exception`, `service`, `manager`, `controller`, `repository`, `dao`,
-`ui`, `gui`, `presentation` are not kind names, and neither are the layer words `domain` and `data` used as kinds:
-the skill's replacement table gives the row to use. A role no row describes goes through the skill's new-kind
-procedure and is reported in the final message.
+`database`, `ui`, `gui`, `presentation` are not kind names, and neither are the layer words `domain` and `data`
+used as kinds: the skill's replacement table gives the row to use. A role no row describes goes through the skill's
+new-kind procedure and is reported in the final message.
 
 ### Files
 
@@ -163,7 +167,7 @@ package: a unit in the wrong shape is split, merged or moved, and the final mess
 - New files follow these rules inside old packages too: a new kind package next to old loose files is correct.
 - When the build unit already names a role with another word (`commands/`, `utils/`, `impl/`, `exception/`), new
   files of that role use that word, in the parent package and in new sub-concepts alike (`nickname/impl/`, not
-  `nickname/database/`, in a unit whose DAO implementations live in `impl/`). Only the word is borrowed, not the
+  `nickname/internal/`, in a unit whose DAO implementations live in `impl/`). Only the word is borrowed, not the
   old shape: the new contract still goes to `nickname/api/`, and nothing new lies loose.
 - The final message lists the old files the rules would move, and where.
 

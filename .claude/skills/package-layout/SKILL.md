@@ -34,7 +34,8 @@ Concept clan (unit root): L2 — 10 children, 25 files, use cases, a database; s
 Files
   domain/api/ClanRepository.kt      api        internal   A1: faked in the use-case tests
   domain/model/Clan.kt              model      internal   nests Member and its Rank
-  data/database/ExposedClanRepository.kt   database   internal   row → Clan: private extension here (A2)
+  data/table/ClanTable.kt           table      internal   apart from the repository that queries it
+  data/internal/ExposedClanRepository.kt   internal   internal   row → Clan: private extension here (A2)
   di/ClanModule.kt                  di         public     instances/bukkit RootModule constructs it
   …
 Tree
@@ -60,7 +61,8 @@ Answer each item in one line with its evidence, from the listing and the plan:
 
 1. **Loose files.** Every new source file lies in a kind package, or is the entry point, or lies in an owner-unit
    concept (the two exceptions of the Shape rule); no file lies in the root package of an `api` unit.
-2. **Mixed packages.** No package the task created holds both files and packages.
+2. **Mixed packages.** No package the task created holds both files and packages; no new file puts a table and the
+   code that queries it into one package.
 3. **Names.** Every new package is lowercase, singular, one segment, a kind row or a reported new kind or a concept
    noun; a role the unit already names with another word (`impl/`, `commands/`) uses that word, in new
    sub-concepts too.
@@ -112,7 +114,7 @@ repository root and answer its findings the same way. Do not run it unasked.
   Exposed implementations), follow the split.
 - Inside an owner unit, the feature's concept package is a leaf when every file in it has the unit's kind
   (`modules/command/…/nickname/NickCommand.kt`), and a branch of kinds otherwise (`modules/data/…/nickname/{api,
-  model, database}`).
+  model, table, internal}`).
 - The feature unit depends on the owner units; an owner unit never depends on a feature unit.
 
 **A new unit is created when one of these holds:**
@@ -235,7 +237,7 @@ decided:
 - its own kinds and sub-concepts number **≥ 10**;
 - its own kinds hold **≥ 20 files**;
 - it has `usecase/` or a domain-role kind (`check/`, `policy/`);
-- it has `database/`, `network/`, `storage/` or a system kind.
+- it has `table/`, `network/`, `storage/` or a system kind.
 
 It also gets them when the user asks («сделай по clean architecture»), and a concept that already has layers
 keeps them: new files follow its layers. Below the trigger nothing is layered, split or reported.
@@ -243,7 +245,7 @@ keeps them: new files follow its layers. Below the trigger nothing is layered, s
 | Layer | Holds |
 |---|---|
 | `domain/` | `api`, `model`, `usecase`, domain-role kinds |
-| `data/` | `database`, `network`, `storage`, `config`, system kinds, and the `internal` implementations of domain contracts |
+| `data/` | `table`, `network`, `storage`, `config`, system kinds, and the `internal` implementations of domain contracts |
 | `presentation/` | `command`, `argument`, `event`, `menu`, `composable`, `view`, `viewmodel`, `permission`, and screen sub-concepts |
 | concept level | `di/`, `util/` |
 
@@ -281,16 +283,16 @@ never another layer. A unit root that holds ≥ 2 concepts never holds a layer.
    never edited by the task.
 
 **Replacement table** (package names below a unit's root package; unit names such as `core`, `shared`, `gui`,
-`data`, `dao` are outside it):
+`data`, `dao`, `database` are outside it):
 
 | Instead of | Use |
 |---|---|
-| `models`, `entity`, `entities`, `types`, `domain` or `data` as a kind | `model`; `database` for database rows |
+| `models`, `entity`, `entities`, `types`, `domain` or `data` as a kind | `model`; `table` for database rows |
 | `error`, `errors`, `exception`, `exceptions`, `failure` | `model` |
 | `implementation`, `service`, `services`, `manager`, `controller`, `handler`, `provider`, `helper`, `helpers` | `impl` for a public implementation (Rust: `imp`, since `impl` is a keyword), `internal` for one its unit keeps, `api` for its contract, `usecase` for an operation |
 | `interfaces`, `contract`, `port`, `ports` | `api` |
 | `dto`, `dtos`, `remote`, `client`, `http` | `network` |
-| `dao`, `repository`, `persistence`, `db`, `table`, `exposed`, `room` | `database` for the implementation, `api` for the contract |
+| `dao`, `repository`, `persistence`, `db`, `database`, `tables`, `exposed`, `room` | `table` for tables and their rows, `internal` for the implementation (`impl` when public; Rust: `imp`), `api` for the contract |
 | `krate`, `prefs`, `datastore`, `file` | `storage` |
 | `configuration`, `settings`, `properties`, `translation`, `messages` | `config` |
 | `ui`, `gui`, `screen`, `screens`, `compose`, `component`, `components` | `composable`, `menu` or `view` |
@@ -339,7 +341,7 @@ Task: a new Bukkit plugin in which players set a nickname with `/nick <name>` an
 nicknames are stored in the database, shown in chat, and limited by a length and a colour list in the config.
 
 Decisions: a single-unit project and no B2/B3, so one unit. The unit is one feature, so kinds sit at its root.
-One contract group (`NicknameDao`), 7 children, 11 files: L1. `NicknameDao` passes A1 (the command tests fake
+One contract group (`NicknameDao`), 8 children, 11 files: L1. `NicknameDao` passes A1 (the command tests fake
 it). The row → model conversion has one caller: a private extension in `ExposedNicknameDao.kt`. One service to
 wire besides the root: no concept DI module (A4); `RootModule` wires it.
 
@@ -351,9 +353,8 @@ src/main/kotlin/ru/astrainteractive/nickname/
 ├── model/
 │   ├── Nickname.kt                    data class + nested Style
 │   └── NicknameError.kt               sealed, every variant in the file
-├── database/
-│   ├── NicknameTable.kt
-│   └── ExposedNicknameDao.kt
+├── table/NicknameTable.kt
+├── internal/ExposedNicknameDao.kt     implements NicknameDao, apart from the table
 ├── config/NicknameConfig.kt           max length, allowed colours
 ├── command/
 │   ├── NickCommand.kt                 /nick <name> and /nick reset
@@ -386,7 +387,8 @@ return included). Names from the existing packages: `code`, `player`, `role`.
 ├── player/
 │   ├── api/LinkingDao.kt (public), DiscordLinkedPlayerDao.kt (internal)
 │   ├── model/LinkedPlayerModel.kt (nests DiscordLink, TelegramLink), LinkedPlayerStorageError.kt
-│   ├── database/LinkedPlayerTable.kt, LinkedPlayerRows.kt, LinkingDaoImpl.kt
+│   ├── table/LinkedPlayerTable.kt
+│   ├── internal/LinkingDaoImpl.kt, LinkedPlayerRows.kt     the table stays in table/
 │   └── di/LinkDatabaseModule.kt
 └── role/
     ├── api/PermissionGroups.kt
@@ -419,9 +421,9 @@ and cached in the app's Room database, which the `core/database` unit owns. The 
 avatar.
 
 Decisions: app project, so `api` + `impl` (always). The cache entity and its Room DAO go to the owner unit
-`core/database`, as a leaf concept (both files import Room). Two screens, so two screen sub-concepts. The entity →
-`Profile` conversion has one caller in another unit: a private extension in `ProfileRepositoryImpl.kt` (A2).
-`impl` has 6 children and 9 files: L1.
+`core/database`, split into kinds: the entity is a `table`, the DAO interface Room implements is an `api`. Two
+screens, so two screen sub-concepts. The entity → `Profile` conversion has one caller in another unit: a private
+extension in `ProfileRepositoryImpl.kt` (A2). `impl` has 6 children and 9 files: L1.
 
 ```
 feature/profile/api/src/main/kotlin/com/example/feature/profile/api/
@@ -438,7 +440,8 @@ feature/profile/impl/src/main/kotlin/com/example/feature/profile/impl/
 │   ├── viewmodel/EditProfileViewModel.kt    state and intents in the same file
 │   └── composable/EditProfileScreen.kt
 └── di/ProfileModule.kt                public: the app's RootModule constructs it
-core/database/src/main/kotlin/com/example/core/database/profile/ProfileCacheEntity.kt, ProfileCacheDao.kt
+core/database/src/main/kotlin/com/example/core/database/profile/table/ProfileCacheEntity.kt
+core/database/src/main/kotlin/com/example/core/database/profile/api/ProfileCacheDao.kt
 feature/profile/api/src/testFixtures/kotlin/com/example/feature/profile/api/fake/FakeProfileRepository.kt
 feature/profile/impl/src/test/kotlin/com/example/feature/profile/impl/edit/viewmodel/EditProfileViewModelTest.kt
 ```
@@ -449,7 +452,7 @@ Task: players create clans, invite and promote members, pay into a clan bank thr
 clan-chat listener, a friendly-fire listener, a config and translations. The project's feature units own their
 databases (no data unit), so the feature is a new unit `modules/clan` (B1).
 
-Plan counts: one contract group besides two files of the economy adapter; 10 children (`api`, `model`, `database`,
+Plan counts: one contract group besides two files of the economy adapter; 10 children (`api`, `model`, `table`,
 `usecase`, `policy`, `config`, `command`, `event`, `internal`, `di`), 25 files, use cases and a domain kind, a
 database: the layer trigger fires.
 
@@ -462,16 +465,16 @@ modules/clan/src/main/kotlin/ru/astrainteractive/clan/
 │   │           PromoteMemberUseCase.kt, DepositToBankUseCase.kt
 │   └── policy/ClanNamePolicy.kt, MemberLimitPolicy.kt, RankPolicy.kt     new kind, reported
 ├── data/
-│   ├── database/ClanTable.kt, ClanMemberTable.kt, ClanInviteTable.kt, ExposedClanRepository.kt
+│   ├── table/ClanTable.kt, ClanMemberTable.kt, ClanInviteTable.kt
 │   ├── config/ClanConfig.kt, ClanTranslation.kt
-│   └── internal/VaultEconomyGateway.kt
+│   └── internal/ExposedClanRepository.kt, VaultEconomyGateway.kt
 ├── presentation/
 │   ├── command/ClanCommand.kt, ClanTabCompleter.kt
 │   └── event/ClanChatListener.kt, FriendlyFireListener.kt
 └── di/ClanModule.kt                   public: instances/bukkit RootModule constructs it
 ```
 
-The nicknames plugin of §5.1, at 7 children and 11 files, stays flat under the same rule.
+The nicknames plugin of §5.1, at 8 children and 11 files, stays flat under the same rule.
 
 ### 5.6 A new Rust crate in a workspace: afk
 

@@ -46,7 +46,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Keep each responsibility in its own class and each class in the package its role gives it: contracts in `api/`, domain data in `model/`, persistence in `database/`, commands in `command/`, wiring in `di/`. The package-layout rule and skill decide the packages, when a concept is layered into `domain/`, `data/`, `presentation/`, and when a feature gets its own build unit.
+Keep each responsibility in its own class and each class in the package its role gives it: contracts in `api/`, domain data in `model/`, database tables in `table/`, commands in `command/`, wiring in `di/`. The package-layout rule and skill decide the packages, when a concept is layered into `domain/`, `data/`, `presentation/`, and when a feature gets its own build unit.
 
 Do not mix unrelated responsibilities in one class or function.
 

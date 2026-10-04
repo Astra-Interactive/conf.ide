@@ -9,11 +9,11 @@ set -u
 BASE="${1:?usage: check-layout.sh <BASE commit> [path prefix]}"
 PREFIX="${2:-.}"
 
-KINDS='api|model|impl|imp|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
-PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|database|network|fake'
+KINDS='api|model|impl|imp|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|table|network|fake'
+PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|table|network|fake'
 # `presentation` is absent: it is banned as a kind but is a mandated layer directory (SKILL.md §4.4);
 # `domain` and `data` are layer or unit words for the same reason.
-BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|table|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
+BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|database|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
 ENTRY='fun main\(|: *JavaPlugin\(\)|: *LifecyclePlugin\(\)|: *Application\(\)|: *Plugin\(\)|ModInitializer|@Mod\('
 NOT_WORD='([^A-Za-z0-9_]|$)'
 FOUND=0
