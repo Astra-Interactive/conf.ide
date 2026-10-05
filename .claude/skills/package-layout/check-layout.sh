@@ -36,6 +36,14 @@ unit_used_name_at_base() {
     git ls-tree -r --name-only "$BASE" -- "$unit" 2>/dev/null | grep -qE "(^|/)$2/"
 }
 
+# `dao` is banned as a kind but may name a concept: a `dao/` that holds only packages
+# (`link/dao/{api,table,internal}/`) is not reported, one that holds source files is.
+dao_concept() {
+    [ "$(basename "$1")" = "dao" ] \
+        && [ -n "$(find "$1" -mindepth 1 -maxdepth 1 -type d)" ] \
+        && [ -z "$(find "$1" -mindepth 1 -maxdepth 1 -type f \( -name '*.kt' -o -name '*.rs' \))" ]
+}
+
 crate_root_of() {
     case "$1" in
         "$2"/*) echo . ;;
@@ -91,7 +99,7 @@ for dir in $NEW_DIRS; do
     case "$name" in
         src|main|test|tests|kotlin|java|testFixtures|*Main|*Test) continue ;;
     esac
-    if printf '%s\n' "$name" | grep -qxE "$BANNED"; then
+    if printf '%s\n' "$name" | grep -qxE "$BANNED" && ! dao_concept "$dir"; then
         unit_used_name_at_base "$dir" "$name" || report "BANNED-NAME" "$dir (see the replacement table)"
     elif printf '%s\n' "$name" | grep -qE '[A-Z-]'; then
         report "NAME-CASE" "$dir (lowercase, one segment)"

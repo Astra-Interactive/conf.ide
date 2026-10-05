@@ -82,7 +82,7 @@ internal class FakeUserRepository : UserRepository {
 ### Where tests live
 
 * `src/test/kotlin` mirrors `src/main/kotlin` package for package: `…link.internal.LinkApiImpl` is tested by `src/test/kotlin/…/link/internal/LinkApiImplTest.kt`. In Kotlin Multiplatform, `commonTest` mirrors `commonMain`.
-* A fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/link/player/fake/FakeLinkingDao.kt` fakes `…link.player.api.LinkingDao`.
+* A fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/link/dao/fake/FakeLinkingDao.kt` fakes `…link.dao.api.LinkingDao`.
 * A fake that tests of other build units need lives in the `testFixtures` source set of the unit that owns the contract, at the same path, and is never copied into each consumer. The Kotlin package-layout rule gives the Gradle setup and the Kotlin Multiplatform alternative.
 
 **Frameworks**: `kotlin.test`, `kotlinx.coroutines.test`

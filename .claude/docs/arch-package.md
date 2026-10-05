@@ -80,12 +80,14 @@ create Bukkit players).
 
 A table and the code that queries it never share a package, even where old code keeps them together: the DAO or
 repository implementation is `internal`, or `impl` (Rust `imp`) when public, whatever database library it imports
-(`link/player/table/PlayerTable.kt`, `link/player/internal/LinkingDaoImpl.kt`).
+(`link/dao/table/PlayerTable.kt`, `link/dao/internal/LinkingDaoImpl.kt`).
 
 `models`, `dto`, `utils`, `errors`, `exception`, `service`, `manager`, `controller`, `repository`, `dao`,
 `database`, `ui`, `gui`, `presentation` are not kind names, and neither are the layer words `domain` and `data`
-used as kinds: the skill's replacement table gives the row to use. A role no row describes goes through the skill's
-new-kind procedure and is reported in the final message.
+used as kinds: the skill's replacement table gives the row to use. `dao` may still name a concept that groups a
+DAO contract with its tables, models and implementation, split into kinds like any concept (`link/dao/api/`,
+`link/dao/table/`, `link/dao/internal/`); no file lies directly in `dao/`. A role no row describes goes through the
+skill's new-kind procedure and is reported in the final message.
 
 ### Files
 

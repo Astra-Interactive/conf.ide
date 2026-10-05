@@ -12,6 +12,6 @@ dependency order, using `lazy {}` where construction must be deferred. It lives 
 unit that starts the application (`instances:<name>`, the plugin unit), next to the entry point that creates it.
 
 - Every DI module lives in the `di/` package of the concept it wires: `…link.di.LinkModule`,
-  `…link.player.di.LinkDatabaseModule`. It is `internal` unless another build unit constructs it.
+  `…link.dao.di.LinkDatabaseModule`. It is `internal` unless another build unit constructs it.
 - Pass the whole module as a dependency, not individual services extracted from it.
 - Never use a service locator or global singletons.

@@ -292,7 +292,7 @@ never another layer. A unit root that holds ≥ 2 concepts never holds a layer.
 | `implementation`, `service`, `services`, `manager`, `controller`, `handler`, `provider`, `helper`, `helpers` | `impl` for a public implementation (Rust: `imp`, since `impl` is a keyword), `internal` for one its unit keeps, `api` for its contract, `usecase` for an operation |
 | `interfaces`, `contract`, `port`, `ports` | `api` |
 | `dto`, `dtos`, `remote`, `client`, `http` | `network` |
-| `dao`, `repository`, `persistence`, `db`, `database`, `tables`, `exposed`, `room` | `table` for tables and their rows, `internal` for the implementation (`impl` when public; Rust: `imp`), `api` for the contract |
+| `dao` as a kind, `repository`, `persistence`, `db`, `database`, `tables`, `exposed`, `room` | `table` for tables and their rows, `internal` for the implementation (`impl` when public; Rust: `imp`), `api` for the contract; `dao` stays allowed as a concept split into these kinds (`link/dao/{api,table,internal}/`) |
 | `krate`, `prefs`, `datastore`, `file` | `storage` |
 | `configuration`, `settings`, `properties`, `translation`, `messages` | `config` |
 | `ui`, `gui`, `screen`, `screens`, `compose`, `component`, `components` | `composable`, `menu` or `view` |
@@ -371,7 +371,7 @@ Every file counts as new. `modules/link` is one feature, so its root package `�
 sub-concepts. Contract groups: `LinkApi` (main; `Unlinking` and `DiscordMembership` merge into it because
 `LinkApiImpl` implements all three), `CodeApi` (3 files, 3 kinds), `LinkingDao` + `DiscordLinkedPlayerDao` (merged:
 both signatures name `LinkedPlayerModel`; 8 files), `PermissionGroups` (4 files, the error its implementations
-return included). Names from the existing packages: `code`, `player`, `role`.
+return included). Names from the existing packages: `code`, `dao`, `role`.
 
 ```
 …/messagebridge/link/
@@ -384,7 +384,7 @@ return included). Names from the existing packages: `code`, `player`, `role`.
 │   ├── api/CodeApi.kt
 │   ├── model/CodeUser.kt
 │   └── internal/CodeApiImpl.kt
-├── player/
+├── dao/
 │   ├── api/LinkingDao.kt (public), DiscordLinkedPlayerDao.kt (internal)
 │   ├── model/LinkedPlayerModel.kt (nests DiscordLink, TelegramLink), LinkedPlayerStorageError.kt
 │   ├── table/LinkedPlayerTable.kt
@@ -395,7 +395,7 @@ return included). Names from the existing packages: `code`, `player`, `role`.
     ├── model/PermissionGroupError.kt
     └── internal/LuckPermsGroups.kt, DiscordLinkRole.kt      one adapter per system: no system kind
 link/src/test/kotlin/…/link/internal/LinkApiImplTest.kt
-link/src/testFixtures/kotlin/…/link/player/fake/FakeLinkingDao.kt   used by command and messenger tests
+link/src/testFixtures/kotlin/…/link/dao/fake/FakeLinkingDao.kt   used by command and messenger tests
 ```
 
 ### 5.3 New files in an old package: `CodeValidator` and the old `command` unit

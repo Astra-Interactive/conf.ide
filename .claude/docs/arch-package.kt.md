@@ -112,9 +112,9 @@ sealed interface LinkResponse {
   `…link.internal` is tested by `src/test/kotlin/…/link/internal/LinkApiImplTest.kt`. Kotlin Multiplatform:
   `commonTest` mirrors `commonMain`, each platform test source set mirrors its main source set.
 - A hand-written fake lives in `fake/` inside the concept of the contract it replaces, in the test tree:
-  `src/test/kotlin/…/link/player/fake/FakeLinkingDao.kt` fakes `…link.player.api.LinkingDao`.
+  `src/test/kotlin/…/link/dao/fake/FakeLinkingDao.kt` fakes `…link.dao.api.LinkingDao`.
 - A fake that tests of other units need lives in the `testFixtures` source set of the unit that owns the contract,
-  at the same path (`link/src/testFixtures/kotlin/…/link/player/fake/FakeLinkingDao.kt`), enabled with the
+  at the same path (`link/src/testFixtures/kotlin/…/link/dao/fake/FakeLinkingDao.kt`), enabled with the
   `java-test-fixtures` plugin (JVM units) or `android { testFixtures { enable = true } }` (Android units); the
   consumer declares `testImplementation(testFixtures(projects.modules.link))`. A Kotlin Multiplatform unit has no
   `testFixtures`: its shared fakes go to a sibling unit `<feature>/fake` (root package `…<feature>.fake`, a leaf of
