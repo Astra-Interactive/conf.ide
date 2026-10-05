@@ -19,7 +19,8 @@ Every source path reads `<unit root>/<concept>[/<sub-concept>…]/<kind>/<File>`
 its kinds directly under its root package; in a refactor, its old domain packages of 3 or more files stay as
 concepts next to those kinds (see Existing code).
 
-1. Concept packages hold only packages. Kind packages hold only files. A one-file kind package is normal.
+1. Concept packages hold only packages. Kind packages hold only files, except `di/`, which may also hold the
+   `factory/` kind. A one-file kind package is normal.
 
    ```
    link/api/LinkApi.kt              contract other units call
@@ -49,7 +50,8 @@ The first row whose condition the file meets decides its kind.
 | Kind | The file |
 |---|---|
 | `fake` | lives in the test tree: a hand-written fake or fixture of the concept's contracts |
-| `di` | is a DI module, including `RootModule`, or a factory only the wiring calls |
+| `di` | is a DI module, including `RootModule` |
+| `factory` | is a factory only the wiring calls (DI modules and other factories); it lies in `di/factory/` (`discord/di/factory/JdaSessionFactory.kt` next to `discord/di/JdaMessengerModule.kt`) |
 | `table` | declares a database table or the row type that mirrors one: an Exposed `Table` object, a Room entity, a Diesel `table!` |
 | `network` | imports an HTTP, WebSocket or RPC client, or declares wire DTOs |
 | `storage` | saves state the program writes itself to files or key-value stores, not to a database (YAML state, krate, DataStore) |

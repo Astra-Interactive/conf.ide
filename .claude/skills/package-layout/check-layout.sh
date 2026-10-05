@@ -10,7 +10,8 @@ BASE="${1:?usage: check-layout.sh <BASE commit> [path prefix]}"
 PREFIX="${2:-.}"
 
 KINDS='api|model|impl|imp|internal|di|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|table|network|fake'
-PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|table|network|fake'
+PRIVATE_KINDS='internal|mapping|usecase|command|argument|event|menu|composable|view|viewmodel|config|storage|permission|util|table|network|fake|factory'
+# `factory` is absent from KINDS: it is a kind only inside `di/`, the one kind package that holds a package.
 # `presentation` is absent: it is banned as a kind but is a mandated layer directory (SKILL.md §4.4);
 # `domain` and `data` are layer or unit words for the same reason.
 BANNED='models|entity|entities|types|error|errors|exception|exceptions|failure|implementation|service|services|manager|managers|controller|controllers|handler|handlers|provider|providers|helper|helpers|interfaces|contract|contracts|port|ports|dto|dtos|remote|client|http|dao|daos|repository|repositories|persistence|db|database|tables|exposed|room|krate|prefs|datastore|file|configuration|settings|properties|translation|translations|messages|ui|gui|screen|screens|compose|component|components|presenter|state|mapper|mappers|converter|converters|utils|common|misc|ktx|ext|extensions|listener|listeners|events|commands|cmd|argumenttype|arguments|jda|kord'
@@ -63,7 +64,8 @@ for file in $NEW_SOURCES; do
     if [ "${file##*.}" = "kt" ] && grep -qE "$ENTRY" "$file"; then
         continue
     fi
-    if [ -n "$(find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
+    subdirs=$(find "$dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)
+    if [ -n "$subdirs" ] && ! { [ "$(basename "$dir")" = "di" ] && [ "$subdirs" = "$dir/factory" ]; }; then
         report "LOOSE" "$file (its package also holds packages)"
         continue
     fi
@@ -93,7 +95,8 @@ for dir in $NEW_DIRS; do
         unit_used_name_at_base "$dir" "$name" || report "BANNED-NAME" "$dir (see the replacement table)"
     elif printf '%s\n' "$name" | grep -qE '[A-Z-]'; then
         report "NAME-CASE" "$dir (lowercase, one segment)"
-    elif ! printf '%s\n' "$name" | grep -qxE "$KINDS" && [ -z "$(find "$dir" -mindepth 1 -maxdepth 1 -type d)" ]; then
+    elif ! printf '%s\n' "$name" | grep -qxE "$KINDS" && [ "$(basename "$(dirname "$dir")")/$name" != "di/factory" ] \
+        && [ -z "$(find "$dir" -mindepth 1 -maxdepth 1 -type d)" ]; then
         report "NEW-KIND?" "$dir (a leaf outside the kind table: a reported new kind, or a concept leaf)"
     fi
     for sibling in "$(dirname "$dir")"/*/; do
