@@ -398,7 +398,7 @@ link/src/test/kotlin/…/link/internal/LinkApiImplTest.kt
 link/src/testFixtures/kotlin/…/link/player/fake/FakeLinkingDao.kt   used by command and messenger tests
 ```
 
-### 5.3 New files in an old package: `CodeValidator` and an old `commands/`
+### 5.3 New files in an old package: `CodeValidator` and the old `command` unit
 
 The old `link/code/` holds `CodeApi.kt`, `CodeApiImpl.kt`, `CodeUser.kt` loose. The task adds code validation.
 
@@ -411,8 +411,8 @@ The old `link/code/` holds `CodeApi.kt`, `CodeApiImpl.kt`, `CodeUser.kt` loose. 
 Either way the three old files stay; the final message suggests `CodeApi.kt → code/api/`, `CodeApiImpl.kt →
 code/internal/`, `CodeUser.kt → code/model/`.
 
-In the old `modules/command` unit, whose root package is `…messagebridge.commands`, a new command goes to
-`…commands/<feature>/`, not to a new `command/` package next to it.
+In the old `modules/command` unit, whose root package is `…messagebridge.command`, a new command goes to
+`…command/<feature>/` with its files directly in it, like the old `…command/reload/`.
 
 ### 5.4 An app feature across units: profile
 
