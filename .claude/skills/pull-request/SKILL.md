@@ -1,7 +1,7 @@
 ---
 name: pull-request
-description: Open a pull request and write its title and description. Use it whenever a pull request is to be opened, updated or described — the user asks for a PR, the new-feature skill's answers ask for one, or a PR description needs rewriting. Checks the branch, bumps the project version, pushes only the feature branch, writes a short title and a description that says only what the diff cannot, and creates or edits the PR with gh.
-version: 1.2.0
+description: Open a pull request and write its title and description. Use it whenever a pull request is to be opened, updated or described — the user asks for a PR, the new-feature skill's answers ask for one, or a PR description needs rewriting. Checks the branch, pushes only the feature branch, writes a short title and a description that says only what the diff cannot, and creates or edits the PR with gh.
+version: 1.0.0
 ---
 
 # Pull request
@@ -23,32 +23,17 @@ gh pr view --json number,url,baseRefName 2>/dev/null
   never move commits off a branch yourself.
 - The task's uncommitted changes are committed first, by the git-commits rule; files that carried the user's work
   before the task stay out.
-- When the branch already has a pull request, update that one (step 5) instead of opening a second.
+- When the branch already has a pull request, update that one (step 4) instead of opening a second.
 
 Read the whole change before writing, not only the last commit: `git log --oneline <base>..HEAD` and
 `git diff <base>...HEAD`.
 
-## 2. Bump the version
-
-A pull request that changes what the project's users get (a fix, a feature, a dependency they receive) raises the
-project version, unless the branch already raises its minor number over the base
-(`git diff <base>...HEAD -- <version file>`).
-
-- The version is where the build reads it: the version key of `gradle.properties`, `[package] version` of
-  `Cargo.toml` (`[workspace.package]` in a workspace), `version` of `package.json`.
-- The bump raises the minor number and resets the patch (1.38.2 → 1.39.0), for a fix as for a feature. A patch or a
-  major bump is made only when the user asks for one.
-- The bump is its own commit, the last one on the branch: `[CHORE] Bump version to 1.39.0`. The description says
-  the new version in one line (`Version 1.39.0.`).
-- A pull request that changes nothing users get (docs, CI, tests, agent rules) keeps the version, and so does a
-  project that keeps no version in its files.
-
-## 3. Push
+## 2. Push
 
 Push the feature branch and nothing else: `git push -u origin <branch>`. Never push the base branch, never
 `--force`.
 
-## 4. Open
+## 3. Open
 
 Write the title and the description by the rules below, the description into a temporary file. A repository
 template (`.github/pull_request_template.md`, `.github/PULL_REQUEST_TEMPLATE/`) gives the headings; its sections
@@ -60,7 +45,7 @@ gh pr create --base <base> --head <branch> --title "<title>" --body-file <file>
 
 The base is written without `origin/`. The final message gives the pull request's URL.
 
-## 5. Update
+## 4. Update
 
 When later commits make the title or the description wrong, rewrite them for the whole change as it is now, by the
 same rules: `gh pr edit <number> --title "<title>" --body-file <file>`. The description says what the pull request
