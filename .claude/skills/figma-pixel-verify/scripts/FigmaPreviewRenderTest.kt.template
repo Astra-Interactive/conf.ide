@@ -1,0 +1,116 @@
+@file:Suppress("FunctionNaming")
+@file:OptIn(ExperimentalTestApi::class, InternalComposeApi::class)
+
+// Throwaway harness copied by render_preview.sh into <module>/src/desktopTest/kotlin/figmaverify/.
+// It renders one @Preview (private is fine: reflection by name) headlessly on the Skia desktop
+// target and writes a PNG plus a semantics-node dump. Never commit it; the script removes it.
+
+package figmaverify
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.InternalComposeApi
+import androidx.compose.runtime.currentComposer
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.asSkiaBitmap
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.v2.runSkikoComposeUiTest
+import androidx.compose.ui.unit.Density
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
+import java.io.File
+import java.lang.reflect.Method
+import java.util.Properties
+import kotlin.test.Test
+
+private const val REQUEST_PATH = "/tmp/figma-compose-verify/request.properties"
+private const val COMPOSABLE_PARAMETER_COUNT = 2
+
+private class RenderRequest(
+    val facadeClass: String,
+    val functionName: String,
+    val widthDp: Float,
+    val heightDp: Float,
+    val density: Float,
+    val fontScale: Float,
+    val inspectionMode: Boolean,
+    val outputPng: File
+) {
+    val sizePx: Size get() = Size(widthDp * density, heightDp * density)
+
+    companion object {
+        fun load(): RenderRequest {
+            val properties = Properties().apply { File(REQUEST_PATH).inputStream().use { stream -> load(stream) } }
+            fun required(key: String): String = requireNotNull(properties.getProperty(key)) { "$key is missing in $REQUEST_PATH" }
+            return RenderRequest(
+                facadeClass = required("facadeClass"),
+                functionName = required("functionName"),
+                widthDp = required("widthDp").toFloat(),
+                heightDp = required("heightDp").toFloat(),
+                density = required("density").toFloat(),
+                fontScale = required("fontScale").toFloat(),
+                inspectionMode = required("inspectionMode").toBoolean(),
+                outputPng = File(required("outputPng"))
+            )
+        }
+    }
+}
+
+// A zero-parameter @Composable compiles to a static method (Composer, Int); @Preview itself has
+// BINARY retention, so the function is found by name, not by annotation.
+private fun RenderRequest.previewMethod(): Method {
+    val candidates = Class.forName(facadeClass).declaredMethods.filter { candidate ->
+        candidate.name == functionName && candidate.parameterCount == COMPOSABLE_PARAMETER_COUNT
+    }
+    val method = requireNotNull(candidates.singleOrNull()) {
+        "expected exactly one zero-parameter composable '$functionName' in $facadeClass, found ${candidates.size}"
+    }
+    method.isAccessible = true
+    return method
+}
+
+@Composable
+private fun InvokePreview(method: Method) {
+    method.invoke(null, currentComposer, 0)
+}
+
+private fun SemanticsNodeInteractionsProvider.dumpNodes(): String =
+    onAllNodes(SemanticsMatcher("any node") { true }, useUnmergedTree = true)
+        .fetchSemanticsNodes()
+        .joinToString(separator = "\n") { node ->
+            val bounds = node.boundsInRoot
+            val tag = node.config.getOrNull(SemanticsProperties.TestTag).orEmpty()
+            val text = node.config.getOrNull(SemanticsProperties.Text)
+                ?.joinToString(separator = "|") { annotated -> annotated.text }
+                .orEmpty()
+            "${node.id}\t${bounds.left}\t${bounds.top}\t${bounds.right}\t${bounds.bottom}\t$tag\t$text"
+        }
+
+class FigmaPreviewRenderTest {
+    @Test
+    fun GIVEN_render_request_WHEN_preview_is_rendered_THEN_scene_png_and_node_dump_are_written() {
+        val request = RenderRequest.load()
+        val preview = request.previewMethod()
+
+        runSkikoComposeUiTest(
+            size = request.sizePx,
+            density = Density(density = request.density, fontScale = request.fontScale)
+        ) {
+            setContent {
+                CompositionLocalProvider(LocalInspectionMode provides request.inspectionMode) {
+                    InvokePreview(preview)
+                }
+            }
+            val scene = captureToImage()
+            val png = Image.makeFromBitmap(scene.asSkiaBitmap()).encodeToData(EncodedImageFormat.PNG)
+            request.outputPng.parentFile.mkdirs()
+            request.outputPng.writeBytes(requireNotNull(png) { "PNG encoding failed" }.bytes)
+            File(request.outputPng.path + ".nodes.tsv").writeText(dumpNodes())
+        }
+    }
+}
