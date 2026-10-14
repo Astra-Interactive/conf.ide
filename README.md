@@ -43,6 +43,17 @@ IDE and LLM configurations
 <table>
 <tr>
 <td align="center" width="130">
+<img src="https://cdn.simpleicons.org/telegram/26A5E4" width="25" alt="Telegram"/><br/>
+<sub><b>Telegram</b></sub>
+</td>
+<td align="center">
+<a href="https://t.me/makeevrserg">
+<img width="70%" src="https://img.shields.io/badge/@makeevrserg-Message-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram @makeevrserg"/>
+</a>
+</td>
+</tr>
+<tr>
+<td align="center" width="130">
 <img src="https://cdn.simpleicons.org/bitcoin/F7931A" width="25" alt="BTC"/><br/>
 <sub><b>Bitcoin</b></sub>
 </td>
