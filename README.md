@@ -9,7 +9,7 @@ IDE and LLM configurations
 - mattpocock for [git-guardrails-claude-code](https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md)
 - Programistich for [figma-pixel-verify](.claude/skills/figma-pixel-verify) (previously for iOS)
 
-# Plugins
+# IntelliJ Plugins
 
 - [Regexp Tester](https://plugins.jetbrains.com/plugin/2917-regexp-tester)
 - [.​gitattributes support](https://plugins.jetbrains.com/plugin/26477--gitattributes-support)
