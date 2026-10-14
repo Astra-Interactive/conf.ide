@@ -1,5 +1,3 @@
-@.claude/docs/arch-package.md
-@.claude/docs/arch-package.kt.md
 @.claude/docs/clean-code.kt.md
 @.claude/docs/code-ordering.kt.md
 @.claude/docs/codebase-memory.md
