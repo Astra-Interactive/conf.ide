@@ -1,6 +1,6 @@
 # conf.ide
 
-IDE configurations
+IDE and LLM configurations
 
 # Plugins
 
