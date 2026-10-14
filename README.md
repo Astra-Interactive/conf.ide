@@ -37,9 +37,8 @@ IDE and LLM configurations
 
 ---
 
-## 💜 Support Us
 
-If our projects help you, consider supporting their development.
+# 💖 Support the project
 
 <table>
 <tr>
@@ -80,5 +79,3 @@ bc1q9a8dr55jgfae0mhevw3vvczegjv0khfp0ngrnv
 </td>
 </tr>
 </table>
-
----
