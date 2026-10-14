@@ -7,6 +7,7 @@ IDE and LLM configurations
 - mattpocock for [handoff](https://github.com/mattpocock/skills/blob/main/skills/productivity/handoff/SKILL.md)
 - mattpocock for [wait-what](https://github.com/mattpocock/skills/blob/main/skills/productivity/wait-what/SKILL.md)
 - mattpocock for [git-guardrails-claude-code](https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md)
+- Programistich for [figma-pixel-verify](.claude/skills/figma-pixel-verify) (previously for iOS)
 
 # Plugins
 
