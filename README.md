@@ -8,6 +8,7 @@ IDE and LLM configurations
 - [mattpocock](https://github.com/mattpocock) for [wait-what](https://github.com/mattpocock/skills/blob/main/skills/productivity/wait-what/SKILL.md)
 - [mattpocock](https://github.com/mattpocock) for [git-guardrails-claude-code](https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md)
 - [mattpocock](https://github.com/mattpocock) for [code-review](https://github.com/mattpocock/skills/blob/main/skills/engineering/code-review/SKILL.md)
+- [mattpocock](https://github.com/mattpocock) for [retro](https://github.com/mattpocock/skills/blob/main/skills/engineering/retro/SKILL.md)
 - [Programistich](https://github.com/Programistich) for [figma-pixel-verify](.claude/skills/figma-pixel-verify) (previously for iOS)
 
 # IntelliJ Plugins
