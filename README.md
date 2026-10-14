@@ -2,6 +2,12 @@
 
 IDE and LLM configurations
 
+# Gratitude
+- mattpocock for [grilling](https://github.com/mattpocock/skills/blob/main/skills/productivity/grilling/SKILL.md)
+- mattpocock for [handoff](https://github.com/mattpocock/skills/blob/main/skills/productivity/handoff/SKILL.md)
+- mattpocock for [wait-what](https://github.com/mattpocock/skills/blob/main/skills/productivity/wait-what/SKILL.md)
+- mattpocock for [git-guardrails-claude-code](https://github.com/mattpocock/skills/blob/main/skills/misc/git-guardrails-claude-code/SKILL.md)
+
 # Plugins
 
 - [Regexp Tester](https://plugins.jetbrains.com/plugin/2917-regexp-tester)
