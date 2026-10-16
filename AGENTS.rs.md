@@ -1,3 +1,8 @@
+@.claude/docs/arch-package.md
+@.claude/docs/arch-package.rs.md
+@.claude/docs/arch-domain.md
+@.claude/docs/arch-domain.rs.md
+@.claude/docs/arch-context.md
 @.claude/docs/clean-code.rs.md
 @.claude/docs/closure-naming.rs.md
 @.claude/docs/code-ordering.rs.md
