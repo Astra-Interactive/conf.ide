@@ -11,7 +11,8 @@ api/impl. "DI module" names this class only; a Gradle module is a build unit.
 dependency order, using `lazy {}` where construction must be deferred. It lives in `di/RootModule.kt` of the
 unit that starts the application (`instances:<name>`, the plugin unit), next to the entry point that creates it.
 
-- Every DI module lives in the `di/` package of the concept it wires: `…link.di.LinkModule`,
-  `…link.dao.di.LinkDatabaseModule`. It is `internal` unless another build unit constructs it.
+- Every DI module lives in the `di/` package of the concept it wires, at the level of a context
+  (`…jail.di.JailModule`) or of a module of a context (`…monetization.offer.di.OfferModule`), never inside a
+  role package. It is `internal` unless another build unit constructs it.
 - Pass the whole module as a dependency, not individual services extracted from it.
 - Never use a service locator or global singletons.
