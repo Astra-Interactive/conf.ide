@@ -30,12 +30,12 @@ package com.example.order
 
 @Test
 fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty() {
-    val useCase = CreateOrderUseCase(
+    val createOrder = CreateOrder(
         orderRepository = FakeOrderRepository(),
         paymentGateway = FakePaymentGateway()
     )
 
-    val result = useCase.execute(
+    val result = createOrder(
         CreateOrderCommand(
             customerId = CustomerId("customer-1"),
             items = emptyList()
@@ -67,6 +67,7 @@ Example fake:
 ```kotlin
 internal class FakeUserRepository : UserRepository {
     private val users = mutableMapOf<UserId, User>()
+    val saved = mutableListOf<User>()
 
     override suspend fun findById(id: UserId): User? {
         return users[id]
@@ -74,6 +75,7 @@ internal class FakeUserRepository : UserRepository {
 
     override suspend fun save(user: User): SaveUserResult {
         users[user.id] = user
+        saved += user
         return SaveUserResult.Success
     }
 }
@@ -81,8 +83,8 @@ internal class FakeUserRepository : UserRepository {
 
 ### Where tests live
 
-* `src/test/kotlin` mirrors `src/main/kotlin` package for package: `…link.internal.LinkApiImpl` is tested by `src/test/kotlin/…/link/internal/LinkApiImplTest.kt`. In Kotlin Multiplatform, `commonTest` mirrors `commonMain`.
-* A fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/link/dao/fake/FakeLinkingDao.kt` fakes `…link.dao.api.LinkingDao`.
+* `src/test/kotlin` mirrors `src/main/kotlin` package for package: `…jail.data.file.FileJailRepository` is tested by `src/test/kotlin/…/jail/data/file/FileJailRepositoryTest.kt`. In Kotlin Multiplatform, `commonTest` mirrors `commonMain`.
+* A fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/jail/data/fake/FakeJailRepository.kt` fakes `…jail.data.JailRepository`. A fake scripts failures or records calls; a double that only stores values in memory is an in-memory implementation and lives in production code under `data/memory/`.
 * A fake that tests of other build units need lives in the `testFixtures` source set of the unit that owns the contract, at the same path, and is never copied into each consumer. The Kotlin package-layout rule gives the Gradle setup and the Kotlin Multiplatform alternative.
 
 **Frameworks**: `kotlin.test`, `kotlinx.coroutines.test`

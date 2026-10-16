@@ -33,7 +33,7 @@ Use design patterns only when they make the code simpler, cleaner, or easier to 
 Consider patterns such as:
 
 * Strategy Pattern for interchangeable algorithms or behaviors.
-* Factory Pattern for complex object creation.
+* Factory Pattern only as the domain rule allows it: a function that creates an aggregate under a rule; dependencies are constructed at the composition root.
 * Builder Pattern for constructing complex objects step by step.
 * Observer/Event Pattern for event-driven systems.
 * Repository Pattern for data access abstraction.

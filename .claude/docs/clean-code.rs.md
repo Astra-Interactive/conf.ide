@@ -33,7 +33,7 @@ Use design patterns only when they make the code simpler, cleaner, or easier to 
 Consider patterns such as:
 
 * Strategy Pattern via generic parameters or trait objects for interchangeable algorithms or behaviors.
-* Factory functions (`new`, `from_*`) and `From`/`TryFrom` impls for complex object creation.
+* Factory Pattern only as the domain rule allows it: a function that creates an aggregate under a rule; dependencies are constructed at the composition root.
 * Builder Pattern for constructing complex objects step by step.
 * Adapter Pattern (newtype wrapping an external API) for integrating external crates or incompatible interfaces.
 * Decorator Pattern via wrapper types implementing the same trait for adding behavior without modifying existing types.

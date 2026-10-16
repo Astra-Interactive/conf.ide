@@ -50,8 +50,7 @@ fun validateOrder(order: Order): Result<Order> {
 - A per-use-case sealed result (`CreateOrderResult`) lives in the same `model/`, with its failure variants
   nested next to the success ones.
 - An error that never leaves one implementation is `private` in that implementation's file.
-- When the concept already has an `exception/` package, new error types of that concept go there instead of
-  `model/`.
+- An old `exception/` package stays as it is; new error types of its concept still go to `model/`.
 
 ### Boundaries: converting exceptions
 
