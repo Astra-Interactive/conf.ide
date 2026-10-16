@@ -3,7 +3,8 @@
 How the domain rule is written in Rust.
 
 - An entity with invariants is a `struct` with private fields and methods that return a new value or a
-  decision; a value object without invariants is a plain `struct` with `pub(crate)` fields and derives
+  decision; a value object without invariants is a plain `struct` with `pub` fields (the type's own visibility caps
+  them) and derives
   `Clone, PartialEq, Eq`.
 - A typed identifier is a newtype (`pub(crate) struct PlayerId(Uuid)`) deriving `Copy, Eq, Hash`; a value
   object with an invariant is built by an associated function returning `Result<Self, ModelError>`.

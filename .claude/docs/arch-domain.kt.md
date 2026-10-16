@@ -30,7 +30,7 @@ How the domain rule is written in Kotlin.
   they do I/O; implementations are `internal` classes in the technology package beneath it.
 - An aggregate factory with rules is a `companion object` function `create(...): Result<Aggregate>` in the
   aggregate's file.
-- A domain event is a `data class` in `model`, published through the platform bus (a Bukkit event type that
-  wraps it) or a publisher contract in `integration`.
+- A domain event is a `data class` in `model`, published through the platform bus or a publisher contract in
+  `integration`; the Bukkit event type that carries it lives in `event/`.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
   are never imported in `model`, in a use case or in a contract. The architecture test checks the imports.

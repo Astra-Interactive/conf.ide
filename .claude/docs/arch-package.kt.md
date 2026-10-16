@@ -6,11 +6,11 @@ The package-layout rule says which package a file goes to. This rule says how Ko
 
 - The directory is the package: `src/main/kotlin/ru/astrainteractive/aspekt/module/jail/data/JailRepository.kt`
   declares `package ru.astrainteractive.aspekt.module.jail.data`.
-- A unit's root package is the project's base package followed by the unit's path, with the container
-  directory (`modules/`, `components/`) dropped and hyphens removed: `modules/jail` →
-  `ru.astrainteractive.aspekt.module.jail`, `components/bsb/monetization/impl` →
-  `com.flipperdevices.bsb.monetization.impl`. In an existing project use the mapping its sibling units already
-  use. An Android unit's `namespace` is its root package.
+- A unit's root package is the project's base package followed by the unit's path with hyphens removed. The
+  container directory's segment follows the project's existing convention: AspeKt keeps it in the singular
+  (`modules/jail` → `ru.astrainteractive.aspekt.module.jail`), BUSY keeps it as is
+  (`components/bsb/monetization/impl` → `com.flipperdevices.bsb.monetization.impl`); a new project drops it.
+  An Android unit's `namespace` is its root package.
 - The words `api` and `impl` appear in a package only as the segment of a unit named so; they are never a
   package of their own.
 - Platform code of a Multiplatform unit goes to its source set (`androidMain`, `iosMain`, `jvmMain`) at the
@@ -29,10 +29,12 @@ Decide the tier while writing the declaration:
 |---|---|
 | used by one file only | `private` in that file |
 | used by other files of the same unit | `internal` |
-| used by another unit: the contents of an `api` unit, a DI module the entry point constructs, a `<Context>Api` and the models in its signatures, an entry point | none (public) |
+| used by another unit: the contents of an `api` unit, a DI module the entry point constructs, a `<Context>Api` and the models in its signatures, the platform main class of an entry-point unit | none (public) |
 
-Public is Kotlin's default, so a public declaration carries no modifier: the keyword `public` is never written.
-Class members are `private` unless another class uses them. The `test` source set sees `internal`, so nothing
+Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
+only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class
+members are `private` unless another class uses them. Entry points such as `JailCommand` and `JailEvent` are
+`internal`: the entry-point unit constructs the context's DI module, not its classes. The `test` source set sees `internal`, so nothing
 is widened for tests.
 
 ```kotlin
@@ -59,8 +61,10 @@ internal class FileJailRepository(
 - An `api` unit may depend on `core`, the domain kernel and other `api` units, never on any `impl`. Only the
   entry-point unit depends on `impl` units, and only to construct the composition root. A consumer context
   depends on the provider's `api` unit, or on its root package when the provider is not split.
-- An `api` unit holds the `<Context>Api` contract, the models in its signatures, and the stubs or preview
-  implementations of its own contracts under `<contract package>/stub/`.
+- An `api` unit holds the `<Context>Api` contract, the models in its signatures, the stubs or preview
+  implementations of its own contracts under `<contract package>/stub/`, and, when the entry point constructs
+  the context through an interface as the DI rule allows, that DI-module interface; its implementation in
+  `impl/di` is the `Default…` case.
 - A `<context>/contract` unit holds only `@Serializable` types and route constants shared by a server unit and
   its client unit; neither side's `model` crosses the wire.
 - Every unit has a one-sentence `README.md`.
@@ -72,7 +76,8 @@ internal class FileJailRepository(
   route and its request and response types), `job`, `composable`, `viewmodel`. These roles and every
   technology package may import the platform (Bukkit, Ktor, Compose).
 - A use case is a class at the context root named by its verb (`FreeInmate`) with one public
-  `operator fun invoke`, no interface. It and every contract import no platform or framework type; the server
+  `operator fun invoke`, no interface. The one class implementing the context's `<Context>Api`,
+  `Default<Context>Api`, sits at the root with the use cases and delegates to them. It and every contract import no platform or framework type; the server
   is reached through AstraLibs' abstractions (`server/player`, `server/location`, `server/permission`) or the
   context's own `integration` contract.
 - A screen is a `composable` plus its own `viewmodel`; a view model holds no rule and calls use cases and
@@ -104,9 +109,10 @@ explicitly; there is no scanning.
   platform test source set mirrors its main source set. A test file is named after the owner of the behaviour
   it checks (a use case, a repository implementation, a model rule, an entry point); a class with no behaviour
   of its own gets no test file.
-- A `Fake…` lives in the test tree in `fake/` inside the concept of the contract it replaces
-  (`src/test/kotlin/…/jail/data/fake/FakeJailRepository.kt`). An in-memory implementation is production code
-  in `data/memory/`, usable by any unit's tests and by demos.
+- A `Fake…` scripts failures or records calls. It lives in the test tree in `fake/` inside the concept of
+  the contract it replaces (`src/test/kotlin/…/jail/data/fake/FakeJailRepository.kt`). A double that only
+  stores values in memory is not a fake but an in-memory implementation: production code in `data/memory/`,
+  usable by any unit's tests and by demos.
 - A fake that tests of other units need lives in the `testFixtures` source set of the owning unit at the same
   path (`java-test-fixtures` for JVM units, `android { testFixtures { enable = true } }` for Android units),
   consumed with `testImplementation(testFixtures(projects.modules.jail))`. A Multiplatform unit has no

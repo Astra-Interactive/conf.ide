@@ -1,8 +1,10 @@
 ## Domain building blocks
 
 This rule says what the types of a context are and where their rules live. The package-layout rule says
-where the files go; this rule decides what is in them. It applies only inside a context that has business
-rules. A CRUD context is model, storage and command, and none of the building blocks below is forced on it.
+where the files go; this rule decides what is in them. The building blocks (entity, value object, aggregate,
+use case, domain event, factory) apply only inside a context that has business rules; a CRUD context is
+model, storage and command, and none of them is forced on it. The sections Repository, What the model may
+import and Validation apply to every context.
 
 ### Rules live on the model
 
@@ -32,7 +34,8 @@ rules. A CRUD context is model, storage and command, and none of the building bl
 - An **aggregate** is the unit that is changed and saved whole. Its root is the only type through which its
   parts are changed. The repository loads and saves the aggregate whole.
 - In a context with rules an aggregate is a module of the context: a sub-package with the same roles inside,
-  created at three or more files or storage of its own, as the package-layout rule says. The parts that belong
+  created only when it has three or more files or storage of its own, as the package-layout rule says; below
+  that its files sit in the context's role packages. The parts that belong
   to one aggregate (`ClaimChunk` with its `ChunkFlag`s) stay in one module.
 - A context without rules has no aggregates. An aggregate whose methods start taking other aggregates as
   arguments is the signal that the boundary is wrong.
@@ -42,7 +45,10 @@ rules. A CRUD context is model, storage and command, and none of the building bl
 - The context's data contract is the repository: `<Aggregate>Repository`, one per aggregate or per model
   family, in `data`. It speaks the context's words (`findUnreconciled(account)`, not
   `findByAccountAndDateRange`), holds no business rule and extends no generic base. `Api`, `Dao`, `Krate` and
-  `Storage` are not contract names; `Krate` stays for an implementation that is a krate.
+  `Storage` are not names for the repository contract; `Krate` stays for an implementation that is a krate,
+  and `<Context>Api` names only the context's published interface.
+- A cache is another implementation of the repository contract that wraps one
+  (`data/memory/CachedJailRepository`), never a contract or a role of its own.
 - A read that decides nothing is a query function on the repository returning a projection type declared in
   `model`; it does not load the aggregate. A use case is either a command that changes an aggregate or a query
   that only reads, never both.
@@ -50,8 +56,11 @@ rules. A CRUD context is model, storage and command, and none of the building bl
 ### Use case
 
 - A use case is a class at the context root named by its verb (`JailPlayer`, `FreeInmate`), with one public
-  entry and no interface. It exists only when it decides something or combines two or more contracts; an
-  entry point that merely reads or writes storage calls the contract directly.
+  entry and no interface. It exists only when the flow has more than one step: a contract call whose result
+  a model rule judges before the next action, or two or more contracts combined. A single contract call with
+  no branch is made from the entry point directly.
+- The context's published `<Context>Api` is implemented by `Default<Context>Api` at the context root, a
+  façade that delegates to the use cases and holds no rule.
 - One action per class. A use case never calls another use case; an entry point that needs two actions calls
   both.
 - A use case holds no domain rule: it orchestrates the model and the contracts. A rule found in a use case

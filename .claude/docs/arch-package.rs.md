@@ -16,8 +16,10 @@ module encapsulates and a Kotlin package does not.
   `crates/`; internal crates carry `version = "0.0.0"`. Profiles, patches and shared dependency versions are
   declared once in the root manifest. Build automation is an `xtask` crate, not shell scripts.
 - A crate's directory is named exactly like the crate: kebab-case with the project prefix (`foo-core`,
-  `foo-cli`), never sorted into folders. Modules are snake_case. A type never repeats its module's name
-  (`io::Error`, not `io::IoError`), and a module is never named like its parent.
+  `foo-cli`), never sorted into folders. Modules are snake_case. On the re-exported path a type does not
+  repeat its module's name (`io::Error`, not `io::IoError`); a private file module may carry its type's name
+  (`file_jail_repository.rs` holding `FileJailRepository`), and `data::file::FileJailRepository` is accepted
+  because `File` names the technology. A module is never named like its parent.
 - Every crate carries a one-sentence `README.md`.
 
 ### The module tree
@@ -37,9 +39,11 @@ module encapsulates and a Kotlin package does not.
       }
       mod data {
           mod repository;
-          mod file;
           pub(crate) use repository::JailRepository;
-          pub(crate) use file::FileJailRepository;
+          mod file {
+              mod file_jail_repository;
+              pub(crate) use file_jail_repository::FileJailRepository;
+          }
       }
       mod free_inmate;
       pub(crate) use free_inmate::FreeInmate;
@@ -54,8 +58,9 @@ module encapsulates and a Kotlin package does not.
   `pub(crate) use` (or `pub use` at the crate root of a library), so the path to a type is the package path
   `jail::model::Jail` and the file name appears in no path. Glob re-exports (`pub use x::*`) and preludes are
   forbidden.
-- A role of the package-layout rule is an inline block; a technology package beneath a contract is a nested
-  block (`data { mod repository; mod file; … }`) and its implementation file is named by the technology.
+- A role of the package-layout rule is an inline block. A technology package beneath a contract is a nested
+  block inside it (`data { … mod file { mod file_jail_repository; … } }`), a directory as in Kotlin, and the
+  implementation file inside it is named after its type in snake_case (`src/jail/data/file/file_jail_repository.rs`).
 
 ### Visibility
 
@@ -72,8 +77,8 @@ module encapsulates and a Kotlin package does not.
 ### Contracts and implementations
 
 - A contract is a trait at its role level (`jail::data::JailRepository`); its implementation is a struct one
-  level down, in the file named by its technology (`jail/data/file.rs` holding `FileJailRepository`). The
-  trait takes the plain name; the struct carries the technology or variant; `Impl` is forbidden.
+  level down, in the technology block (`jail/data/file/file_jail_repository.rs` holding `FileJailRepository`).
+  The trait takes the plain name; the struct carries the technology or variant; `Impl` is forbidden.
 - A trait exists on the four triggers of the package-layout rule and no other; an in-memory implementation is
   production code under `data/memory`.
 - A trait that third parties will implement gets its own crate; a trait that must not be implemented outside
@@ -89,9 +94,6 @@ module encapsulates and a Kotlin package does not.
   never used: it would create the forbidden `foo.rs` plus `foo/` pair.
 - A published crate tests its public API from one integration-test crate `tests/it/` (`tests/it/main.rs` with
   modules), never one binary per file. An internal crate keeps every test under `src` and has no `tests/`.
-- Tests that span several crates of a workspace go into a dedicated member crate (`<project>-tests`).
-- A shared `test-utils` crate is split per component, because a crate with many dependencies is a hub that
-  wrecks incremental builds.
 
 ### Cargo's conventional layout
 
