@@ -24,7 +24,7 @@ Core requirements:
 * Open/Closed Principle: extend behavior through traits and generics without modifying existing logic too much.
 * Liskov Substitution Principle: every implementation of a trait must honor the trait's documented contract.
 * Interface Segregation Principle: prefer small, focused traits (a `Clock` trait with a single `now()` method) over large traits with unrelated methods.
-* Dependency Inversion Principle: depend on traits, not concrete implementations; concrete types are chosen at the composition root. A trait exists where the package-layout skill's gate A1 allows one: another concept or crate calls it, it has two or more implementations, or a test replaces it with a fake.
+* Dependency Inversion Principle: depend on traits, not concrete implementations; concrete types are chosen at the composition root. A trait exists on the four triggers of the package-layout rule: another unit calls it, two or more implementations exist or one is known to come, an inner part declares what it needs from an outer one, or a test must replace a contract over I/O or the platform with a fake.
 
 ### 3. Use design patterns when appropriate
 
@@ -44,7 +44,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Keep each responsibility in its own type and each type in the module its role gives it: traits in `api/`, domain data in `model/`, database tables in `table/`, file and key-value state in `storage/`, commands in `command/`, wiring in `di/`. The package-layout rule and skill decide the modules, when a concept is layered into `domain/`, `data/`, `presentation/`, and when a feature gets its own crate. The composition root is `RootModule` in `src/di/root_module.rs` of the binary crate; `main.rs` only calls its `run()`.
+Keep each responsibility in its own type and each type in the module its role gives it: traits at their role level (`data`, `integration`), domain data in `model`, storage representations inside `data/<technology>`, commands in `command`, wiring in `di`. The package-layout rule and skill decide the modules and when code gets its own crate. The composition root is `RootModule` in `src/di/root_module.rs` of the binary crate; `main.rs` only calls its `run()`.
 
 Do not mix unrelated responsibilities in one crate, module, or function.
 

@@ -24,7 +24,7 @@ Core requirements:
 * Open/Closed Principle: code should be extendable without modifying existing logic too much.
 * Liskov Substitution Principle: subclasses should be safely replaceable by their parent type.
 * Interface Segregation Principle: avoid large interfaces with unrelated methods.
-* Dependency Inversion Principle: depend on abstractions, not concrete implementations. An interface exists where the package-layout skill's gate A1 allows one: another concept or unit calls it, it has two or more implementations, or a test replaces it with a fake.
+* Dependency Inversion Principle: depend on abstractions, not concrete implementations. An interface exists on the four triggers of the package-layout rule: another unit calls it, two or more implementations exist or one is known to come, an inner part declares what it needs from an outer one, or a test must replace a contract over I/O or the platform with a fake.
 
 ### 3. Use design patterns when appropriate
 
@@ -46,7 +46,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Keep each responsibility in its own class and each class in the package its role gives it: contracts in `api/`, domain data in `model/`, database tables in `table/`, commands in `command/`, wiring in `di/`. The package-layout rule and skill decide the packages, when a concept is layered into `domain/`, `data/`, `presentation/`, and when a feature gets its own build unit.
+Keep each responsibility in its own class and each class in the package its role gives it: contracts at their role level (`data/`, `integration/`), domain data in `model/`, tables inside `data/<technology>/`, commands in `command/`, wiring in `di/`. The package-layout rule and skill decide the packages and when a context gets its own build unit.
 
 Do not mix unrelated responsibilities in one class or function.
 
