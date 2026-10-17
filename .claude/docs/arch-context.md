@@ -37,8 +37,9 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 ### `core`
 
 - `core` is the project's common unit for what is not worth a unit of its own: config, translation and
-  permission models, shared helpers, shared coroutine scopes, small platform pieces as packages
-  (`core/coroutine`). It may be split by platform (`core/api`, `core/bukkit`).
+  permission models, shared functions, shared coroutine scopes, generic classes two units need
+  (`core/cache/cache4k/RefreshingCache`), small platform pieces as packages (`core/coroutine`). It has the same
+  concept → kind shape as any unit. It may be split by platform (`core/api`, `core/bukkit`).
 - `core` holds no use case and no repository, and depends on no feature unit. Nothing enters it before its
   second consumer.
 - A published library (AstraLibs) is a dependency, not the `core` of any project.
@@ -51,7 +52,7 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `api` (contracts) | `model` |
 | `usecase` | `api`, `model` |
 | implementations (technology packages and units), `stub` | the contracts they implement, `model` |
-| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `menu`, `slot`, `component`, `context`, `route`, `composable`, `viewmodel`, …) | `usecase`, `api`, `model`, `util` |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable`, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util` |
 | `util` | `api`, `model` |
 | `di` | everything; nothing depends on it |
 
