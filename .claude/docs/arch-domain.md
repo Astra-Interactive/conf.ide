@@ -33,34 +33,34 @@ import and Validation apply to every context.
 
 - An **aggregate** is the unit that is changed and saved whole. Its root is the only type through which its
   parts are changed. The repository loads and saves the aggregate whole.
-- In a context with rules an aggregate is a module of the context: a sub-package with the same roles inside,
-  created only when it has three or more files or storage of its own, as the package-layout rule says; below
-  that its files sit in the context's role packages. The parts that belong
-  to one aggregate (`ClaimChunk` with its `ChunkFlag`s) stay in one module.
+- In a context with rules an aggregate is a concept: a package with the same kinds inside (`claim/api`,
+  `claim/model`, `claim/usecase`). The parts that belong to one aggregate (`ClaimChunk` with its `ChunkFlag`s)
+  stay in one concept.
 - A context without rules has no aggregates. An aggregate whose methods start taking other aggregates as
   arguments is the signal that the boundary is wrong.
 
 ### Repository
 
-- The context's data contract is the repository: `<Aggregate>Repository`, one per aggregate or per model
-  family, in `data`. It speaks the context's words (`findUnreconciled(account)`, not
+- The data contract is the repository: `<Aggregate>Repository`, one per aggregate or per model family, in the
+  `api` package of the concept it stores (`data.dao.rating.api.RatingRepository`). It speaks the context's words (`findUnreconciled(account)`, not
   `findByAccountAndDateRange`), holds no business rule and extends no generic base. `Api`, `Dao`, `Krate` and
-  `Storage` are not names for the repository contract; `Krate` stays for an implementation that is a krate,
-  and `<Context>Api` names only the context's published interface.
+  `Storage` are not names for the repository contract; `Krate` stays for an implementation that is a krate.
 - A cache is another implementation of the repository contract that wraps one
-  (`data/memory/CachedJailRepository`), never a contract or a role of its own.
+  (`data.exposed.rating.CachedRatingRepository` beside `ExposedRatingRepository`), never a contract or a kind
+  of its own; a helper it uses (`RefreshingCache`) has its own file beside it.
 - A read that decides nothing is a query function on the repository returning a projection type declared in
   `model`; it does not load the aggregate. A use case is either a command that changes an aggregate or a query
   that only reads, never both.
 
 ### Use case
 
-- A use case is a class at the context root named by its verb (`JailPlayer`, `FreeInmate`), with one public
-  entry and no interface. It exists only when the flow has more than one step: a contract call whose result
-  a model rule judges before the next action, or two or more contracts combined. A single contract call with
-  no branch is made from the entry point directly.
-- The context's published `<Context>Api` is implemented by `Default<Context>Api` at the context root, a
-  façade that delegates to the use cases and holds no rule.
+- A use case is named `<Verb><Object>UseCase` (`RatePlayerUseCase`, `LowerKillerRatingUseCase`) and lives in
+  the `usecase` package of its concept, with one public entry and no interface. In a plugin it lives in the
+  `api` unit of the sub-context that owns the operation; other sub-contexts depend on that unit. It never
+  lives in `core`.
+- It exists only when the flow has more than one step: a contract call whose result a model rule judges
+  before the next action, or two or more contracts combined. A single contract call with no branch is made
+  from the entry point directly.
 - One action per class. A use case never calls another use case; an entry point that needs two actions calls
   both.
 - A use case holds no domain rule: it orchestrates the model and the contracts. A rule found in a use case
@@ -69,17 +69,16 @@ import and Validation apply to every context.
 ### Domain service
 
 There is no domain-service kind. A pure rule is a `model` function. A capability a technology provides
-(hashing, sending mail, a clock) is a contract at its role level with a technology implementation beneath it.
+(hashing, sending mail, a clock) is a contract in the `api` of its concept with an implementation in a technology package.
 The word `Service` appears in no type name, except for a component the platform runs on its own lifecycle,
 which lives in `service/`.
 
 ### Domain event
 
 - An event type is a model type, named in the past tense (`PlayerJailed`), in `model` with the aggregate it
-  concerns. It is published through the platform's event bus or through the context's own publisher contract.
-- Listeners sit in `event/` of the context that reacts, which may be another context.
-- An event another context listens to is part of the publisher's public surface and is placed with its
-  contracts.
+  concerns. It is published through the platform's event bus or through a publisher contract in `api`.
+- Listeners sit in the `event` kind of the sub-context that reacts.
+- An event another unit listens to lives in the `api` unit of the publisher, with its contracts.
 
 ### Factory
 
@@ -94,8 +93,9 @@ which lives in `service/`.
   platform or ORM base class, import or type: an Exposed row or a Bukkit `Location` stays in
   `data/<technology>` or behind a conversion in the model's own terms (`JailLocation` with
   `toBukkitLocation()` on the platform side).
-- One model per context: the context's `model` is the one model. A technology package keeps its own
-  representation only when the technology dictates a shape (a table row, a wire format with its own field
+- One representation per thing: a model lives in the `model` of the level that owns it, and a higher level's
+  `model` holds only what several lower levels share. A technology package keeps its own representation only
+  when the technology dictates a shape (a table row, a wire format with its own field
   names), and it maps at its own edge. A type with the same fields as the model "for separation" is forbidden.
 
 ### Validation
