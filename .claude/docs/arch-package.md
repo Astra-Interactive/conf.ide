@@ -95,27 +95,40 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | `api` | contracts of the concept: interfaces other files or units call |
    | `model` | the level's own types: data classes, sealed results, errors (one file each), events, config models |
    | `usecase` | operations named `<Verb><Object>UseCase` |
-   | `util` | extension functions (`<Subject>Ext.kt`) and helpers of the level |
+   | `util` | stateless functions with no role in the project: extensions (`<Subject>Ext.kt`) and top-level functions of the level; never a class or an `object` |
    | `di` | the DI modules of the level (see the DI rule) |
-   | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service`; for UI, see below |
-   | technology packages | an implementation of a contract, named by the library it uses (`exposed`, `krate`, `ktor`, `room`) or by `file`, `memory` |
+   | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service` (run on a timer or its own lifecycle); for UI, see below |
+   | `warmup` | a task the platform runs once at start to seed state (`RatingCacheWarmUp`), in the unit of the state it seeds |
+   | `migration` | code that converts stored data or config from an old format, inside the concept it migrates (`core/settings/migration/ConfigSnakeCaseMigration.kt`) |
+   | `error` | classes that turn a failure into the user's reply, in the unit of the mechanism that fails (`command/error/CommandExceptionHandler.kt`) |
+   | technology packages | an implementation of a contract, or code built on one library, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
    | `stub` | a stub or preview implementation of a contract that other units need |
 
 4. **UI vocabulary is derived, not fixed.** `composable` and `viewmodel` mean Kotlin Compose and an Android
    style view model, and are used only there. For any other UI framework the names come from the framework's
    own classes and from the words the project already uses. AstraRating uses AstraLibs' `Menu` inside a
-   `gui` sub-context: `gui/menu` (menus), `gui/component` (reusable menu parts), `gui/context` (`SlotContext`),
-   `gui/feature` (the holder of a menu's state), `gui/model` (`RatingSlotKey`).
-5. **The project's word wins.** When a project already names a kind with its own word (`feature` for a state
-   holder), new files of that kind use it, unless the word is forbidden below.
+   `gui` sub-context, with its own words: `gui` (menus), `slot` (menu parts), `context` (`SlotContext`),
+   `component` (the holder of a menu's state), `router`, `model` (`RatingSlotKey`).
+5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
+   state holder), new files of that kind use it, unless the word is forbidden below.
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
-   warms the rating cache, so it belongs to `data`, even though the platform runs it on start.
-7. **`model` and `util` live at every level.** A model or a helper lives in the `model` or `util` of the level
-   that uses it, even as one file (`integration/papi/model/PapiConfig.kt`). A higher level's `model` or `util`
-   holds only what several lower levels share.
-8. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
+   seeds the rating cache at start, so it belongs to `data` (`warmup`) and reaches the server through
+   AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even when it only loads
+   a cache (`LoginEvent`); a failure handler sits with the mechanism that fails.
+7. **`model` and `util` live at every level.** A model or a function lives in the `model` or `util` of the
+   level that uses it, even as one file (`integration/papi/model/PapiConfig.kt`). A higher level's `model` or
+   `util` holds only what several lower levels share. `core` has the same concept → kind shape
+   (`core/settings/model`, `core/util`).
+8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
+   implementations. Does it decide something in the project's words? A rule on the model (`arch-domain.md`).
+   Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in the unit it
+   serves. Is it generic code that two units need? `core`, in the technology package of the library it is built
+   on (`core/cache/cache4k/RefreshingCache.kt`). Only when every answer is no and the file holds functions is it
+   `util`. `util` and `model` are never the place for a class no kind fits: the agent asks the user and proposes
+   a word.
+9. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
    singular, except an inherently plural concept (`news`).
-9. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
+10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
    `entrypoint`, `impl`, `internal`, `repository`, `valueobject`, `aggregate`, `factory`, `exception`, `dto`,
    `type`, `enum`, `dao`, `common`, `shared`, `helpers`, `misc`, `port`, `adapter`, `in`, `out`, `spi`,
    `inbound`, `outbound`, `validation`. `table` and `entity` are allowed only inside a technology's
@@ -133,7 +146,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   unit, under the same concept, and is named by its technology or variant (`ExposedRatingRepository`,
   `InMemoryJailRepository`, `CachedRatingRepository`). `Impl`, the `I` prefix and the `Interface` suffix are
   forbidden. `database`, `network`, `local` and `remote` are not technology names.
-- A cache is another implementation of the contract that wraps one, beside it.
+- A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
+  another implementation beside it (`CachedRatingRepository`). One that caches part of it gets its own
+  contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
+  `Cache4kRatedUsersCache`).
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
   contracts they implement and `model`; entry points on use cases, contracts and `model`; nothing depends on an
   entry point; `di` depends on everything and nothing depends on it. A use case and a contract import no
@@ -153,8 +169,8 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   level, any other in the `model` of the level that uses it, even one used by one class
   (`modules/command`: `…command.model.UsageCommandException`). There is no `exception` package.
 - Extension functions default to `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`); they go
-  into the type's own file only when they are part of the type. Helpers are top-level functions, never an
-  `object` used as a namespace.
+  into the type's own file only when they are part of the type. A function is never an `object` used as a
+  namespace, and there is no `Helper`, `Util` or `Manager` class.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the
@@ -163,13 +179,13 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 
 ### Existing code
 
-- **Re-layout needs approval.** Merging, moving, renaming or deleting an existing unit or package happens only
-  after the user approved a printed tree "before → after". A request such as "fix the issues" is not that
+- **Re-layout needs approval.** Merging, moving, renaming or deleting anything that exists (a unit, a package,
+  a file, a class name, DI wiring) happens only after the user approved a printed tree "before → after". A request such as "fix the issues" is not that
   approval. Without it the rules apply to new files only.
 - **Re-layout does not change mechanisms.** A move changes packages, imports and the DI lines the move forces,
   nothing else. The project's mechanisms stay as they are: its `Lifecycle` objects, how listeners start
   (`val job = flowEvent(...)`), its krates, its DI wiring. The DI rule applies to the DI modules a task
-  creates; existing wiring that breaks it (a flat `RootModule`, a module handed a service) stays. Replacing a
+  creates; existing wiring that breaks it (a flat `RootModule`) stays. Replacing a
   mechanism is a separate task the user asks for.
 - Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a
   new line of wiring, a new variant or property of an old type.
