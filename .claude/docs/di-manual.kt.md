@@ -23,7 +23,11 @@ unit that starts the application (`instances:<name>`, the plugin unit), next to 
   `enable()`/`reload()`/`disable()` functions, and never moves a child's work into its own lambda.
 - `RootModule` only builds the root DI modules and lists their `lifecycle`s; it constructs no service itself.
 - A DI module is `internal` unless another build unit constructs it.
-- Pass the whole module as a dependency, not individual services extracted from it.
+- Pass the whole module as a dependency, not individual services extracted from it. When the providing DI
+  module sits in a unit the consumer may not depend on (`data/exposed` for `gui/api`), the consumer's DI module
+  takes the contract it needs as a constructor parameter (`RatingPlayersModule(ratingRepository: RatingRepository)`).
+- A task that seeds or migrates a resource (`warmup`, `migration`) is built by the DI module of that resource
+  and started by its `lifecycle` (`RatingStorageModule` starts `RatingCacheWarmUp` in `onEnable`).
 - Never use a service locator or global singletons.
 - These rules apply to the DI modules a task creates. Existing wiring that breaks them stays as it is until
   the user asks to change it.
