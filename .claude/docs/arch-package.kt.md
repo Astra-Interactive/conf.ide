@@ -7,13 +7,16 @@ The package-layout rule says which package a file goes to. This rule says how Ko
 - The directory is the package:
   `modules/data/dao/src/main/kotlin/ru/astrainteractive/astrarating/data/dao/rating/api/RatingRepository.kt`
   declares `package ru.astrainteractive.astrarating.data.dao.rating.api`.
-- A unit's root package is the project's base package followed by the unit's path with hyphens removed. The
-  container directory's segment follows the project's existing convention: AspeKt keeps it in the singular
-  (`modules/jail` → `ru.astrainteractive.aspekt.module.jail`), BUSY keeps it as is
-  (`components/bsb/monetization/impl` → `com.flipperdevices.bsb.monetization.impl`); a new project drops it.
-  An Android unit's `namespace` is its root package.
+- A unit's root package follows the project's existing convention, and a new unit takes the root package its
+  neighbours would give it: AspeKt keeps the container in the singular (`modules/jail` →
+  `ru.astrainteractive.aspekt.module.jail`), BUSY keeps the path as is (`components/bsb/monetization/impl` →
+  `com.flipperdevices.bsb.monetization.impl`), AstraRating drops the platform suffix
+  (`modules/event-bukkit` → `ru.astrainteractive.astrarating.event`). A new project uses the base package
+  followed by the unit path with hyphens removed and the container dropped. An Android unit's `namespace` is
+  its root package.
 - `api` is both a unit name (`gui/api`) and a kind package (`rating/api`); `impl` is only a unit name, in
-  apps.
+  apps. A word on the forbidden list may appear in a unit's root package (`…data.dao`, `…monetization.impl`),
+  never in a package created inside the unit.
 - Platform code of a Multiplatform unit goes to its source set (`androidMain`, `iosMain`, `jvmMain`) at the
   same package path, never to a package named after the platform. `expect` sits in `commonMain` in the kind
   that owns the concept; each `actual` sits at the same path in its source set, in a file with the platform
@@ -28,18 +31,18 @@ Decide the tier while writing the declaration:
 
 | Declaration | Modifier |
 |---|---|
-| used by one file only | `private` in that file |
-| used by other files of the same unit | `internal` |
-| used by another unit: the contents of an `api` unit, a DI module the entry point constructs, a `<Context>Api` and the models in its signatures, the platform main class of an entry-point unit | none (public) |
+| used by one file only, except an extension function, which goes to `util` | `private` in that file |
+| used by other files of the same unit, such as an implementation its DI module constructs | `internal` |
+| used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the platform main class of an entry-point unit | none (public) |
 
 Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
 only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class
 members are `private` unless another class uses them. Entry points such as `JailCommand` and `JailEvent` are
-`internal`: the entry-point unit constructs the context's DI module, not its classes. The `test` source set sees `internal`, so nothing
+`internal`: other units construct the unit's DI module, not its classes. The `test` source set sees `internal`, so nothing
 is widened for tests.
 
 ```kotlin
-// jail/data/file/FileJailRepository.kt: used by JailModule in the same unit
+// modules/jail/api: jail/file/FileJailRepository.kt, used by JailModule in the same unit
 internal class FileJailRepository(
     private val folder: File,
     private val format: StringFormat
@@ -59,14 +62,14 @@ internal class FileJailRepository(
   convention plugin per unit type, applied only where needed, never through `subprojects`. Dependencies are
   declared with `implementation`; `api` only for a type exported through a Multiplatform framework. These
   apply to new units; old `include(":modules:jail")` paths stay.
-- In a plugin, an `api` unit (`gui/api`) holds everything platform-free of its sub-context: models, use
-  cases, contracts and their platform-free implementations, with its own DI module. Its build file declares no
+- In a plugin, an `api` unit (`gui/api`) holds the platform-free code of its sub-context that other units
+  call: models, use cases, contracts and their platform-free implementations, with its own DI module. Its build file declares no
   platform dependency (no Paper, no Bukkit). The platform unit (`gui/bukkit`) depends on it and holds what
   imports the platform.
 - In an app, an `api` unit holds contracts, the models in their signatures and stubs (`<concept>/stub/`); the
   `impl` unit holds the rest. Only the entry-point unit depends on an `impl` unit.
-- Any unit may depend on `core` and on `api` units; nothing depends on a platform unit or on the entry point
-  except the entry point itself. `core` depends on no feature unit.
+- Dependencies between units follow the second table of `arch-context.md`; nothing depends on the entry
+  point, and `core` depends on no feature unit.
 - A `<context>/contract` unit holds only `@Serializable` types and route constants shared by a server unit and
   its client unit; neither side's `model` crosses the wire.
 - Every unit has a one-sentence `README.md`.
@@ -86,8 +89,9 @@ internal class FileJailRepository(
 
 ### DI modules
 
-Each unit has its own DI module in the `di` package of the level it wires, and a resource with its own
-lifecycle has its own DI module in the unit that owns it. DI modules form a tree, each exposes its own
+Each unit that constructs something has its own DI module in the `di` package of the level it wires, and a
+resource with its own lifecycle has its own DI module in the unit that owns it. A unit of contracts and
+models only has none. DI modules form a tree, each exposes its own
 `lifecycle: Lifecycle`, and the entry point's `RootModule` builds the roots and lists their `lifecycle`s
 explicitly; there is no scanning. The DI rule has the details.
 
@@ -98,8 +102,9 @@ explicitly; there is no scanning. The DI rule has the details.
 - A new data class that is a property type of exactly one class is nested in it. A type returned to another
   class is a top-level family in `model`.
 - An `enum` used only through one type is nested in it; otherwise it is a top-level family of its own.
-- Same file as the type: its companion object and private helper functions. Extension functions go to
-  `util/<Subject>Ext.kt` of the level that uses them, unless they are part of the type itself. Never a class
+- Same file as the type: its companion object and private helper functions that are not extensions.
+  Extension functions go to `util/<Subject>Ext.kt` of the level that uses them, even when one file uses them
+  (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`), unless they are part of the type itself. Never a class
   inside a function body, never an `inner class`.
 - A file of top-level functions is named after what they do (`DurationFormat.kt`), never `Utils.kt`; helpers
   are never grouped in an `object`.
