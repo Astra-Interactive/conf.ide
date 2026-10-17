@@ -10,6 +10,10 @@ import and Validation apply to every context.
 
 - A rule about one type is a function of that type in its `model` file: a method or an extension that returns
   a copy or a decision, taking what it needs as parameters (`fun JailInmate.isSentenceOver(now: Instant)`).
+  It is never a top-level function that takes the type as a parameter only to read its fields. When the type
+  belongs to another unit (a config model in `core`), the rule is an extension in `util/<Type>Ext.kt` of the
+  level that uses it (`fun AstraRatingConfig.isRatingMessageLengthAllowed(message: String)`). The default is
+  judged by the situation; a rule over several types follows the next line.
 - A rule spanning several types is a function in `model` named after the decision.
 - A class that only reads and writes a model's fields is the anaemic smell: refuse it, and move the rule into
   the model.
@@ -45,9 +49,11 @@ import and Validation apply to every context.
   `api` package of the concept it stores (`data.dao.rating.api.RatingRepository`). It speaks the context's words (`findUnreconciled(account)`, not
   `findByAccountAndDateRange`), holds no business rule and extends no generic base. `Api`, `Dao`, `Krate` and
   `Storage` are not names for the repository contract; `Krate` stays for an implementation that is a krate.
-- A cache is another implementation of the repository contract that wraps one
-  (`data.exposed.rating.CachedRatingRepository` beside `ExposedRatingRepository`), never a contract or a kind
-  of its own; a helper it uses (`RefreshingCache`) has its own file beside it.
+- A cache is part of storage, never of its consumer. One that wraps the whole repository is another
+  implementation beside it (`data.exposed.rating.CachedRatingRepository` beside `ExposedRatingRepository`).
+  One that caches part of it gets its own contract in the same `api` (`RatedUsersCache`) and an implementation
+  in the technology unit (`Cache4kRatedUsersCache`). A class it uses has its own file beside it, or in `core`
+  when two units use it (`core/cache/cache4k/RefreshingCache`).
 - A read that decides nothing is a query function on the repository returning a projection type declared in
   `model`; it does not load the aggregate. A use case is either a command that changes an aggregate or a query
   that only reads, never both.
