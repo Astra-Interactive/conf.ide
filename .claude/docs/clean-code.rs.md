@@ -44,7 +44,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Keep each responsibility in its own type and each type in the module its role gives it: traits at their role level (`data`, `integration`), domain data in `model`, storage representations inside `data/<technology>`, commands in `command`, wiring in `di`. The package-layout rule and skill decide the modules and when code gets its own crate. The composition root is `RootModule` in `src/di/root_module.rs` of the binary crate; `main.rs` only calls its `run()`.
+Keep each responsibility in its own type and each type in the kind module of its concept: traits in `api`, data in `model`, operations in `usecase`, storage representations in the technology module, commands in `command`, wiring in `di`. The package-layout rule and skill decide the modules and when code gets its own crate. The composition root is `RootModule` in `src/di/root_module.rs` of the binary crate; `main.rs` only calls its `run()`.
 
 Do not mix unrelated responsibilities in one crate, module, or function.
 
