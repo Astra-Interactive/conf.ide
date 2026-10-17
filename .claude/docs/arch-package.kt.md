@@ -78,13 +78,16 @@ internal class FileJailRepository(
 
 - Entry points sit in kind packages named for the mechanism that invokes them, in the project's and the
   framework's words: `command`, `event`, `service` (an `IntervalService` task), `route` (a Ktor route), `job`.
-  UI kinds come from the UI framework: `composable` and `viewmodel` only with Compose; for AstraLibs menus
-  `menu`, `component`, `context`, `feature`. Entry-point kinds and technology packages may import the platform.
+  A task run once at start is `warmup`, a format converter `migration`, a failure handler `error`. UI kinds
+  come from the UI framework: `composable` and `viewmodel` only with Compose; for AstraLibs menus the
+  project's words (AstraRating: `gui`, `slot`, `context`, `component`, `router`). Entry-point kinds and
+  technology packages may import the platform; a `warmup` or `migration` in a platform-free unit reaches the
+  server through AstraLibs' `PlatformServer`.
 - A use case is `<Verb><Object>UseCase` (`RatePlayerUseCase`) in the `usecase` package of its concept, with one
   public `operator fun invoke` and no interface. A use case and a contract import no platform or framework
   type; the server is reached through AstraLibs' abstractions (`server/player`, `server/location`,
   `server/permission`) or the sub-context's own contract.
-- A state holder of a menu or screen (`feature` in plugins, `viewmodel` with Compose) holds no rule and calls
+- A state holder of a menu or screen (`component` in AstraRating, `viewmodel` with Compose) holds no rule and calls
   use cases and contracts; the shared design system is a `core` package.
 
 ### DI modules
