@@ -29,18 +29,21 @@ Terms used below:
    - a **`<context>/contract`** unit for the wire types a server and its client share;
    - a **tooling unit** with no product code: `build-logic`, an `xtask` crate, a `<feature>/fake` unit.
    A published library (AstraLibs) is a dependency of a project, not one of its units.
-2. A context is cut into sub-context units. The author decides the cut; the kinds above are examples, not a
-   closed list. An agent proposes the cut and asks the user (see the skill); without an answer, new code goes
-   as a package into an existing unit. An existing cut is never merged.
+2. A context is cut into sub-context units. The author decides the cut; the sub-context kinds in Terms are
+   examples, not a closed list. An agent proposes the cut and asks the user (see the skill); without an
+   answer, new code goes as a package into an existing unit. An agent never proposes to merge an existing cut;
+   a merge the user asks for goes through the approval of Existing code.
 3. Paths: in a project with one context, `modules/<sub-context>` (AstraRating: `modules/command`,
-   `modules/gui`, `modules/data`); with several contexts, `modules/<context>/<sub-context>`. A unit's root
-   package is the project's base package plus the unit path.
-4. **Plugin** (separate Gradle JVM builds per platform): a sub-context that has platform code or that other
-   units call is split into an `api` unit and one unit per platform (`gui/api`, `gui/bukkit`, `gui/forge`).
-   The `api` unit holds everything platform-free: models, use cases, contracts and their platform-free
-   implementations. The platform unit holds everything that imports the platform. There is no `impl` unit: in
-   a plugin it would add modules and make nothing easier. A sub-context with no platform split is one unit
-   (`modules/command`). Storage is a contracts unit plus one unit per technology (`data/dao`, `data/exposed`).
+   `modules/gui`, `modules/data`); with several contexts, `modules/<context>`, and
+   `modules/<context>/<sub-context>` once the author cuts it. A unit's root package follows the unit path in
+   the project's existing convention (the Kotlin companion gives the mechanics).
+4. **Plugin** (separate Gradle JVM builds per platform): when the author splits a sub-context by platform
+   (the agent asks, as in 2), it becomes an `api` unit and one unit per platform (`gui/api`, `gui/bukkit`,
+   `gui/forge`). The `api` unit holds the platform-free code other units call: models, use cases, contracts
+   and their platform-free implementations. The platform unit holds everything that imports the platform, and
+   platform-free code that only it uses (`RatingSlotKey`). There is no `impl` unit: in a plugin it would add
+   modules and make nothing easier. A sub-context that is not split is one unit, platform imports included
+   (`modules/command`, `modules/event-bukkit`). Storage is a contracts unit plus one unit per technology (`data/dao`, `data/exposed`).
 5. **App** (Kotlin Multiplatform, Android): a feature others depend on is an `api` unit (contracts, the
    models in their signatures, stubs) plus an `impl` unit (the implementation and its use cases). Platform
    code is a source set of the unit, never a unit.
@@ -56,7 +59,9 @@ Terms used below:
 
 ### Concepts and kinds
 
-Every source path reads `<unit root>/<concept>[/<sub-concept>]/<kind>/<File>`.
+Every source path reads `<unit root>[/<concept>[/<sub-concept>]]/<kind>/<File>`. A kind directly under the
+unit root holds what the whole unit shares: its DI module, a model or a helper several concepts use
+(`…command.model.UsageCommandException`).
 
 1. A concept package holds only packages. A kind package holds only files. A one-file kind package is normal.
    A kind package exists only when it has a file.
@@ -68,17 +73,19 @@ Every source path reads `<unit root>/<concept>[/<sub-concept>]/<kind>/<File>`.
    …data.dao.rating.api.RatingRepository           storage contract, in the concept it stores
    ```
 
-2. **Implementation exception.** In a unit, or a package, that is wholly one technology's implementation
-   (`data/exposed`), the concept package holds the implementations directly, and everything else of that
-   technology sits in kind packages beside them: `table`, `entity`, `model`, `database`, `di`.
+2. **Implementation exception.** In a unit that is wholly one technology's implementation
+   (`data/exposed`), the concept package holds the implementations directly. Everything else of that
+   technology sits in kind packages (`table`, `entity`, `model`, `database`, `di`) at the level that uses it:
+   inside the concept when only that concept uses it, under the unit root when several do. A technology
+   package inside another unit (`jail/file`) holds only implementations.
 
    ```
    …data.exposed.rating.ExposedRatingRepository
    …data.exposed.rating.CachedRatingRepository
    …data.exposed.rating.RefreshingCache
-   …data.exposed.table.UserRatingTable
+   …data.exposed.rating.table.UserRatingTable
    …data.exposed.database.RatingDatabase
-   …data.exposed.model.DbRatingConfiguration
+   …data.exposed.di.ExposedModule
    ```
 
 3. Kinds:
@@ -89,7 +96,7 @@ Every source path reads `<unit root>/<concept>[/<sub-concept>]/<kind>/<File>`.
    | `model` | the level's own types: data classes, sealed results, errors (one file each), events, config models |
    | `usecase` | operations named `<Verb><Object>UseCase` |
    | `util` | extension functions (`<Subject>Ext.kt`) and helpers of the level |
-   | `di` | the DI module of the level (see the DI rule) |
+   | `di` | the DI modules of the level (see the DI rule) |
    | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service`; for UI, see below |
    | technology packages | an implementation of a contract, named by the library it uses (`exposed`, `krate`, `ktor`, `room`) or by `file`, `memory` |
    | `stub` | a stub or preview implementation of a contract that other units need |
@@ -112,7 +119,9 @@ Every source path reads `<unit root>/<concept>[/<sub-concept>]/<kind>/<File>`.
    `entrypoint`, `impl`, `internal`, `repository`, `valueobject`, `aggregate`, `factory`, `exception`, `dto`,
    `type`, `enum`, `dao`, `common`, `shared`, `helpers`, `misc`, `port`, `adapter`, `in`, `out`, `spi`,
    `inbound`, `outbound`, `validation`. `table` and `entity` are allowed only inside a technology's
-   implementation. A unit name may keep a project's existing word (`data/dao`).
+   implementation. The list applies to packages inside a unit: a unit's root package follows its unit path,
+   and a unit name may keep a project's existing word (`data/dao` → `…data.dao`, `monetization/impl` →
+   `…monetization.impl`).
 
 ### Contracts and implementations
 
@@ -125,10 +134,10 @@ Every source path reads `<unit root>/<concept>[/<sub-concept>]/<kind>/<File>`.
   `InMemoryJailRepository`, `CachedRatingRepository`). `Impl`, the `I` prefix and the `Interface` suffix are
   forbidden. `database`, `network`, `local` and `remote` are not technology names.
 - A cache is another implementation of the contract that wraps one, beside it.
-- Dependency direction: `model` depends on nothing of its level; `api` depends on `model`; `usecase` depends on
-  `api` and `model`; implementations and entry points depend on contracts, use cases and `model`; nothing
-  depends on an entry point; `di` depends on everything and nothing depends on it. A use case and a contract
-  import no platform or framework type.
+- Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
+  contracts they implement and `model`; entry points on use cases, contracts and `model`; nothing depends on an
+  entry point; `di` depends on everything and nothing depends on it. A use case and a contract import no
+  platform or framework type.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
   more contracts. A use case never calls another use case.
@@ -140,25 +149,28 @@ Every source path reads `<unit root>/<concept>[/<sub-concept>]/<kind>/<File>`.
   (`RefreshingCache` is not inside `CachedRatingRepository.kt`). A file is split only above about 400 lines.
 - A data class that is a property type of exactly one class is nested in it. A type that is a property of two
   or more classes, or is returned to another class, is top-level in `model`.
-- Every error type is its own file in the `model` of the level that uses it, even one used by one class
-  (`command/model/UsageCommandException.kt`). There is no `exception` package.
+- Every error type is its own file in `model`: an error a contract names in the `model` of the contract's
+  level, any other in the `model` of the level that uses it, even one used by one class
+  (`modules/command`: `…command.model.UsageCommandException`). There is no `exception` package.
 - Extension functions default to `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`); they go
   into the type's own file only when they are part of the type. Helpers are top-level functions, never an
   `object` used as a namespace.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the
-  technology word (`UserRatingTable`, `RatingRow`). A use case carries `UseCase`, a contract its role word
-  (`RatingRepository`).
+  technology word (`UserRatingTable`, `RatingRow`). A use case carries `UseCase`; a contract carries the word
+  for what it is (`RatingRepository`).
 
 ### Existing code
 
 - **Re-layout needs approval.** Merging, moving, renaming or deleting an existing unit or package happens only
   after the user approved a printed tree "before → after". A request such as "fix the issues" is not that
   approval. Without it the rules apply to new files only.
-- **Re-layout does not change mechanisms.** A move changes packages, imports and DI lines only. The project's
-  mechanisms stay as they are: its `Lifecycle` objects, how listeners start (`val job = flowEvent(...)`), its
-  krates, its DI tree. Replacing a mechanism is a separate task the user asks for.
+- **Re-layout does not change mechanisms.** A move changes packages, imports and the DI lines the move forces,
+  nothing else. The project's mechanisms stay as they are: its `Lifecycle` objects, how listeners start
+  (`val job = flowEvent(...)`), its krates, its DI wiring. The DI rule applies to the DI modules a task
+  creates; existing wiring that breaks it (a flat `RootModule`, a module handed a service) stays. Replacing a
+  mechanism is a separate task the user asks for.
 - Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a
   new line of wiring, a new variant or property of an old type.
 - New files follow this rule next to old packages named otherwise, except that the project's own word for a
