@@ -90,8 +90,8 @@ which lives in `service/`.
 ### What the model may import
 
 - The model may carry serialization annotations, because a format is not a framework. It never carries a
-  platform or ORM base class, import or type: an Exposed row or a Bukkit `Location` stays in
-  `data/<technology>` or behind a conversion in the model's own terms (`JailLocation` with
+  platform or ORM base class, import or type: an Exposed row or a Bukkit `Location` stays in its technology
+  package or unit, or behind a conversion in the model's own terms (`JailLocation` with
   `toBukkitLocation()` on the platform side).
 - One representation per thing: a model lives in the `model` of the level that owns it, and a higher level's
   `model` holds only what several lower levels share. A technology package keeps its own representation only
