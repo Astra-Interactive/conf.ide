@@ -1,7 +1,7 @@
 ---
 name: package-layout
-description: Plan and review where new source files, packages and build units go in Kotlin and Rust projects. Use before creating the first new file of any task (feature, bugfix, refactor, test) and whenever a task may need a new package, Gradle module or Cargo crate. Gives the planning procedure, the decision tests, what to do when no role fits, worked examples and the review checklist.
-version: 2.0.0
+description: Plan and review where new source files, packages and build units go in Kotlin and Rust projects. Use before creating the first new file of any task (feature, bugfix, refactor, test), whenever a task may need a new package, Gradle module or Cargo crate, and before moving or merging anything that exists. Gives the planning procedure, the questions to ask the user, the decision tests, worked examples and the review checklist.
+version: 3.0.0
 ---
 
 # Package layout
@@ -13,204 +13,167 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 ## 1. Before the first new file
 
 1. Record `BASE=$(git rev-parse HEAD)`. The review at the end lists the files added since it.
-2. Read the one-sentence `README.md` of every unit you are about to touch. If a unit has none, write it as the
-   first file of the task.
-3. Answer every decision test of section 2, in order, for the feature as a whole, one line each. Within a
-   test, the first line that matches is the answer. The lines go into the final message.
-4. Print the planned tree: every new file with its full path, every new package, every new unit with its
-   `build.gradle.kts` or `Cargo.toml`. A tree that shows a forbidden package name, a loose file at a context
-   root that is neither a use case nor the `<Context>Api` and its `Default` implementation, or an `api` unit
-   holding logic is wrong before any file exists.
-5. Only then create files. Create a role package the moment its first file exists, never before.
+2. Read the project's tree and the one-sentence `README.md` of every unit you are about to touch. Note the
+   project's own words for kinds (`feature`, `component`, `presentation`) and its mechanisms (`Lifecycle`
+   objects, how listeners start, its DI tree). They are kept.
+3. **List the sub-contexts the task touches**: entry mechanisms (commands, listeners, menus, routes,
+   screens), integrations with external systems, storage. For each one that has no unit yet, ask the user:
+   "own unit (`modules/<name>`), or a package in `<existing unit>`?" Show both trees. Without an answer the
+   code goes as a package into the existing unit.
+4. **If the task would merge, move, rename or delete anything that exists**, print the tree "before → after"
+   for those units and packages and wait for the user's approval. "Fix the issues" or "follow the rules" is
+   not approval. Without approval, apply the rules to new files only and list the moves you would make in the
+   final message.
+5. Answer every decision test of section 2 for the feature, one line each. The lines go into the final message.
+6. Print the planned tree of new files with full paths, and the new units with their build files.
+7. Only then create files. Create a kind package the moment its first file exists, never before.
 
 ## 2. Decision tests
 
 **T1. Which unit?**
-- Does the file belong to an existing context, judged by its words and the data it touches? Then that unit.
-- Is it the platform main class or `RootModule`? The entry-point unit.
-- Is it platform infrastructure that knows no domain word, needed by a second context? `core`, as a
-  capability-named package inside it.
-- Is it a typed identifier or a generic value object two contexts share? The kernel.
-- Is it a serializable wire type a server and its client both need? The `<context>/contract` unit.
-- Otherwise it is a new capability (T2).
+- The platform main class or `RootModule`: the entry-point unit.
+- Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
+  even though the platform starts it): that sub-context's unit; platform-free code in its `api` unit,
+  platform code in its platform unit.
+- A config, translation or permission model, a helper, a scope used by several sub-contexts: `core`.
+- A wire type a server and its client share: the `<context>/contract` unit.
+- A new sub-context: ask (step 1.3).
 
-**T2. Context or module?**
-A context when all three hold: its data, if any, is its own; it has words of its own; a typical change to it
-stays inside it. Otherwise a module of the context that owns the data it touches. A new context is a new unit
-in any project with more than one context (Kotlin); in Rust, a new top-level module block. A new module is a
-sub-package only when it has three or more files or storage of its own; below that its files sit in the
-context's role packages.
+**T2. Is this a use case, and where?**
+Only when the flow has more than one step: a contract call whose result a model rule judges before acting, or
+two or more contracts combined. Named `<Verb><Object>UseCase`, in the `usecase` package of its concept, in the
+`api` unit of the sub-context that owns the operation. Never in `core`. If the owner is unclear, ask.
 
-**T3. Does the context split into `api` and `impl`?**
-When another context depends on it, or when it has two or more platform units; otherwise no. A new
-dependency on an unsplit context splits it first. Platform units (`<context>/bukkit`) only for separate Gradle
-JVM builds; Multiplatform uses source sets.
+**T3. Which concept and which kind?**
+Path: `<unit root>/<concept>/<kind>/<File>`. The concept is the thing in the project's words (`rating`). The
+kind: contract → `api`; data class, result, error, event, config → `model`; operation → `usecase`; extension
+or helper → `util`; wiring → `di`; entry point → the project's or the framework's word for its mechanism;
+implementation → the technology package or unit (`exposed`, `memory`), where the concept package holds the
+implementations directly. Nothing lies loose in a concept package outside a technology implementation.
 
-**T4. Which role?**
-Name the file by what the platform or the context does with it: invoked by the command framework → `command`;
-by the event bus, or the platform event type that carries an event → `event`; run by the platform's lifecycle
-→ `service`; run by a scheduler framework → `job`; by the HTTP router → `route`; by the UI → `composable`,
-`viewmodel`; the context's own types, errors, results, events → `model`; a repository contract → `data`, its
-implementation → `data/<technology>`; what the context needs from another system, or exposes to it →
-`integration`, its implementation → `integration/<system>`; a shared conversion → `mapping`; an extension that
-is not part of a type → `util` or the type's file; wiring → `di`; a verb that needs more than one step → the
-context root. If no role fits, go to section 3.
+**T4. Which word for a UI kind?**
+Compose: `composable`, `viewmodel`. Anything else: derive from the framework's classes and the project's words.
+AstraLibs menus: `menu`, `component`, `context`, `feature`, `model`. The project's existing word wins unless it
+is forbidden.
 
 **T5. Does this need an interface?**
-Yes on exactly four triggers: another unit calls it; two or more implementations exist or one is known to
-come; an inner part declares what it needs from an outer one; a test must replace a contract over I/O or the
-platform with a fake. Pure logic, entities and use cases: no.
+Exactly four triggers: another unit calls it; two or more implementations exist or one is known to come; an
+inner part declares what it needs from an outer one; a test must replace a contract over I/O or the platform.
 
-**T6. Does this need a use case?**
-Only when the flow has more than one step: a contract call whose result a model rule judges before the next
-action, or two or more contracts combined. A single contract call with no branch is called from the entry
-point directly.
+**T6. One file or several?**
+A sealed type with its variants, or a data class with its nested data classes, is one file. Every class with
+behaviour, every error type and every helper class has its own file. Extensions go to `util/<Subject>Ext.kt`.
 
-**T7. Is this an anti-corruption layer?**
-Mandatory when the provider's model is not yours: an external library, a platform API, a remote system, a
-third-party plugin. Optional for a sibling context, whose `<Context>Api` is used directly by default.
+**T7. Which DI module?**
+The unit's own DI module in `di` of the level it wires, with its own `lifecycle`; a database or other resource
+with its own lifecycle gets its own DI module. Add the new module as a child of the module that owns its
+dependencies, or list it in `RootModule`. Never merge DI modules, never replace `Lifecycle` with functions.
 
-**T8. Does this go into a shared unit?**
-Only on its second consumer, and never if it holds business logic.
+**T8. Where is it tested?**
+A model rule directly; a use case with fakes or an in-memory implementation; a technology implementation
+against the real technology in a test; the wired plugin in the entry-point unit.
 
-**T9. One file or several?**
-One type family per file; a sealed type with its variants in one file; a data class used by exactly one class
-nested in it; split only above about 400 lines.
+## 3. When no kind fits
 
-**T10. Where is it tested?**
-A model rule directly; a use case with fakes or an in-memory implementation; a technology package against the
-real technology in a test; the wired application in the entry-point unit; the layout by the architecture
-suite.
-
-## 3. A role no row names
-
-The menu is fixed for a task. When T4 finds no role, put the file in the closest role on the menu (a helper
-with no home goes to `util`, a platform-invoked class to the entry-point role of its mechanism) and report in
-the final message which file, which role was chosen and why no role fits, with the name a new role would have.
-The menu in `arch-package.md` is extended by the owner, not by a task.
+Put the file into the closest kind of the menu and report in the final message which file, which kind was
+chosen and why none fits, with the word a new kind would have. A task does not extend the menu.
 
 ## 4. Worked examples
 
-Each tree is what the rules produce for a new feature of that kind. Old files in the real projects are not
-moved to match.
-
-### A plugin context (AspeKt, `jail`)
+### A plugin with one context cut into sub-contexts (AstraRating)
 
 ```
-modules/jail/                                   one unit: nothing else depends on jail
-  README.md                                     "Jails players for a sentence and frees them when it ends."
-  src/main/kotlin/ru/astrainteractive/aspekt/module/jail/
-    JailPlayer.kt                               use case: finds the jail, teleports, records the inmate
-    FreeInmate.kt                               use case: frees, teleports back
-    command/JailCommand.kt                      the command framework invokes it
-    event/JailEvent.kt                          the event bus invokes it
-    service/UnJailServiceTask.kt                the platform runs it on an interval; calls FreeInmate
-    model/Jail.kt  model/JailInmate.kt  model/JailLocation.kt  model/JailError.kt
-    data/JailRepository.kt                      the contract
-    data/file/FileJailRepository.kt             the implementation, named by what it uses
-    data/memory/InMemoryJailRepository.kt       production code, for tests and demos
-    integration/EconomyCharger.kt               what jail needs from economy, in jail's words (optional ACL)
-    integration/economy/EconomyApiCharger.kt    the adapter over economy's EconomyApi
-    di/JailModule.kt                            one DI module, command wiring included
-  src/test/kotlin/ru/astrainteractive/aspekt/module/jail/
-    FreeInmateTest.kt  model/JailInmateTest.kt  data/file/FileJailRepositoryTest.kt
-    data/fake/FakeJailRepository.kt             records calls and scripts failures
+instances/bukkit                   AstraRating.kt, di/RootModule.kt (builds roots, lists their lifecycles)
+modules/core/api                   …core: settings/model/{AstraRatingConfig, AstraRatingTranslation, AstraRatingPermission}.kt,
+                                   coroutine/…, di/CoreModule.kt
+modules/core/bukkit                platform pieces of core
+modules/data/dao                   …data.dao
+  rating/api/RatingRepository.kt
+  rating/model/{Rating, User, UserRating}.kt
+modules/data/exposed               …data.exposed
+  rating/{ExposedRatingRepository, CachedRatingRepository, RefreshingCache, RatingCacheWarmUp}.kt
+  table/{UserTable, UserRatingTable}.kt
+  database/RatingDatabase.kt
+  model/DbRatingConfiguration.kt
+  di/ExposedModule.kt              databaseFlow and its lifecycle
+modules/gui/api                    …gui.api: platform-free, others may call it
+  rating/usecase/{RatePlayerUseCase, LowerKillerRatingUseCase}.kt
+  rating/model/…  rating/api/…  rating/di/RatingGuiModule.kt
+modules/gui/bukkit                 …gui.bukkit
+  menu/{RatingsMenu, PlayerRatingsMenu, MenuRouter}.kt
+  component/{NavigationSlots, SortSlot, EventSlot, RatingsSlot, GuiLoadingIndicator}.kt
+  context/SlotContext.kt
+  feature/{RatingsFeature, PlayerRatingsFeature}.kt
+  model/RatingSlotKey.kt
+  util/PlayerHeadExt.kt
+  di/GuiBukkitModule.kt
+modules/command                    …command: rating/command/RatingCommand.kt, rating/model/UsageCommandException.kt,
+                                   rating/util/KPlayerExt.kt, di/CommandModule.kt
+modules/event-bukkit               …event: login/event/LoginEvent.kt (val job, as the project starts listeners)
+modules/integration-papi           …integration.papi: placeholder/…/RatingPlaceholderExpansion.kt,
+                                   placeholder/model/PapiConfig.kt, di/PapiModule.kt
 ```
 
-### A split context in an app (BUSY, `monetization`)
+### A plugin with several contexts (AspeKt, a new `jail` context)
 
 ```
-components/bsb/monetization/                    container, no build file
-  api/   README.md                              "Tells whether the user may use paid features and sells plans."
-    …/monetization/api/MonetizationApi.kt       the one published interface, at the api root
-    …/monetization/api/model/Plan.kt            models in its signatures
-    …/monetization/api/stub/StubMonetizationApi.kt
-  impl/  README.md
-    …/monetization/impl/DefaultMonetizationApi.kt   the façade over the use cases
-    …/monetization/impl/CheckEntitlement.kt     use case at the root
-    …/monetization/impl/composable/…  viewmodel/…   screens, one view model each
-    …/monetization/impl/model/…
-    …/monetization/impl/data/EntitlementRepository.kt
-    …/monetization/impl/data/revenuecat/RevenueCatEntitlementRepository.kt
-    …/monetization/impl/offer/{composable, viewmodel, model}/   a module of the context
-    …/monetization/impl/di/MonetizationModule.kt
-    src/androidMain/…/monetization/impl/data/revenuecat/BillingClient.android.kt   actual for the platform
+modules/jail/api                   …module.jail.api
+  jail/usecase/{JailPlayerUseCase, FreeInmateUseCase}.kt
+  jail/model/{Jail, JailInmate, JailLocation, JailError}.kt
+  jail/api/JailRepository.kt
+  jail/file/{FileJailRepository}.kt       technology package: implementations directly
+  jail/memory/{InMemoryJailRepository}.kt
+  jail/di/JailModule.kt
+modules/jail/bukkit                …module.jail.bukkit
+  jail/command/JailCommand.kt  jail/event/JailEvent.kt  jail/service/UnJailServiceTask.kt
+  jail/util/LocationExt.kt  jail/di/JailBukkitModule.kt
 ```
 
-### A library capability (AstraLibs, `encoding` inside `core`)
+### An app feature (BUSY, `monetization`)
 
 ```
-core/  README.md                                "Platform-free building blocks every plugin uses."
-  …/astralibs/encoding/Encoder.kt               the capability's contract, at the capability root
-  …/astralibs/encoding/base64/Base64Encoder.kt  named by what it uses
-  …/astralibs/encoding/model/Encoded.kt
-build.gradle.kts: kotlin { explicitApi() }      a published library: every public declaration is deliberate
+components/bsb/monetization/api    …monetization.api: offer/api/MonetizationApi.kt, offer/model/Plan.kt,
+                                   offer/stub/StubMonetizationApi.kt
+components/bsb/monetization/impl   …monetization.impl: offer/usecase/CheckEntitlementUseCase.kt,
+                                   offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatEntitlementRepository.kt,
+                                   offer/di/MonetizationModule.kt; androidMain at the same paths
 ```
 
-### A Ktor context with a client (AstraLearner, `dictionary`)
+### A Rust crate
 
-```
-modules/dictionary/                             container, no build file
-  contract/  README.md                          wire types both sides compile against
-    …/dictionary/contract/WordDto.kt  …/contract/DictionaryRoutes.kt
-  impl/      README.md                          the server context
-    …/dictionary/AddWord.kt                     use case
-    …/dictionary/route/WordRoutes.kt            the router invokes it; uses the contract unit's types
-    …/dictionary/model/Word.kt  …/model/DictionaryError.kt
-    …/dictionary/data/WordRepository.kt  …/data/exposed/ExposedWordRepository.kt  …/data/exposed/table/WordTable.kt
-    …/dictionary/di/DictionaryModule.kt
-```
-
-### A Rust crate (a plugin, `jail` as a context block)
-
-```
-crates/plugin-jailer/
-  README.md
-  src/lib.rs                                    the whole module tree as inline blocks, no code
-  src/jail/free_inmate.rs                       use case struct
-  src/jail/free_inmate_tests.rs                 sibling test, declared from lib.rs
-  src/jail/model/jail.rs  src/jail/model/inmate.rs
-  src/jail/data/repository.rs                   trait JailRepository
-  src/jail/data/file/file_jail_repository.rs    FileJailRepository, in the technology block `file`
-  src/jail/command/jail.rs
-  src/jail/di/jail_module.rs
-```
+The Rust companion `arch-package.rs.md` holds the crate shape; this skill's tests T2–T8 apply with crates and
+module blocks in place of Gradle units and packages.
 
 ## 5. Before the final message
 
 List the files added since `BASE` (`git diff --name-only --diff-filter=A $BASE`) and answer each item in one
 line. A "no" is fixed by moving the new file, never an old one.
 
-1. Does every new unit have a one-sentence `README.md`, and does the sentence fit?
-2. Is every new unit a context, an entry point, `core`, the kernel, a `<context>/contract` or a tooling unit?
-3. Does the first level of every new unit match its kind: roles under a context unit, the `<Context>Api`
-   with `model/` and `stub/` under an `api` unit, capabilities under `core`, the kernel and a library unit?
-4. Is every loose file at a context root a verb-named use case, the `<Context>Api`, or its `Default`
-   implementation?
-5. Is every other new file in a role from the menu, and is every role package non-empty?
-6. Does any new package carry a forbidden name (`domain`, `api`, `impl`, `internal`, `usecase`, `repository`,
-   `exception`, `dto`, `util` at the top, `port`, `adapter`, …)? Are all package names singular?
-7. Does every contract sit at its role level with its implementation one level down in a package named by its
-   technology or system, never `database`, `network`, `local`, `remote`?
-8. Is every implementation named by technology or variant, with no `Impl`, `I` prefix or `Interface` suffix?
+1. Did the task merge, move, rename or delete nothing without the user's approval of a "before → after" tree?
+2. Did a move change only packages, imports and DI lines, leaving `Lifecycle`, listener start-up and krates as
+   they were?
+3. Was every new sub-context offered to the user as "own unit or package", and does every new unit have a
+   one-sentence `README.md`?
+4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation, and
+   never in `core`? Does `core` depend on no feature unit?
+5. Does every concept package hold only kind packages, except a technology implementation?
+6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel` only under Compose and
+   the project's own word kept?
+7. Does any new package carry a forbidden name (`domain`, `impl`, `internal`, `repository`, `exception`, `dto`,
+   `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names singular?
+8. Does every contract sit in `api` of its concept, with its implementation named by technology or variant, no
+   `Impl`, no `I` prefix?
 9. Does every new interface pass one of the four triggers?
-10. Does `model` import nothing from the context and no platform or ORM type (serialization annotations
-    excepted)? Do use cases and contracts import no platform type?
-11. Does every data class that is a property of exactly one class sit nested in it? Does every sealed family
-    sit in one file in `model`? Is every error family in `model`, with no new file in an old `exception`?
-12. Does every new context own its data, and does no context read another's tables or files?
-13. Does every cross-context edge go through a `<Context>Api`, an event or a typed identifier, with no cycle,
-    no `api` → `impl` dependency, and the provider split before the dependency?
-14. Is every dependency on an uncontrolled provider behind an `integration` contract with its implementation
-    under `integration/<system>`?
-15. Did anything enter `core` or the kernel before its second consumer, or any business logic at all?
-16. Is `di/` present only at the context and module levels with exactly one DI module each?
-17. Are the three visibility tiers applied, with `public` written only where explicit API mode demands it?
-18. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `data/memory`?
-19. Rust: is every module declared from `lib.rs`, no `mod.rs`, no `foo.rs` beside `foo/`, every file module
-    private and re-exported by name, tests in sibling `_tests.rs` files, `unreachable_pub` on?
-20. Did the task leave every old file where it was, and does the final message list the old files the rule
-    would move?
+10. Is every model and every helper in the `model` or `util` of the level that uses it?
+11. Does every class with behaviour, every error type and every helper class have its own file, and every
+    extension sit in `util/<Subject>Ext.kt`?
+12. Does `model` import nothing of its level and no platform or ORM type? Do `api` and `usecase` import no
+    platform type? Does a plugin's `api` unit declare no platform dependency?
+13. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
+14. Does every unit have its own DI module with its own `lifecycle`, in a tree, with `RootModule` only
+    building roots?
+15. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
+16. Does the final message list the old files the rules would move, and where?
 
-The checker that runs items 3, 5, 6, 7, 8, 10, 13 and 19 mechanically is defined in the checker stage of the
-rewrite; until it exists, answer them by hand and say so in the final message.
+The checker that runs items 5, 7, 8, 12 and 13 mechanically is defined in the checker stage; until it exists,
+answer them by hand and say so in the final message.
