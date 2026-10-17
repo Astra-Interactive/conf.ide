@@ -49,8 +49,8 @@ fun validateOrder(order: Order): Result<Order> {
   `model/OrderError.kt` holds `OrderError` and every subclass.
 - A per-use-case sealed result (`CreateOrderResult`) lives in the same `model/`, with its failure variants
   nested next to the success ones.
-- Every error type, or error hierarchy with its subclasses, is its own file in the `model/` of the level that
-  uses it, even one that never leaves one class (`command/model/UsageCommandException.kt`), never a private
+- Any other error type, or error hierarchy with its subclasses, is its own file in the `model/` of the level
+  that uses it, even one that never leaves one class (`…command.model.UsageCommandException`), never a private
   class inside the file that throws it.
 - An old `exception/` package stays as it is; new error types of its concept still go to `model/`.
 
