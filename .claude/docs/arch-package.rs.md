@@ -1,8 +1,10 @@
 ## Rust: package layout mechanics
 
 The package-layout rule says which package a file goes to. This rule says how Cargo and the Rust module system
-express it. The tree is the same as in Kotlin; what differs is where the unit boundary falls, because a Rust
-module encapsulates and a Kotlin package does not.
+express it. Rust keeps its own shape: a context is a module block that holds its use cases and its kind
+blocks (`model`, `data`, entry points), as in the example below. The Kotlin concept → kind path, sub-context
+units and the `UseCase` suffix do not apply, because a Rust module encapsulates and a Kotlin package does
+not.
 
 ### Crates
 
@@ -58,7 +60,7 @@ module encapsulates and a Kotlin package does not.
   `pub(crate) use` (or `pub use` at the crate root of a library), so the path to a type is the package path
   `jail::model::Jail` and the file name appears in no path. Glob re-exports (`pub use x::*`) and preludes are
   forbidden.
-- A role of the package-layout rule is an inline block. A technology package beneath a contract is a nested
+- A kind block (`model`, `data`, an entry point) is an inline block. A technology package beneath a contract is a nested
   block inside it (`data { … mod file { mod file_jail_repository; … } }`), a directory as in Kotlin, and the
   implementation file inside it is named after its type in snake_case (`src/jail/data/file/file_jail_repository.rs`).
 
@@ -76,7 +78,7 @@ module encapsulates and a Kotlin package does not.
 
 ### Contracts and implementations
 
-- A contract is a trait at its role level (`jail::data::JailRepository`); its implementation is a struct one
+- A contract is a trait in its kind block (`jail::data::JailRepository`); its implementation is a struct one
   level down, in the technology block (`jail/data/file/file_jail_repository.rs` holding `FileJailRepository`).
   The trait takes the plain name; the struct carries the technology or variant; `Impl` is forbidden.
 - A trait exists on the four triggers of the package-layout rule and no other; an in-memory implementation is
