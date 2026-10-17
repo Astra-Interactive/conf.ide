@@ -1,7 +1,7 @@
 ---
 name: package-layout
 description: Plan and review where new source files, packages and build units go in Kotlin and Rust projects. Use before creating the first new file of any task (feature, bugfix, refactor, test), whenever a task may need a new package, Gradle module or Cargo crate, and before moving or merging anything that exists. Gives the planning procedure, the questions to ask the user, the decision tests, worked examples and the review checklist.
-version: 3.0.0
+version: 3.1.0
 ---
 
 # Package layout
@@ -36,7 +36,8 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
   even though the platform starts it): that sub-context's unit; platform-free code in its `api` unit,
   platform code in its platform unit.
-- A config, translation or permission model, a helper, a scope used by several sub-contexts: `core`.
+- A config, translation or permission model, a function, a generic class or a scope used by several
+  sub-contexts: `core`, in the concept → kind shape.
 - A wire type a server and its client share: the `<context>/contract` unit.
 - A new sub-context: ask (step 1.3).
 
@@ -46,16 +47,23 @@ two or more contracts combined. Named `<Verb><Object>UseCase`, in the `usecase` 
 `api` unit of the sub-context that owns the operation. Never in `core`. If the owner is unclear, ask.
 
 **T3. Which concept and which kind?**
-Path: `<unit root>/<concept>/<kind>/<File>`. The concept is the thing in the project's words (`rating`). The
-kind: contract → `api`; data class, result, error, event, config → `model`; operation → `usecase`; extension
-or helper → `util`; wiring → `di`; entry point → the project's or the framework's word for its mechanism;
-implementation → the technology package or unit (`exposed`, `memory`), where the concept package holds the
-implementations directly. Nothing lies loose in a concept package outside a technology implementation.
+Path: `<unit root>[/<concept>]/<kind>/<File>`. The concept is the thing in the project's words (`rating`). The
+kind, asked in this order:
+1. Contract → `api`. Implements, wraps or narrows a contract (a cache included) → beside the other
+   implementations, in storage when it caches storage.
+2. Data class, result, error, event, config → `model`. A rule that reads one type's fields → an extension of
+   that type (`arch-domain.md`).
+3. Operation of more than one step → `usecase`. Wiring → `di`.
+4. Run by the platform → the word of its mechanism, in the unit it serves: `command`, `event`, the UI words,
+   `service` (timer), `warmup` (once at start), `migration` (format change), `error` (failure to reply).
+5. Built on one library → that library's technology package; generic and needed by two units → `core`.
+6. Functions with no role in the project (extensions, formatting) → `util`. Never a class.
+Nothing lies loose in a concept package outside a technology implementation unit.
 
 **T4. Which word for a UI kind?**
 Compose: `composable`, `viewmodel`. Anything else: derive from the framework's classes and the project's words.
-AstraLibs menus: `menu`, `component`, `context`, `feature`, `model`. The project's existing word wins unless it
-is forbidden.
+AstraLibs menus: the project's words (AstraRating: `gui`, `slot`, `context`, `component`, `router`, `model`).
+The project's existing word wins unless it is forbidden.
 
 **T5. Does this need an interface?**
 Exactly four triggers: another unit calls it; two or more implementations exist or one is known to come; an
@@ -63,13 +71,16 @@ inner part declares what it needs from an outer one; a test must replace a contr
 
 **T6. One file or several?**
 A sealed type with its variants, or a data class with its nested data classes, is one file. Every class with
-behaviour, every error type and every helper class has its own file. Extensions go to `util/<Subject>Ext.kt`.
+behaviour and every error type has its own file. Extensions go to `util/<Subject>Ext.kt`. There is no
+`Helper`, `Util` or `Manager` class.
 
 **T7. Which DI module?**
 The unit's own DI module in `di` of the level it wires, with its own `lifecycle`; a database or other resource
 with its own lifecycle gets its own DI module. Add the new module as a child of the module that owns its
-dependencies, or list it in `RootModule`. Never merge DI modules, never replace `Lifecycle` with functions,
-and leave existing wiring as it is, even where it breaks the DI rule.
+dependencies, or list it in `RootModule`. A `warmup` or `migration` is built and started by the DI module of
+the resource it prepares. A DI module that cannot reach the providing module takes the contract as a
+parameter. Never merge DI modules, never replace `Lifecycle` with functions, and leave existing wiring as it
+is, even where it breaks the DI rule.
 
 **T8. Where is it tested?**
 A model rule directly; a use case with fakes or an in-memory implementation; a technology implementation
@@ -77,44 +88,63 @@ against the real technology in a test; the wired plugin in the entry-point unit.
 
 ## 3. When no kind fits
 
-Put the file into the closest kind of the menu and report in the final message which file, which kind was
-chosen and why none fits, with the word a new kind would have. A task does not extend the menu.
+Stop and ask the user. Name the file, what it does, why no kind of T3 fits, and the word a new kind would
+have. `util` and `model` are never the fallback for a class. A task does not extend the menu on its own.
 
 ## 4. Worked examples
 
 ### A plugin with one context cut into sub-contexts (AstraRating)
 
+The tree as it stands, real class names, root packages without `ru.astrainteractive.astrarating`:
+
 ```
-instances/bukkit                   AstraRating.kt, di/RootModule.kt (builds roots, lists their lifecycles)
-modules/core/api                   …core: settings/model/{AstraRatingConfig, AstraRatingTranslation, AstraRatingPermission}.kt,
-                                   coroutine/…, di/CoreModule.kt
-modules/core/bukkit                platform pieces of core
-modules/data/dao                   …data.dao
-  rating/api/RatingRepository.kt
-  rating/model/{Rating, User, UserRating}.kt
-modules/data/exposed               …data.exposed
-  rating/{ExposedRatingRepository, CachedRatingRepository, RefreshingCache, RatingCacheWarmUp}.kt
-  table/{UserTable, UserRatingTable}.kt
-  database/RatingDatabase.kt
-  model/DbRatingConfiguration.kt
-  di/ExposedModule.kt              databaseFlow and its lifecycle
-modules/gui/api                    …gui.api: platform-free, others may call it
-  rating/usecase/{RatePlayerUseCase, LowerKillerRatingUseCase}.kt
-  rating/model/…  rating/api/…  rating/di/RatingGuiModule.kt
-modules/gui/bukkit                 …gui.bukkit
-  menu/{RatingsMenu, PlayerRatingsMenu, MenuRouter}.kt
-  component/{NavigationSlots, SortSlot, EventSlot, RatingsSlot, GuiLoadingIndicator}.kt
-  context/SlotContext.kt
-  feature/{RatingsFeature, PlayerRatingsFeature}.kt
-  model/RatingSlotKey.kt
-  util/PlayerHeadExt.kt
+instances/bukkit         AstraRating.kt, di/RootModule.kt (builds roots, lists their lifecycles)
+modules/core/api         …core
+  settings/model/{AstraRatingConfig, AstraRatingPermission, AstraRatingTranslation}.kt
+  settings/migration/ConfigSnakeCaseMigration.kt
+  cache/cache4k/RefreshingCache.kt         generic, built on cache4k, two units use it
+  util/SortExt.kt
+  di/CoreModule.kt
+modules/core/bukkit      …core: di/BukkitModule.kt
+modules/data/dao         …data.dao (contracts, models, in-memory doubles; no DI module)
+  rating/api/{RatingRepository, RatingCache, RatedUsersCache}.kt
+  rating/memory/InMemoryRatingCache.kt
+  rating/model/{NewUser, RatedUser, RatingStorageError, RatingType, User, UserRating}.kt
+  rating/util/RatingRepositoryExt.kt
+modules/data/exposed     …data.exposed
+  rating/{ExposedRatingRepository, CacheRefreshingRatingRepository, Cache4kRatingCache, Cache4kRatedUsersCache}.kt
+  rating/warmup/RatingCacheWarmUp.kt       seeds RatingCache at start through PlatformServer
+  rating/di/RatingStorageModule.kt         builds the caches, starts the warm-up in its lifecycle
+  table/{UserTable, UserRatingTable}.kt  model/DbRatingConfiguration.kt  di/ExposedModule.kt
+modules/gui/api          …gui.api
+  rating/change/usecase/AddRatingUseCase.kt
+  rating/change/model/{AddRatingResult, RatingPlayer}.kt
+  rating/change/util/AstraRatingConfigExt.kt   isRatingMessageLengthAllowed(message)
+  rating/players/component/{RatingPlayersComponent, DefaultRatingPlayersComponent}.kt
+  rating/players/model/UsersRatingsSort.kt
+  rating/players/di/RatingPlayersModule.kt     takes RatingRepository and RatedUsersCache as parameters
+  rating/player/{component, model, util, di}/…   router/api/GuiRouter.kt  util/SortCycleExt.kt  di/GuiModule.kt
+modules/gui/bukkit       …gui.bukkit
+  rating/players/gui/RatingsGUI.kt  rating/player/gui/PlayerRatingsGUI.kt
+  slot/{EventSlot, NavigationSlots, RatingsSlot, PlayerRatingsSlot, SortSlot, GuiLoadingIndicator, ConnectionLines}.kt
+  context/SlotContext.kt  model/RatingSlotKey.kt  router/BukkitGuiRouter.kt
+  util/{ButtonExt, DateFormat, MessageLines, OfflinePlayerExt, UserExt, RatingInventoryLayout, …}.kt
   di/GuiBukkitModule.kt
-modules/command                    …command: rating/command/RatingCommand.kt, rating/model/UsageCommandException.kt,
-                                   rating/util/KPlayerExt.kt, di/CommandModule.kt
-modules/event-bukkit               …event: login/event/LoginEvent.kt (val job, as the project starts listeners)
-modules/integration-papi           …integration.papi: placeholder/…/RatingPlaceholderExpansion.kt,
-                                   placeholder/model/PapiConfig.kt, di/PapiModule.kt
+modules/command          …command
+  rating/command/{RatingCommandExecutor, RatingLiteralArgumentBuilder}.kt  rating/model/RatingCommand.kt
+  rating/util/KPlayerExt.kt  reload/command/ReloadLiteralArgumentBuilder.kt
+  error/CommandExceptionHandler.kt  model/UsageCommandException.kt  di/CommandsModule.kt
+modules/event-bukkit     …event: login/event/LoginEvent.kt (val job), kill/event/KillEventListener.kt, di/EventModule.kt
+modules/integration-papi …integration.papi
+  placeholder/expansion/{RatingPlaceholderExpansion, RatingAmountPlaceholder, ColorPlaceholder}.kt
+  placeholder/api/RatingPlaceholder.kt  placeholder/model/{PapiConfig, Coloring}.kt  di/PapiModule.kt
 ```
+
+Where a new file goes: a new menu → `gui/bukkit/rating/<concept>/gui/`; its state holder →
+`gui/api/rating/<concept>/component/`; an operation two units call → `gui/api/rating/<concept>/usecase/`; a new
+storage query → `data/dao/rating/api/RatingRepository` plus `data/exposed/rating/ExposedRatingRepository`; a start-up
+seed → `data/exposed/rating/warmup/`; a config format change → `core/settings/migration/`; a new placeholder →
+`integration-papi/placeholder/expansion/`.
 
 ### A plugin with several contexts (AspeKt, a new `jail` context)
 
@@ -168,16 +198,19 @@ line. A "no" is fixed by moving the new file, never an old one.
 8. Does every contract sit in `api` of its concept, with its implementation named by technology or variant, no
    `Impl`, no `I` prefix?
 9. Does every new interface pass one of the four triggers?
-10. Is every model and every helper in the `model` or `util` of the level that uses it?
-11. Does every class with behaviour, every error type and every helper class have its own file, and every
-    extension sit in `util/<Subject>Ext.kt`?
-12. Does `model` import nothing of its level and no platform or ORM type? Do `api` and `usecase` import no
+10. Is every model and every function in the `model` or `util` of the level that uses it?
+11. Does every class with behaviour and every error type have its own file, and every extension sit in
+    `util/<Subject>Ext.kt`? Does any `util` hold a class or an `object`? Does any top-level function take a type
+    as a parameter only to read its fields?
+12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
+    handler in `error` of its mechanism, every format converter in `migration` of what it converts?
+13. Does `model` import nothing of its level and no platform or ORM type? Do `api` and `usecase` import no
     platform type? Does a plugin's `api` unit declare no platform dependency?
-13. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
-14. Does every new unit that constructs something have its own DI module with its own `lifecycle`, in a
+14. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
+15. Does every new unit that constructs something have its own DI module with its own `lifecycle`, in a
     tree, and did the existing DI wiring stay as it was?
-15. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
-16. Does the final message list the old files the rules would move, and where?
+16. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
+17. Does the final message list the old files the rules would move, and where?
 
-The checker that runs items 5, 7, 8, 12 and 13 mechanically is defined in the checker stage; until it exists,
+The checker that runs items 5, 7, 8, 11 (a class in `util`), 13 and 14 mechanically is defined in the checker stage; until it exists,
 answer them by hand and say so in the final message.
