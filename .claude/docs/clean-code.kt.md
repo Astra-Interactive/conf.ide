@@ -71,6 +71,26 @@ Do not mix unrelated responsibilities in one class or function.
 ### 7. Prefer clarity over cleverness
 
 * Do not write overly complex one-liners.
+* An expression body (`fun f() = …`) only when the whole function fits on one line. A body that needs a line
+  break is a block body with an explicit `return`.
+* A condition that does not fit on one line is never wrapped at `&&` or `||`. Write it as a chain, one step per
+  line, joined with `.and(…)` and `.or(…)`. These evaluate both sides, so when the right side must not run (it
+  depends on the left one, or it is costly), use a named `val` or an early return instead.
+
+  ```kotlin
+  // Bad
+  private fun isProductionConfiguration(name: String): Boolean =
+      PRODUCTION_CONFIGURATION_SUFFIXES.any { suffix -> name.endsWith(suffix, ignoreCase = true) } &&
+          !name.contains("test", ignoreCase = true)
+
+  // Good
+  private fun isProductionConfiguration(name: String): Boolean {
+      return PRODUCTION_CONFIGURATION_SUFFIXES
+          .any { suffix -> name.endsWith(suffix, ignoreCase = true) }
+          .and(!name.contains("test", ignoreCase = true))
+  }
+  ```
+
 * Do not use advanced language features unless they improve readability.
 * Code should be understandable by another developer without needing a long explanation.
 
