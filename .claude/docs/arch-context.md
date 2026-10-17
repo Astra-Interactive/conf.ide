@@ -1,81 +1,74 @@
-## Cross-context boundaries
+## Boundaries between units
 
-This rule says how contexts relate: what one may depend on, what crosses between them, what is shared, and
-what enforces it. The package-layout rule defines the contexts; the domain rule defines what is inside them.
+This rule says how units relate: what one may depend on, what crosses between them, what is shared, and what
+enforces it. The package-layout rule defines the units; the domain rule defines what is inside them.
 
-### The context map is the dependency graph
+### The dependency graph
 
-- The map of contexts is the dependency graph between units. It is acyclic, and every edge is one of three
-  kinds: a call on the provider's published contract, a subscription to the provider's events, or a shared
-  typed identifier from the kernel. Nothing else crosses: no repository, no table, no technology type.
-- A consumer depends on the provider's `api` unit; a context that another context needs is split before the
-  dependency is declared (package-layout rule, Units 3). Nothing but the entry-point unit depends on an `impl`
-  or unsplit context unit, and only to construct the composition root. An `api` unit may depend on `core`, the
-  kernel and other `api` units, never on any `impl`.
-- A decision that spans two contexts is a use case in the context that owns the rule, which calls the other
-  context's contract. There is no orchestration layer above the contexts; the entry point only wires.
-- A context publishes general events, shaped for no single consumer. Its contract is drawn as a boundary, not
-  for the convenience of the current caller.
+- The units form an acyclic graph. An edge is one of three kinds: a call on a contract or a use case of an
+  `api` unit, a subscription to its events, or a shared model from `core`. Nothing else crosses: no
+  implementation, no table, no platform type.
+- A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
+  `RatePlayerUseCase`). Nothing depends on a platform unit (`gui/bukkit`) or on the entry point. In an app,
+  only the entry point depends on an `impl` unit.
+- A use case several sub-contexts need lives in the `api` unit of the sub-context that owns the operation. When
+  no owner can be named, the agent asks the user.
+- Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and the
+  entry point depend on the technology.
+- A sub-context publishes general events, shaped for no single consumer.
 
 ### What crosses
 
-- A contract's signatures use the provider's own model types, behaviour included, placed with the contract.
-  An identifier is preferred over a whole object where the consumer only refers to something. An outward copy
-  of a type exists only when the public surface must hide fields.
-- A context never reads another context's tables or files. A read-only need is served by a query on the
-  provider's contract returning a projection.
+- A contract's signatures use the provider's own model types, placed with the contract. An identifier is
+  preferred over a whole object where the consumer only refers to something.
+- A sub-context never reads another's tables or files; it calls the storage contract.
 - A server and its client share wire types through a `<context>/contract` unit of serializable types and route
   constants; neither side's model crosses the wire.
 
 ### The anti-corruption layer
 
-- When the provider's model is not yours to control, an external library, a platform API, a remote system, a
-  third-party plugin, the consumer declares its own contract for what it needs and translates at its edge. This
-  is mandatory for such providers and optional for a sibling context of the same repository, whose published
-  `<Context>Api` is used directly by default.
-- Its shape is the `integration` role: the contract in `integration/`, in the consumer's own words; the
-  implementation one level down in a package named by the system (`integration/luckperms/`), holding both what
-  the context calls on that system and the provider the system calls on the context
-  (`integration/vault/VaultEconomyProvider`); the translations in `mapping/` when more than one file shares
-  them, otherwise inside the implementation. A provider the external system calls is an entry point of the
-  context and follows the entry-point row below.
+- When a provider's model is not yours to control (an external library, a platform API, a remote system, a
+  third-party plugin such as PlaceholderAPI, Vault, LuckPerms), the integration with it is its own sub-context
+  (`integration-papi`) or a concept inside one. It declares in its own words what it needs, translates at its
+  edge, and holds both what it calls on that system and what it exposes to it (`RatingPlaceholderExpansion`).
 - A framework type that leaks into a contract (`Page`, `Pageable`, a plugin's `Location`) is the violation to
   look for: it is replaced by a model type and mapped in the implementation.
 
-### Shared units
+### `core`
 
-- `core` holds platform infrastructure that knows no domain word: the connection, serialization, the command
-  framework, the DI base, shared coroutine scopes. Small pieces live in it as capability-named packages
-  rather than as tiny units.
-- The domain kernel holds only the typed identifiers and generic value objects two or more contexts share, and
-  is named for what it holds.
-- Nothing enters either before its second consumer. Business logic never enters either. A kernel that grows is
-  the signal that two contexts should merge.
-- A published library (AstraLibs) is the company's kit, consumed as a dependency; it is neither `core` nor the
-  kernel of any project.
+- `core` is the project's common unit for what is not worth a unit of its own: config, translation and
+  permission models, shared helpers, shared coroutine scopes, small platform pieces as packages
+  (`core/coroutine`). It may be split by platform (`core/api`, `core/bukkit`).
+- `core` holds no use case and no repository, and depends on no feature unit. Nothing enters it before its
+  second consumer.
+- A published library (AstraLibs) is a dependency, not the `core` of any project.
 
 ### Direction and enforcement
 
-| Inside a context | may depend on |
+| Inside a unit | may depend on |
 |---|---|
-| `model` | nothing in the context |
-| contracts (`data`, `integration`) | `model` |
-| use cases, `Default<Context>Api` | contracts, `model` |
-| technology packages (`data/<tech>`, the adapters in `integration/<system>`), `mapping` | the contracts above them, `model` |
-| entry points (`command`, `event`, `service`, `job`, `route`, `composable`, `viewmodel`) and the providers in `integration/<system>` | use cases, contracts, `model` |
+| `model` | nothing of its level |
+| `api` (contracts) | `model` |
+| `usecase` | `api`, `model` |
+| implementations (technology packages and units), `stub` | the contracts they implement, `model` |
+| entry-point kinds (`command`, `event`, `menu`, `feature`, `route`, `composable`, `viewmodel`, …) | `usecase`, `api`, `model` |
+| `util` | `model` |
 | `di` | everything; nothing depends on it |
 
 | Between units | may depend on |
 |---|---|
-| entry point | every context unit (`impl` or unsplit), `core`, the kernel, `contract` units |
-| a context unit (`impl` or unsplit) | its own `api`, other contexts' `api`, `core`, the kernel, its `contract` unit |
-| `api` | other `api` units, `core`, the kernel |
+| entry point | every unit |
+| a platform unit (`gui/bukkit`) | its own `api`, other `api` units, `core`, the storage contracts unit |
+| an `api` unit or an unsplit sub-context | other `api` units, `core`, the storage contracts unit |
+| an `impl` unit (app) | its own `api`, other `api` units, `core` |
+| a storage technology unit (`data/exposed`) | the storage contracts unit, `core` |
+| the storage contracts unit (`data/dao`) | `core` |
 | `contract` | nothing of the project |
-| `core`, the kernel | nothing of the project |
+| `core` | nothing of the project |
 | `<feature>/fake` | the `api` it fakes |
 
 No cycles anywhere. These two tables are the whole list.
 
 Every row of these tables, the package names, the naming of implementations and the imports allowed in
-`model`, use cases and contracts are meant to be checked by a tool in the build, because a rule that no tool
-checks decays. The skill names the checker; until it exists, the skill's checklist is answered by hand.
+`model`, `api` and `usecase` are meant to be checked by a tool in the build. The skill names the checker; until
+it exists, the skill's checklist is answered by hand.
