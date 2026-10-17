@@ -45,11 +45,13 @@ fun validateOrder(order: Order): Result<Order> {
 ### Where error types live
 
 - An error type that a contract's signature names, or that its implementations return in `Result.failure`,
-  lives in the `model/` package of that contract's concept, in one file with its whole hierarchy:
+  lives in the `model/` package of that contract's level, in one file with its whole hierarchy:
   `model/OrderError.kt` holds `OrderError` and every subclass.
 - A per-use-case sealed result (`CreateOrderResult`) lives in the same `model/`, with its failure variants
   nested next to the success ones.
-- An error that never leaves one implementation is `private` in that implementation's file.
+- Every error type, or error hierarchy with its subclasses, is its own file in the `model/` of the level that
+  uses it, even one that never leaves one class (`command/model/UsageCommandException.kt`), never a private
+  class inside the file that throws it.
 - An old `exception/` package stays as it is; new error types of its concept still go to `model/`.
 
 ### Boundaries: converting exceptions
