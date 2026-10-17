@@ -16,6 +16,7 @@ Core requirements:
 * Prefer early returns and guard clauses.
 * Avoid duplicated code.
 * Remove dead code, unused variables, and unnecessary comments.
+* No `Helper`, `Util` or `Manager` classes: a class with behaviour has a role, and the role names it and its package.
 * A file holds one type family: a sealed hierarchy with all its variants, a data class with the data classes nested in it. The Kotlin package-layout rule says what goes in one file.
 
 ### 2. Follow SOLID principles
