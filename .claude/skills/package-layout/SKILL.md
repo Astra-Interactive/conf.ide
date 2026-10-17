@@ -14,8 +14,9 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 
 1. Record `BASE=$(git rev-parse HEAD)`. The review at the end lists the files added since it.
 2. Read the project's tree and the one-sentence `README.md` of every unit you are about to touch. Note the
-   project's own words for kinds (`feature`, `component`, `presentation`) and its mechanisms (`Lifecycle`
-   objects, how listeners start, its DI tree). They are kept.
+   project's own words for kinds (`feature`, `component`, `slot`) and its mechanisms (`Lifecycle` objects, how
+   listeners start, its DI wiring). They are kept; a word on the forbidden list (`presentation`) is not used
+   for new packages.
 3. **List the sub-contexts the task touches**: entry mechanisms (commands, listeners, menus, routes,
    screens), integrations with external systems, storage. For each one that has no unit yet, ask the user:
    "own unit (`modules/<name>`), or a package in `<existing unit>`?" Show both trees. Without an answer the
@@ -67,7 +68,8 @@ behaviour, every error type and every helper class has its own file. Extensions 
 **T7. Which DI module?**
 The unit's own DI module in `di` of the level it wires, with its own `lifecycle`; a database or other resource
 with its own lifecycle gets its own DI module. Add the new module as a child of the module that owns its
-dependencies, or list it in `RootModule`. Never merge DI modules, never replace `Lifecycle` with functions.
+dependencies, or list it in `RootModule`. Never merge DI modules, never replace `Lifecycle` with functions,
+and leave existing wiring as it is, even where it breaks the DI rule.
 
 **T8. Where is it tested?**
 A model rule directly; a use case with fakes or an in-memory implementation; a technology implementation
@@ -141,8 +143,9 @@ components/bsb/monetization/impl   …monetization.impl: offer/usecase/CheckEnti
 
 ### A Rust crate
 
-The Rust companion `arch-package.rs.md` holds the crate shape; this skill's tests T2–T8 apply with crates and
-module blocks in place of Gradle units and packages.
+Rust follows `arch-package.rs.md` and `arch-domain.rs.md`: a context block holds its use cases and kind
+blocks. Of this skill, the procedure of section 1, T5, T6, T8 and the checklist items that do not name
+Kotlin or Gradle apply; T1–T4 and T7 do not.
 
 ## 5. Before the final message
 
@@ -159,8 +162,9 @@ line. A "no" is fixed by moving the new file, never an old one.
 5. Does every concept package hold only kind packages, except a technology implementation?
 6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel` only under Compose and
    the project's own word kept?
-7. Does any new package carry a forbidden name (`domain`, `impl`, `internal`, `repository`, `exception`, `dto`,
-   `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names singular?
+7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,
+   `exception`, `dto`, `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names
+   singular?
 8. Does every contract sit in `api` of its concept, with its implementation named by technology or variant, no
    `Impl`, no `I` prefix?
 9. Does every new interface pass one of the four triggers?
@@ -170,8 +174,8 @@ line. A "no" is fixed by moving the new file, never an old one.
 12. Does `model` import nothing of its level and no platform or ORM type? Do `api` and `usecase` import no
     platform type? Does a plugin's `api` unit declare no platform dependency?
 13. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
-14. Does every unit have its own DI module with its own `lifecycle`, in a tree, with `RootModule` only
-    building roots?
+14. Does every new unit that constructs something have its own DI module with its own `lifecycle`, in a
+    tree, and did the existing DI wiring stay as it was?
 15. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
 16. Does the final message list the old files the rules would move, and where?
 
