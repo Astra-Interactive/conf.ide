@@ -6,11 +6,11 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 ### The dependency graph
 
 - The units form an acyclic graph. An edge is one of three kinds: a call on a contract or a use case of an
-  `api` unit, a subscription to its events, or a shared model from `core`. Nothing else crosses: no
-  implementation, no table, no platform type.
+  `api` unit, a subscription to its events, or a use of `core` (its models, helpers and scopes). Nothing else
+  crosses: no implementation, no table, no platform type.
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
-  `RatePlayerUseCase`). Nothing depends on a platform unit (`gui/bukkit`) or on the entry point. In an app,
-  only the entry point depends on an `impl` unit.
+  `RatePlayerUseCase`). Nothing depends on a feature's platform unit (`gui/bukkit`) or on the entry point. In an
+  app, only the entry point depends on an `impl` unit.
 - A use case several sub-contexts need lives in the `api` unit of the sub-context that owns the operation. When
   no owner can be named, the agent asks the user.
 - Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and the
@@ -51,20 +51,22 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `api` (contracts) | `model` |
 | `usecase` | `api`, `model` |
 | implementations (technology packages and units), `stub` | the contracts they implement, `model` |
-| entry-point kinds (`command`, `event`, `menu`, `feature`, `route`, `composable`, `viewmodel`, …) | `usecase`, `api`, `model` |
-| `util` | `model` |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `menu`, `slot`, `component`, `context`, `route`, `composable`, `viewmodel`, …) | `usecase`, `api`, `model`, `util` |
+| `util` | `api`, `model` |
 | `di` | everything; nothing depends on it |
 
 | Between units | may depend on |
 |---|---|
 | entry point | every unit |
-| a platform unit (`gui/bukkit`) | its own `api`, other `api` units, `core`, the storage contracts unit |
-| an `api` unit or an unsplit sub-context | other `api` units, `core`, the storage contracts unit |
+| a platform unit (`gui/bukkit`) | its own `api`, other `api` units, `core` and its platform unit (`core/bukkit`), the storage contracts unit |
+| an unsplit sub-context (`event-bukkit`) | `api` units, `core` and its platform unit, the storage contracts unit |
+| an `api` unit | other `api` units, the platform-free `core` (`core/api`), the storage contracts unit |
 | an `impl` unit (app) | its own `api`, other `api` units, `core` |
 | a storage technology unit (`data/exposed`) | the storage contracts unit, `core` |
 | the storage contracts unit (`data/dao`) | `core` |
 | `contract` | nothing of the project |
-| `core` | nothing of the project |
+| `core` (`core/api`) | nothing of the project |
+| the platform unit of `core` (`core/bukkit`) | `core/api` |
 | `<feature>/fake` | the `api` it fakes |
 
 No cycles anywhere. These two tables are the whole list.
