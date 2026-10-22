@@ -30,12 +30,12 @@ package com.example.order
 
 @Test
 fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty() {
-    val createOrder = CreateOrder(
+    val createOrderUseCase = CreateOrderUseCase(
         orderRepository = FakeOrderRepository(),
         paymentGateway = FakePaymentGateway()
     )
 
-    val result = createOrder(
+    val result = createOrderUseCase.invoke(
         CreateOrderCommand(
             customerId = CustomerId("customer-1"),
             items = emptyList()

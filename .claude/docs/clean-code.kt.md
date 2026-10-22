@@ -117,6 +117,19 @@ Do not mix unrelated responsibilities in one class or function.
   )
   ```
 
+* A call on a property or a parameter is written with `.invoke()`, so the reader sees a value being called,
+  not a declared function: a lambda, a `Provider`, a `Factory`, a use case with `operator fun invoke`.
+
+  ```kotlin
+  // Bad
+  val viewModel = splashViewModelProvider()
+  val result = ratePlayerUseCase(player)
+
+  // Good
+  val viewModel = splashViewModelProvider.invoke()
+  val result = ratePlayerUseCase.invoke(player)
+  ```
+
 * Do not use advanced language features unless they improve readability.
 * Code should be understandable by another developer without needing a long explanation.
 
