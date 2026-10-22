@@ -2,8 +2,8 @@
 
 How the domain rule is written in Kotlin.
 
-- An entity and a value object are immutable `data class`es with fields only, apart from an `init` invariant. A rule is an extension in the
-  `util` of the level that uses it; a state transition returns a copy.
+- An entity and a value object are immutable `data class`es with fields only, apart from an `init`
+  invariant. A rule is an extension in the `util` of the level that uses it; a state transition returns a copy.
 
   ```kotlin
   // jail/model/JailInmate.kt

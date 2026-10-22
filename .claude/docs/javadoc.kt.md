@@ -2,7 +2,7 @@
 
 This is a Kotlin project. Documentation is written in KDoc format. The core principle: **a comment exists only if it adds information not already present in the signature**. If the signature says everything on its own — no comment at all.
 
-This document covers only *how to write* a KDoc. It does not decide whether a function should throw or return `Result` — that is governed by the error-handling rules. `@throws` is documented whenever the function in question actually throws: a library API, an SDK wrapper, a boundary adapter. The examples below are generic API signatures, not templates for domain code.
+This document says when a KDoc is written and how. It does not decide whether a function should throw or return `Result` — that is governed by the error-handling rules. `@throws` is documented whenever the function in question actually throws: a library API, an SDK wrapper, a boundary adapter. The examples below are generic API signatures, not templates for domain code.
 
 ### Application code: no KDoc
 

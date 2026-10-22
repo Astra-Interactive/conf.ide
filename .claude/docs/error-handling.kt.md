@@ -98,9 +98,9 @@ suspend fun loadOrder(id: OrderId): Result<Order> {
 }
 ```
 
-When `klibs-mikro` is in the project's `gradle/libs.versions.toml` but the unit does not depend on it yet,
-add `implementation(libs.klibs.mikro.core)` to the unit's build file: the version is already the project's
-choice. Only in a project with no mikro in its version catalog is the check written inline, and then as
+When mikro-core is in the project's version catalog but the unit does not depend on it yet, add the
+catalog's mikro-core alias to the unit's dependencies: the version is already the project's choice. Only in
+a project with no mikro in its version catalog is the check written inline, and then as
 `.onFailure { error -> if (error is CancellationException) throw error }` right after `runCatching`.
 
 ### Composing fallible steps

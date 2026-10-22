@@ -87,7 +87,9 @@ Do not mix unrelated responsibilities in one class or function.
 
   ```kotlin
   // Bad
-  if (current is SplashPaywallState.Content && current.stage == SplashPaywallStage.OFFER && !current.isBusy) {
+  if (current is SplashPaywallState.Content && current.stage == SplashPaywallStage.OFFER &&
+      !current.isBusy && current.offer.expiresAt > now
+  ) {
       current.copy(isBusy = true)
   } else {
       current
@@ -99,7 +101,8 @@ Do not mix unrelated responsibilities in one class or function.
   }
   val isOfferStage = current.stage == SplashPaywallStage.OFFER
   val isIdle = !current.isBusy
-  if (isOfferStage && isIdle) {
+  val isOfferAlive = current.offer.expiresAt > now
+  if (isOfferStage && isIdle && isOfferAlive) {
       return current.copy(isBusy = true)
   }
   return current
@@ -140,7 +143,7 @@ Do not mix unrelated responsibilities in one class or function.
 
 * Do not comment obvious code.
 * Use comments only to explain “why”, not “what”.
-* The public API of a published library, complex algorithms, and important architectural decisions should be documented. Application code carries no KDoc (the KDoc rule).
+* The public API of a published library, complex algorithms, and important architectural decisions should be documented. Application code carries no KDoc beyond the two cases the KDoc rule allows.
 
 ### 9. Refactor before final answer
 

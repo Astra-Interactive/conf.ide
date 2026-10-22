@@ -42,8 +42,8 @@ import and Validation apply to every context.
   of its root, extensions that return a copy (`fun Claim.addChunk(chunk: ClaimChunk): Claim`). The repository
   loads and saves the aggregate whole.
 - In a context with rules an aggregate is a concept: a package with the same kinds inside (`claim/api`,
-  `claim/model`, `claim/util`, `claim/usecase`). The parts that belong to one aggregate (`ClaimChunk` with its `ChunkFlag`s)
-  stay in one concept.
+  `claim/model`, `claim/util`, `claim/usecase`). The parts that belong to one aggregate (`ClaimChunk` with its
+  `ChunkFlag`s) stay in one concept.
 - A context without rules has no aggregates. An aggregate whose rules start taking other aggregates as
   arguments is the signal that the boundary is wrong.
 
