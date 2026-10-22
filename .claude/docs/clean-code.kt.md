@@ -102,8 +102,53 @@ Do not mix unrelated responsibilities in one class or function.
 ### 7. Prefer clarity over cleverness
 
 * Do not write overly complex one-liners.
-* An expression body (`fun f() = …`) only when the whole function fits on one line. A body that needs a line
-  break is a block body with an explicit `return`.
+* An expression body (`fun f() = …`) only when the signature and the body are one line: `=` never ends a
+  line, `= when {`, `= transaction {` and the like are block bodies, and a signature that wraps takes a block
+  body. A body that would wrap after `=` is a block body with an explicit `return`.
+
+  ```kotlin
+  // Bad
+  internal fun Modifier.paywallCardCanvas(): Modifier =
+      canvasAnchoredToCard(CARD_TOP_IN_CARD_ART)
+
+  // Good
+  internal fun Modifier.paywallCardCanvas(): Modifier = canvasAnchoredToCard(CARD_TOP_IN_CARD_ART)
+  ```
+
+* A lambda whose whole body is one `if` without `else` is a guard with a labelled return, in
+  `pointerInput`, `LaunchedEffect`, `launch`, `forEach` alike.
+
+  ```kotlin
+  // Bad
+  .pointerInput(stage) {
+      if (stage == SplashPaywallStage.REVEAL) {
+          detectTapGestures(onDoubleTap = { onReveal.invoke() })
+      }
+  }
+
+  // Good
+  .pointerInput(stage) {
+      if (stage != SplashPaywallStage.REVEAL) {
+          return@pointerInput
+      }
+      detectTapGestures(onDoubleTap = { onReveal.invoke() })
+  }
+  ```
+
+* One arithmetic operator (`+`, `-`, `*`, `/`, `%`) directly before a trailing call (`.sp`, `.dp`,
+  `.toInt()`, `.coerceIn(…)`) is written as its named function (`plus`, `minus`, `times`, `div`, `rem`), so
+  the chain reads left to right without parentheses. Two or more operators before a trailing call: a named
+  `val` first, then the call; `a.times(b).plus(c)` is never written. An expression with no trailing call
+  keeps its operators (`subtotal * (1 + taxRate)`).
+
+  ```kotlin
+  // Bad
+  lineHeight.isEm -> (fontSize.value * lineHeight.value).sp
+
+  // Good
+  lineHeight.isEm -> fontSize.value.times(lineHeight.value).sp
+  ```
+
 * A condition that does not fit on one line is never wrapped at `&&` or `||`. Split it, in this order:
   1. a guard clause (`if (current !is SplashPaywallState.Content) return current`) for a clause that a later
      one depends on through a smart cast or a null check, and for a clause that is costly;

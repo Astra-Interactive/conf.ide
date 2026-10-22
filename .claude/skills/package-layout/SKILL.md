@@ -48,7 +48,8 @@ two or more contracts combined. Named `<Verb><Object>UseCase`, in the `usecase` 
 `api` unit of the sub-context that owns the operation. Never in `core`. If the owner is unclear, ask.
 
 **T3. Which concept and which kind?**
-Path: `<unit root>[/<concept>]/<kind>/<File>`. The concept is the thing in the project's words (`rating`). The
+Path: `<unit root>[/<concept>]/<kind>[/<sub-kind>]/<File>`, the sub-kind for Compose's `composable` only
+(T4). The concept is the thing in the project's words (`rating`). The
 kind, asked in this order:
 1. Contract → `api`. Implements, wraps or narrows a contract (a cache included) → beside the other
    implementations, in storage when it caches storage.
@@ -64,7 +65,9 @@ Nothing lies loose in a concept package outside a technology implementation unit
 **T4. Which word for a UI kind?**
 Compose: `composable`, `viewmodel`, `theme` (shared values of a level); UI types in the level's `model`, shared
 Compose extensions in its `util`, a one-file one `private` in the composable file, no `composable/model` or
-`composable/util` (`compose.kt.md`). Anything else: derive from the framework's classes and the project's words.
+`composable/util`; `composable` alone may split into `screen`, `component`, `layout` and the project's own words,
+files or sub-packages but never both (`compose.kt.md`). Anything else: derive from the framework's classes and
+the project's words.
 AstraLibs menus: the project's words (AstraRating: `gui`, `slot`, `context`, `component`, `router`, `model`).
 The project's existing word wins unless it is forbidden.
 
@@ -192,7 +195,8 @@ line. A "no" is fixed by moving the new file, never an old one.
    one-sentence `README.md`?
 4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation, and
    never in `core`? Does `core` depend on no feature unit?
-5. Does every concept package hold only kind packages, except a technology implementation?
+5. Does every concept package hold only kind packages, except a technology implementation? Does every kind
+   package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
 6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel`/`theme` only under
    Compose and the project's own word kept?
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,

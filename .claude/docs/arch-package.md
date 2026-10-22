@@ -59,12 +59,15 @@ Terms used below:
 
 ### Concepts and kinds
 
-Every source path reads `<unit root>[/<concept>[/<sub-concept>]]/<kind>/<File>`. A kind directly under the
+Every source path reads `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind
+for Compose's `composable` only (Concepts and kinds 1). A kind directly under the
 unit root holds what the whole unit shares: its DI module, a model or a helper several concepts use
 (`…command.model.UsageCommandException`).
 
 1. A concept package holds only packages. A kind package holds only files. A one-file kind package is normal.
-   A kind package exists only when it has a file.
+   A kind package exists only when it has a file. The one exception is Compose's `composable`, which may hold
+   sub-packages (`screen`, `component`, `layout`, a project's own words) instead of files; the Kotlin Compose
+   rule says when.
 
    ```
    …gui.api.rating.api.RatingPlayersRepository     contract
@@ -112,7 +115,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    uses AstraLibs' `Menu` inside a `gui` sub-context, with its own words: `gui` (menus), `slot` (menu parts),
    `context` (`SlotContext`), `component` (the holder of a menu's state), `router`, `model` (`RatingSlotKey`).
 5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
-   state holder), new files of that kind use it, unless the word is forbidden below.
+   state holder), new files of that kind use it, unless the word is forbidden below or plural (9).
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
    seeds the rating cache at start, so it belongs to `data` (`warmup`) and reaches the server through
    AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even when it only loads
