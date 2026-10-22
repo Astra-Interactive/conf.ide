@@ -82,12 +82,13 @@ re-label an error; use `fold` as above.
 ### Coroutines
 
 `runCatching` catches `CancellationException` and breaks structured concurrency. In `suspend` code
-rethrow it before doing anything else with the result:
+rethrow it before doing anything else with the result, through mikro-core's
+`Result<T>.propagateCancellationException()` (`ru.astrainteractive.klibs.mikro.core.coroutines`):
 
 ```kotlin
 suspend fun loadOrder(id: OrderId): Result<Order> {
     return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
-        .onFailure { error -> if (error is CancellationException) throw error }
+        .propagateCancellationException()
         .fold(
             onSuccess = { order -> Result.success(order) },
             onFailure = { error ->
@@ -96,6 +97,11 @@ suspend fun loadOrder(id: OrderId): Result<Order> {
         )
 }
 ```
+
+When `klibs-mikro` is in the project's `gradle/libs.versions.toml` but the unit does not depend on it yet,
+add `implementation(libs.klibs.mikro.core)` to the unit's build file: the version is already the project's
+choice. Only in a project with no mikro in its version catalog is the check written inline, and then as
+`.onFailure { error -> if (error is CancellationException) throw error }` right after `runCatching`.
 
 ### Composing fallible steps
 
