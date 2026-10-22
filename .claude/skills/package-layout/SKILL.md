@@ -51,13 +51,13 @@ Path: `<unit root>[/<concept>]/<kind>/<File>`. The concept is the thing in the p
 kind, asked in this order:
 1. Contract → `api`. Implements, wraps or narrows a contract (a cache included) → beside the other
    implementations, in storage when it caches storage.
-2. Data class, result, error, event, config → `model`. A rule that reads one type's fields → an extension of
-   that type (`arch-domain.md`).
+2. Data class, result, error, event, config → `model`, fields only. A rule over a type → an extension of
+   that type in `util` (`arch-domain.md`).
 3. Operation of more than one step → `usecase`. Wiring → `di`.
 4. Run by the platform → the word of its mechanism, in the unit it serves: `command`, `event`, the UI words,
    `service` (timer), `warmup` (once at start), `migration` (format change), `error` (failure to reply).
 5. Built on one library → that library's technology package; generic and needed by two units → `core`.
-6. Functions with no role in the project (extensions, formatting) → `util`. Never a class.
+6. Functions (extensions, rules of the model, formatting) → `util`. Never a class.
 Nothing lies loose in a concept package outside a technology implementation unit.
 
 **T4. Which word for a UI kind?**

@@ -95,7 +95,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | `api` | contracts of the concept: interfaces other files or units call |
    | `model` | the level's own types: data classes, sealed results, errors (one file each), events, config models |
    | `usecase` | operations named `<Verb><Object>UseCase` |
-   | `util` | stateless functions with no role in the project: extensions (`<Subject>Ext.kt`) and top-level functions of the level; never a class or an `object` |
+   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` |
    | `di` | the DI modules of the level (see the DI rule) |
    | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service` (run on a timer or its own lifecycle); for UI, see below |
    | `warmup` | a task the platform runs once at start to seed state (`RatingCacheWarmUp`), in the unit of the state it seeds |
@@ -120,12 +120,11 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    `util` holds only what several lower levels share. `core` has the same concept → kind shape
    (`core/settings/model`, `core/util`).
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
-   implementations. Does it decide something in the project's words? A rule on the model (`arch-domain.md`).
-   Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in the unit it
-   serves. Is it generic code that two units need? `core`, in the technology package of the library it is built
-   on (`core/cache/cache4k/RefreshingCache.kt`). Only when every answer is no and the file holds functions is it
-   `util`. `util` and `model` are never the place for a class no kind fits: the agent asks the user and proposes
-   a word.
+   implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
+   the unit it serves. Is it generic code that two units need? `core`, in the technology package of the library
+   it is built on (`core/cache/cache4k/RefreshingCache.kt`). Only when every answer is no and the file holds
+   functions, a rule of the model included, is it `util`. `util` and `model` are never the place for a class no
+   kind fits: the agent asks the user and proposes a word.
 9. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
    singular, except an inherently plural concept (`news`).
 10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,

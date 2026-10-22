@@ -6,19 +6,22 @@ use case, domain event, factory) apply only inside a context that has business r
 model, storage and command, and none of them is forced on it. The sections Repository, What the model may
 import and Validation apply to every context.
 
-### Rules live on the model
+### Rules live in `util`
 
-- A rule about one type is a function of that type in its `model` file: a method or an extension that returns
-  a copy or a decision, taking what it needs as parameters (`fun JailInmate.isSentenceOver(now: Instant)`).
-  It is never a top-level function that takes the type as a parameter only to read its fields. When the type
-  belongs to another unit (a config model in `core`), the rule is an extension in `util/<Type>Ext.kt` of the
-  level that uses it (`fun AstraRatingConfig.isRatingMessageLengthAllowed(message: String)`). The default is
-  judged by the situation; a rule over several types follows the next line.
-- A rule spanning several types is a function in `model` named after the decision.
-- A class that only reads and writes a model's fields is the anaemic smell: refuse it, and move the rule into
-  the model.
-- A use case integrates and never operates: it loads, calls the model and saves. A model function operates and
-  never integrates: it takes values and returns values.
+- The model is data: a `data class` holds fields and nothing else. A rule about one type is an extension of
+  that type in `util/<Type>Ext.kt`, returning a copy or a decision and taking what it needs as parameters
+  (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
+  `fun Dictionary.canRead(user: User?)` in `dictionary/util/DictionaryExt.kt`). It is never a member of the
+  type, and never a top-level function that takes the type as a parameter.
+- A rule spanning several types is a top-level function in the same `util`, named after the decision
+  (`fun isTransferAllowed(from: Account, to: Account): Boolean`).
+- The `util` is that of the level that uses the rule, whichever unit the type comes from
+  (`fun AstraRatingConfig.isRatingMessageLengthAllowed(message: String)` in `gui/api`, over a `core` model).
+  A rule two units use moves to the `util` of the model's own unit, so that it exists once.
+- A class that only reads and writes a model's fields is the anaemic smell (a `Helper`, a `Manager`): refuse
+  it, and write the rule as an extension.
+- A use case integrates and never operates: it loads, calls the rules and saves. A rule operates and never
+  integrates: it takes values and returns values.
 
 ### Entity, value object, identifier
 
@@ -35,12 +38,13 @@ import and Validation apply to every context.
 
 ### Aggregate
 
-- An **aggregate** is the unit that is changed and saved whole. Its root is the only type through which its
-  parts are changed. The repository loads and saves the aggregate whole.
+- An **aggregate** is the unit that is changed and saved whole. Its parts are changed only through the rules
+  of its root, extensions that return a copy (`fun Claim.addChunk(chunk: ClaimChunk): Claim`). The repository
+  loads and saves the aggregate whole.
 - In a context with rules an aggregate is a concept: a package with the same kinds inside (`claim/api`,
   `claim/model`, `claim/usecase`). The parts that belong to one aggregate (`ClaimChunk` with its `ChunkFlag`s)
   stay in one concept.
-- A context without rules has no aggregates. An aggregate whose methods start taking other aggregates as
+- A context without rules has no aggregates. An aggregate whose rules start taking other aggregates as
   arguments is the signal that the boundary is wrong.
 
 ### Repository
@@ -69,12 +73,12 @@ import and Validation apply to every context.
   from the entry point directly.
 - One action per class. A use case never calls another use case; an entry point that needs two actions calls
   both.
-- A use case holds no domain rule: it orchestrates the model and the contracts. A rule found in a use case
-  moves to `model`.
+- A use case holds no domain rule: it orchestrates the rules and the contracts. A rule found in a use case
+  moves to `util` as an extension of its type.
 
 ### Domain service
 
-There is no domain-service kind. A pure rule is a `model` function. A capability a technology provides
+There is no domain-service kind. A pure rule is a `util` function. A capability a technology provides
 (hashing, sending mail, a clock) is a contract in the `api` of its concept with an implementation in a technology package.
 The word `Service` appears in no type name, except for a component the platform runs on its own lifecycle,
 which lives in `service/`.
@@ -88,8 +92,9 @@ which lives in `service/`.
 
 ### Factory
 
-- A factory exists only when creating an aggregate involves a rule, and then it is a function in the
-  aggregate's `model` file: a companion `create` or a top-level function returning a `Result`.
+- A factory exists only when creating an aggregate involves a rule, and then it is a top-level function in
+  the aggregate's `util` returning a `Result` (`fun createJail(name: String, location: JailLocation):
+  Result<Jail>`), never a companion `create`: the model is data.
 - The construction of dependencies belongs to `di/` and is not called a factory. A `Factory` class for a single
   implementation is forbidden.
 
@@ -107,6 +112,6 @@ which lives in `service/`.
 ### Validation
 
 Validation is repeated on purpose, each copy in its own place: an entry point checks the shape of its input
-(an argument converter, a request type); the model guards invariants in value-object constructors and
-aggregate methods; the technology package adds the storage constraint. There is no `validation` package and no
+(an argument converter, a request type); the model guards invariants in value-object constructors and the
+aggregate's rules; the technology package adds the storage constraint. There is no `validation` package and no
 validator class that duplicates a model invariant.

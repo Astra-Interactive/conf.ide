@@ -2,7 +2,8 @@
 
 How the domain rule is written in Kotlin.
 
-- An entity and a value object are immutable `data class`es; a state transition returns a copy.
+- An entity and a value object are immutable `data class`es with fields only. A rule is an extension in the
+  `util` of the level that uses it; a state transition returns a copy.
 
   ```kotlin
   // jail/model/JailInmate.kt
@@ -11,9 +12,10 @@ How the domain rule is written in Kotlin.
       val jail: JailId,
       val start: Instant,
       val duration: Duration
-  ) {
-      fun isSentenceOver(now: Instant): Boolean = now - start > duration
-  }
+  )
+
+  // jail/util/JailInmateExt.kt
+  internal fun JailInmate.isSentenceOver(now: Instant): Boolean = now - start > duration
   ```
 
 - A typed identifier is a `@JvmInline value class` over the primitive (`value class PlayerId(val uuid: Uuid)`).
@@ -30,8 +32,8 @@ How the domain rule is written in Kotlin.
   (`data.dao.rating.api.RatingRepository`); its functions are `suspend` where they do I/O; implementations are
   `internal` classes in the technology unit or package, under the same concept
   (`data.exposed.rating.ExposedRatingRepository`).
-- An aggregate factory with rules is a `companion object` function `create(...): Result<Aggregate>` in the
-  aggregate's file.
+- An aggregate factory with rules is a top-level function `create<Aggregate>(...): Result<Aggregate>` in the
+  aggregate's `util`, never a `companion object` function.
 - A domain event is a `data class` in `model`, published through the platform bus or a publisher contract in
   `api`; the Bukkit event type that carries it lives in the `event` kind of the platform unit.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
