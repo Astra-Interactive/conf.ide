@@ -12,6 +12,7 @@
 @.claude/docs/di-manual-constructors.kt.md
 @.claude/docs/di-manual.kt.md
 @.claude/docs/error-handling.kt.md
+@.claude/docs/function-reference.kt.md
 @.claude/docs/git-commits.md
 @.claude/docs/imports.kt.md
 @.claude/docs/javadoc.kt.md
