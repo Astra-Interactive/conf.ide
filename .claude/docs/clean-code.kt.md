@@ -140,7 +140,7 @@ Do not mix unrelated responsibilities in one class or function.
 
 * Do not comment obvious code.
 * Use comments only to explain “why”, not “what”.
-* Public APIs, complex algorithms, and important architectural decisions should be documented.
+* The public API of a published library, complex algorithms, and important architectural decisions should be documented. Application code carries no KDoc (the KDoc rule).
 
 ### 9. Refactor before final answer
 

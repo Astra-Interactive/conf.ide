@@ -4,6 +4,27 @@ This is a Kotlin project. Documentation is written in KDoc format. The core prin
 
 This document covers only *how to write* a KDoc. It does not decide whether a function should throw or return `Result` — that is governed by the error-handling rules. `@throws` is documented whenever the function in question actually throws: a library API, an SDK wrapper, a boundary adapter. The examples below are generic API signatures, not templates for domain code.
 
+### Application code: no KDoc
+
+In a plugin, an application or a service the code is understandable without KDoc, and KDoc is not written. The one exception is a line that says what the code cannot: the failure case of a contract (`@return failure with [DictionaryError.NotFound] when no dictionary has this id`) or a reason that points outside the code (a platform quirk, a workaround for a bug in a library). A KDoc that says what a declaration does, why a module exists, or repeats a rule the body shows is deleted.
+
+```kotlin
+// Deleted: the name says it, and the body shows the rule
+/**
+ * Exposes the firebase auth repositories so the application and tests obtain them
+ * through the module instead of constructing the implementations directly.
+ */
+interface ApiFirebaseModule
+
+// Kept: the signature cannot say which failure comes back
+/**
+ * @return failure with [DictionaryError.NotFound] when no dictionary has this id
+ */
+suspend fun deleteDictionary(id: DictionaryId, user: User): Result<Unit>
+```
+
+The rest of this rule, the self-check table included, applies to published library units, the ones with `explicitApi()` on.
+
 ### Mandatory self-check before writing
 
 Before writing each KDoc element, ask yourself the question and write the element only if the answer is "yes":
