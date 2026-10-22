@@ -105,10 +105,10 @@ explicitly; there is no scanning. The DI rule has the details.
 - A new data class that is a property type of exactly one class is nested in it. A type returned to another
   class is a top-level family in `model`.
 - An `enum` used only through one type is nested in it; otherwise it is a top-level family of its own.
-- Same file as the type: its companion object and private helper functions that are not extensions.
-  Extension functions go to `util/<Subject>Ext.kt` of the level that uses them, even when one file uses them
-  (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`), unless they are part of the type itself. Never a class
-  inside a function body, never an `inner class`.
+- Same file as the type: its companion object, nothing else. A file that declares a class holds no top-level
+  function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
+  that uses it, even when one file uses it (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`). Never a
+  class inside a function body, never an `inner class`.
 - A file of top-level functions is named after what they do (`DurationFormat.kt`), never `Utils.kt`; helpers
   are never grouped in an `object`.
 - Multiplatform platform files carry the source-set suffix (`Platform.jvm.kt`).

@@ -168,9 +168,9 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - Every error type is its own file in `model`: an error a contract names in the `model` of the contract's
   level, any other in the `model` of the level that uses it, even one used by one class
   (`modules/command`: `…command.model.UsageCommandException`). There is no `exception` package.
-- Extension functions default to `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`); they go
-  into the type's own file only when they are part of the type. A function is never an `object` used as a
-  namespace, and there is no `Helper`, `Util` or `Manager` class.
+- Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
+  the type's own file. A file that declares a class holds no top-level function. A function is never an
+  `object` used as a namespace, and there is no `Helper`, `Util` or `Manager` class.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the
