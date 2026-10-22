@@ -102,6 +102,21 @@ Do not mix unrelated responsibilities in one class or function.
   return current
   ```
 
+* A call with three or more arguments puts each argument on its own line, whether or not it would fit; one or
+  two arguments stay on one line when they fit. The column limit decides nothing here.
+
+  ```kotlin
+  // Bad
+  current.copy(stage = SplashPaywallStage.SUCCESS, isBusy = false, expiresAt = result.expiresAt)
+
+  // Good
+  current.copy(
+      stage = SplashPaywallStage.SUCCESS,
+      isBusy = false,
+      expiresAt = result.expiresAt
+  )
+  ```
+
 * Do not use advanced language features unless they improve readability.
 * Code should be understandable by another developer without needing a long explanation.
 
