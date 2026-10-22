@@ -62,7 +62,9 @@ kind, asked in this order:
 Nothing lies loose in a concept package outside a technology implementation unit.
 
 **T4. Which word for a UI kind?**
-Compose: `composable`, `viewmodel`. Anything else: derive from the framework's classes and the project's words.
+Compose: `composable`, `viewmodel`, `theme` (shared values of a level); UI types in the level's `model`, shared
+Compose extensions in its `util`, a one-file one `private` in the composable file, no `composable/model` or
+`composable/util` (`compose.kt.md`). Anything else: derive from the framework's classes and the project's words.
 AstraLibs menus: the project's words (AstraRating: `gui`, `slot`, `context`, `component`, `router`, `model`).
 The project's existing word wins unless it is forbidden.
 
@@ -72,8 +74,8 @@ inner part declares what it needs from an outer one; a test must replace a contr
 
 **T6. One file or several?**
 A sealed type with its variants, or a data class with its nested data classes, is one file. Every class with
-behaviour and every error type has its own file. Extensions go to `util/<Subject>Ext.kt`. There is no
-`Helper`, `Util` or `Manager` class.
+behaviour and every error type has its own file. Extensions go to `util/<Subject>Ext.kt`, except one that
+only a Compose composable file uses, which is `private` there. There is no `Helper`, `Util` or `Manager` class.
 
 **T7. Which DI module?**
 The unit's own DI module in `di` of the level it wires, with its own `lifecycle`; a database or other resource
@@ -191,8 +193,8 @@ line. A "no" is fixed by moving the new file, never an old one.
 4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation, and
    never in `core`? Does `core` depend on no feature unit?
 5. Does every concept package hold only kind packages, except a technology implementation?
-6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel` only under Compose and
-   the project's own word kept?
+6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel`/`theme` only under
+   Compose and the project's own word kept?
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,
    `exception`, `dto`, `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names
    singular?
@@ -202,12 +204,14 @@ line. A "no" is fixed by moving the new file, never an old one.
 10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
     units use, in the `util` of the model's own unit?
 11. Does every class with behaviour and every error type have its own file, and every extension sit in
-    `util/<Subject>Ext.kt`? Does any `util` hold a class or an `object`? Does any top-level function take a type
-    as a parameter where an extension of that type is the rule?
+    `util/<Subject>Ext.kt` (or `private` in the one Compose composable file that uses it)? Does any `util` hold
+    a class or an `object`? Does any top-level function take a type as a parameter where an extension of that
+    type is the rule?
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
     handler in `error` of its mechanism, every format converter in `migration` of what it converts?
-13. Does `model` import nothing of its level and no platform or ORM type? Do `api` and `usecase` import no
-    platform type? Does a plugin's `api` unit declare no platform dependency?
+13. Does `model` import nothing of its level and no platform or ORM type (Compose types only in a UI unit's
+    `model`)? Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform
+    dependency?
 14. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
 15. Does every new unit that constructs something have its own DI module with its own `lifecycle`, in a
     tree, and did the existing DI wiring stay as it was?

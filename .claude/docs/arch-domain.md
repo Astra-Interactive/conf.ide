@@ -103,7 +103,9 @@ which lives in `service/`.
 - The model may carry serialization annotations, because a format is not a framework. It never carries a
   platform or ORM base class, import or type: an Exposed row or a Bukkit `Location` stays in its technology
   package or unit, or behind a conversion in the model's own terms (`JailLocation` with
-  `toBukkitLocation()` on the platform side).
+  `toBukkitLocation()` on the platform side). The `model` of a UI unit, one whose build already depends on
+  Compose, may carry Compose types (`Painter`, `Dp`, `Color`) when the type holds what the domain type lacks
+  (a painter, a dimension), never as a copy of it; the Kotlin Compose rule gives the details.
 - One representation per thing: a model lives in the `model` of the level that owns it, and a higher level's
   `model` holds only what several lower levels share. A technology package keeps its own representation only
   when the technology dictates a shape (a table row, a wire format with its own field

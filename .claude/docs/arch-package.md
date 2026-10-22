@@ -98,17 +98,19 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` |
    | `di` | the DI modules of the level (see the DI rule) |
    | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service` (run on a timer or its own lifecycle); for UI, see below |
+   | `theme` | Compose only: the values (timings, spacing, tokens) several composables of the level share, as an `object` of values; in the design-system unit also the theme itself, its `CompositionLocal`s and the `@Composable` theme function (`compose.kt.md`) |
    | `warmup` | a task the platform runs once at start to seed state (`RatingCacheWarmUp`), in the unit of the state it seeds |
    | `migration` | code that converts stored data or config from an old format, inside the concept it migrates (`core/settings/migration/ConfigSnakeCaseMigration.kt`) |
    | `error` | classes that turn a failure into the user's reply, in the unit of the mechanism that fails (`command/error/CommandExceptionHandler.kt`) |
    | technology packages | an implementation of a contract, or code built on one library, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
    | `stub` | a stub or preview implementation of a contract that other units need |
 
-4. **UI vocabulary is derived, not fixed.** `composable` and `viewmodel` mean Kotlin Compose and an Android
-   style view model, and are used only there. For any other UI framework the names come from the framework's
-   own classes and from the words the project already uses. AstraRating uses AstraLibs' `Menu` inside a
-   `gui` sub-context, with its own words: `gui` (menus), `slot` (menu parts), `context` (`SlotContext`),
-   `component` (the holder of a menu's state), `router`, `model` (`RatingSlotKey`).
+4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose, `viewmodel` an
+   Android style view model, and all three are used only there (`theme` holds the values several composables
+   of a level share; the Kotlin Compose rule says what else a Compose unit holds). For any other UI framework
+   the names come from the framework's own classes and from the words the project already uses. AstraRating
+   uses AstraLibs' `Menu` inside a `gui` sub-context, with its own words: `gui` (menus), `slot` (menu parts),
+   `context` (`SlotContext`), `component` (the holder of a menu's state), `router`, `model` (`RatingSlotKey`).
 5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
    state holder), new files of that kind use it, unless the word is forbidden below.
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
@@ -170,8 +172,11 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   level, any other in the `model` of the level that uses it, even one used by one class
   (`modules/command`: `…command.model.UsageCommandException`). There is no `exception` package.
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
-  the type's own file. A file that declares a class holds no top-level function. A function is never an
-  `object` used as a namespace, and there is no `Helper`, `Util` or `Manager` class.
+  the type's own file. A file that declares a class holds no top-level function; a Compose composable file
+  declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is
+  never an `object` used as a namespace (a `theme` object holds values, not functions; the public
+  `<Component>Defaults` of a design-system component is Compose's one exception), and there is no `Helper`,
+  `Util` or `Manager` class.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the

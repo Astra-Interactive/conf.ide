@@ -71,6 +71,12 @@ class OrderPricing(
 }
 ```
 
+### Exception: the preview block of a composable file
+
+Previews close a composable file, and everything that only previews use (constants, fixtures, helper
+composables) sits in that block, before the first function that uses it, never at the top of the file. The
+Compose rule (`compose.kt.md`) gives the shape.
+
 ### Exception: property initializers
 
 A property whose initializer calls a function stays at the top with the other properties. Rule 1 wins

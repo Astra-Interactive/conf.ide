@@ -112,9 +112,12 @@ explicitly; there is no scanning. The DI rule has the details.
 - Same file as the type: its companion object, nothing else. A file that declares a class holds no top-level
   function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
   that uses it, even when one file uses it (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`). Never a
-  class inside a function body, never an `inner class`.
+  class inside a function body, never an `inner class`. A Compose composable file declares no class, so an
+  extension only it uses is `private` in it (`compose.kt.md`).
 - A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a rule
-  over several types), never `Utils.kt`; helpers are never grouped in an `object`.
+  over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme` object
+  of shared values holds no function; a design-system component's public `<Component>Defaults` is the one
+  exception, `compose.kt.md`).
 - Multiplatform platform files carry the source-set suffix (`Platform.jvm.kt`).
 
 ### Tests

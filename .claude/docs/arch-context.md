@@ -52,8 +52,9 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `api` (contracts) | `model` |
 | `usecase` | `api`, `model`, `util` |
 | implementations (technology packages and units), `stub` | the contracts they implement, `model` |
-| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable`, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util` |
-| `util` | `api`, `model` |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable`, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds |
+| `theme` (Compose) | `model` |
+| `util` | `api`, `model`; `theme` in a Compose unit |
 | `di` | everything; nothing depends on it |
 
 | Between units | may depend on |

@@ -37,4 +37,6 @@ How the domain rule is written in Kotlin.
 - A domain event is a `data class` in `model`, published through the platform bus or a publisher contract in
   `api`; the Bukkit event type that carries it lives in the `event` kind of the platform unit.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
-  are never imported in `model`, in a use case or in a contract. The architecture test checks the imports.
+  are never imported in `model`, in a use case or in a contract. The one exception: in a UI unit, one whose
+  build already depends on Compose, `model` may import `androidx.compose.*` and `org.jetbrains.compose.*`
+  (`Painter`, `Dp`, `Color`), see `compose.kt.md`. The architecture test checks the imports.
