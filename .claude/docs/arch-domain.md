@@ -13,8 +13,8 @@ import and Validation apply to every context.
   (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
   `fun Dictionary.canRead(user: User?)` in `dictionary/util/DictionaryExt.kt`). It is never a member of the
   type, and never a top-level function that takes the type as a parameter.
-- A rule spanning several types is a top-level function in the same `util`, named after the decision
-  (`fun isTransferAllowed(from: Account, to: Account): Boolean`).
+- A rule spanning several types is a top-level function in the same `util`, in a file named after the
+  decision (`fun isWithinLimit(transfer: Transfer, limit: AccountLimit): Boolean` in `TransferLimit.kt`).
 - The `util` is that of the level that uses the rule, whichever unit the type comes from
   (`fun AstraRatingConfig.isRatingMessageLengthAllowed(message: String)` in `gui/api`, over a `core` model).
   A rule two units use moves to the `util` of the model's own unit, so that it exists once.
@@ -42,7 +42,7 @@ import and Validation apply to every context.
   of its root, extensions that return a copy (`fun Claim.addChunk(chunk: ClaimChunk): Claim`). The repository
   loads and saves the aggregate whole.
 - In a context with rules an aggregate is a concept: a package with the same kinds inside (`claim/api`,
-  `claim/model`, `claim/usecase`). The parts that belong to one aggregate (`ClaimChunk` with its `ChunkFlag`s)
+  `claim/model`, `claim/util`, `claim/usecase`). The parts that belong to one aggregate (`ClaimChunk` with its `ChunkFlag`s)
   stay in one concept.
 - A context without rules has no aggregates. An aggregate whose rules start taking other aggregates as
   arguments is the signal that the boundary is wrong.
@@ -112,6 +112,6 @@ which lives in `service/`.
 ### Validation
 
 Validation is repeated on purpose, each copy in its own place: an entry point checks the shape of its input
-(an argument converter, a request type); the model guards invariants in value-object constructors and the
-aggregate's rules; the technology package adds the storage constraint. There is no `validation` package and no
+(an argument converter, a request type); the model guards invariants in value-object constructors and in the
+aggregate's rules in `util`; the technology package adds the storage constraint. There is no `validation` package and no
 validator class that duplicates a model invariant.

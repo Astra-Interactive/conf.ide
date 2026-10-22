@@ -45,7 +45,7 @@ Terms used below:
    modules and make nothing easier. A sub-context that is not split is one unit, platform imports included
    (`modules/command`, `modules/event-bukkit`). Storage is a contracts unit plus one unit per technology (`data/dao`, `data/exposed`).
 5. **App** (Kotlin Multiplatform, Android): a feature others depend on is an `api` unit (contracts, the
-   models in their signatures, stubs) plus an `impl` unit (the implementation and its use cases). Platform
+   models in their signatures, the `util` rules of those models, stubs) plus an `impl` unit (the implementation and its use cases). Platform
    code is a source set of the unit, never a unit.
 6. A use case that several sub-contexts need lives in the `api` unit of the sub-context that owns the
    operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. When
@@ -117,7 +117,8 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    a cache (`LoginEvent`); a failure handler sits with the mechanism that fails.
 7. **`model` and `util` live at every level.** A model or a function lives in the `model` or `util` of the
    level that uses it, even as one file (`integration/papi/model/PapiConfig.kt`). A higher level's `model` or
-   `util` holds only what several lower levels share. `core` has the same concept → kind shape
+   `util` holds only what several lower levels share; a rule of a model that two units use lives in the `util`
+   of the model's own unit. `core` has the same concept → kind shape
    (`core/settings/model`, `core/util`).
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
    implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
@@ -150,7 +151,8 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
   `Cache4kRatedUsersCache`).
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
-  contracts they implement and `model`; entry points on use cases, contracts and `model`; nothing depends on an
+  contracts they implement and `model`; use cases on contracts, `model` and `util`; entry points on use cases,
+  contracts, `model` and `util`; nothing depends on an
   entry point; `di` depends on everything and nothing depends on it. A use case and a contract import no
   platform or framework type.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more

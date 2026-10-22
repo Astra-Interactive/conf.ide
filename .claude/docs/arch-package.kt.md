@@ -31,7 +31,7 @@ Decide the tier while writing the declaration:
 
 | Declaration | Modifier |
 |---|---|
-| used by one file only, except an extension function, which goes to `util` | `private` in that file |
+| used by one file only, an extension in its `util` file included | `private` in that file |
 | used by other files of the same unit, such as an implementation its DI module constructs | `internal` |
 | used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the platform main class of an entry-point unit | none (public) |
 
@@ -66,8 +66,8 @@ internal class FileJailRepository(
   call: models, use cases, contracts and their platform-free implementations, with its own DI module. Its build file declares no
   platform dependency (no Paper, no Bukkit). The platform unit (`gui/bukkit`) depends on it and holds what
   imports the platform.
-- In an app, an `api` unit holds contracts, the models in their signatures and stubs (`<concept>/stub/`); the
-  `impl` unit holds the rest. Only the entry-point unit depends on an `impl` unit.
+- In an app, an `api` unit holds contracts, the models in their signatures, the `util` rules of those models and
+  stubs (`<concept>/stub/`); the `impl` unit holds the rest. Only the entry-point unit depends on an `impl` unit.
 - Dependencies between units follow the second table of `arch-context.md`; nothing depends on the entry
   point, and `core` depends on no feature unit.
 - A `<context>/contract` unit holds only `@Serializable` types and route constants shared by a server unit and
@@ -101,7 +101,8 @@ explicitly; there is no scanning. The DI rule has the details.
 ### What goes in one file
 
 - A file holds one type family: a sealed type with its variants, or a data class with the data classes
-  nested in it. A class with behaviour always has its own file, even a private helper of one class.
+  nested in it. A class with behaviour always has its own file, even a private helper of one class. A model
+  file holds the data class and nothing else: its rules and its factory are in `util` (`arch-domain.md`).
 - A new data class that is a property type of exactly one class is nested in it. A type returned to another
   class is a top-level family in `model`.
 - The state type of a screen or a menu (`SplashPaywallState`, `RatingPlayersState`) is always its own file
@@ -112,8 +113,8 @@ explicitly; there is no scanning. The DI rule has the details.
   function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
   that uses it, even when one file uses it (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`). Never a
   class inside a function body, never an `inner class`.
-- A file of top-level functions is named after what they do (`DurationFormat.kt`), never `Utils.kt`; helpers
-  are never grouped in an `object`.
+- A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a rule
+  over several types), never `Utils.kt`; helpers are never grouped in an `object`.
 - Multiplatform platform files carry the source-set suffix (`Platform.jvm.kt`).
 
 ### Tests

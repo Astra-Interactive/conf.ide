@@ -37,7 +37,8 @@ checklist for proving it. Read the rules first; this file does not repeat them.
   even though the platform starts it): that sub-context's unit; platform-free code in its `api` unit,
   platform code in its platform unit.
 - A config, translation or permission model, a function, a generic class or a scope used by several
-  sub-contexts: `core`, in the concept → kind shape.
+  sub-contexts: `core`, in the concept → kind shape. A rule of a model that two units use is the exception:
+  the `util` of the model's own unit.
 - A wire type a server and its client share: the `<context>/contract` unit.
 - A new sub-context: ask (step 1.3).
 
@@ -198,10 +199,11 @@ line. A "no" is fixed by moving the new file, never an old one.
 8. Does every contract sit in `api` of its concept, with its implementation named by technology or variant, no
    `Impl`, no `I` prefix?
 9. Does every new interface pass one of the four triggers?
-10. Is every model and every function in the `model` or `util` of the level that uses it?
+10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
+    units use, in the `util` of the model's own unit?
 11. Does every class with behaviour and every error type have its own file, and every extension sit in
     `util/<Subject>Ext.kt`? Does any `util` hold a class or an `object`? Does any top-level function take a type
-    as a parameter only to read its fields?
+    as a parameter where an extension of that type is the rule?
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
     handler in `error` of its mechanism, every format converter in `migration` of what it converts?
 13. Does `model` import nothing of its level and no platform or ORM type? Do `api` and `usecase` import no

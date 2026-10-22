@@ -34,11 +34,11 @@ fun parseOrder(raw: String): Result<Order> {
     return Result.success(Order(/* ... */))
 }
 
-fun validateOrder(order: Order): Result<Order> {
-    if (order.items.isEmpty()) {
+fun Order.validate(): Result<Order> {
+    if (items.isEmpty()) {
         return Result.failure(OrderValidationError("Order must contain at least one item"))
     }
-    return Result.success(order)
+    return Result.success(this)
 }
 ```
 
@@ -111,7 +111,7 @@ flat and nothing is thrown.
 ```kotlin
 fun orderTotal(raw: String): Result<Money> {
     val order = parseOrder(raw).getOrElse { error -> return Result.failure(error) }
-    val validOrder = validateOrder(order).getOrElse { error -> return Result.failure(error) }
+    val validOrder = order.validate().getOrElse { error -> return Result.failure(error) }
     return Result.success(validOrder.total)
 }
 ```
@@ -121,7 +121,7 @@ Use `map` for a pure transformation of the success value and `recover` for a fal
 ```kotlin
 val total: Result<Money> = parseOrder(raw).map { order -> order.total }
 
-val totalOrZero: Result<Money> = total.recover { _ -> Money.zero() }
+val totalOrZero: Result<Money> = total.recover { _ -> Money.ZERO }
 ```
 
 ### Consuming a `Result`

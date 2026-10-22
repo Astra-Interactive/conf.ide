@@ -60,7 +60,7 @@ class OrderPricing(
 
     fun priceOf(order: Order): Money {
         if (order.items.size > MAX_ITEMS) {
-            return Money.zero()
+            return Money.ZERO
         }
         return priceCache.getOrPut(order.id) { applyTax(order.subtotal) }
     }
