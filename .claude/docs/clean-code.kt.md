@@ -10,6 +10,34 @@ Core requirements:
 
 * Use meaningful names for variables, functions, classes, files, and modules.
 * Avoid vague names like `data`, `temp`, `foo`, `manager`, `handler`, unless the meaning is obvious.
+* A function is named with a verb that says what happens; one that returns a value is never a bare noun
+  (`cardSegments()`, `featureShortcuts()`, `titleStyle()` mislead) and never starts with `get`, except
+  `getState()` where a project already uses it as the view model's state accessor. `operator fun invoke`,
+  a DI `provide…` and an override of a framework signature keep their names. The usual verbs; another verb
+  is fine when it says what happens as plainly:
+
+  | Verb | When | Example |
+  |---|---|---|
+  | `select` | one of fixed values, chosen by a condition | `selectCardSegments(stage)` |
+  | `resolve` | a value from several sources or by precedence, a `@Composable` reading the theme included | `resolveTitleStyle(size)` |
+  | `build` | a new object or list assembled from parts | `buildFeatureShortcuts()` |
+  | `create` | an aggregate factory with a rule, returning `Result` | `createJail(name, location)` |
+  | `compute` | a number or geometry | `computeOpacity(distance)` |
+  | `format` | a value turned into text for display | `formatPrice(plan)` |
+  | `parse` | text turned into a value, returning `Result` | `parseOrder(raw)` |
+  | `find` | a lookup that may return `null` | `findPlan(id)` |
+  | `load` / `fetch` | a read from storage / from the network | `loadOffer()`, `fetchCustomerInfo()` |
+  | `save` / `send` / `notify` | a write, a dispatch | `notifyPurchaseFailed()` |
+  | `is` / `has` / `can` / `should` | a `Boolean` predicate | `isSentenceOver(now)`, `canRead(user)` |
+  | `to<Type>` | a conversion that copies; an extension | `Plan.toPlanContent()` |
+  | `as<Type>` | a view over the same object, no copy | `asStateFlow()` |
+  | `remember<Thing>` | a `@Composable` that calls `remember` | `rememberAppearProgress(...)` |
+  | `on<Event>` | a view-model handler of a user action | `onPurchase()` |
+  | `update<Thing>` | a state transition | `updateContent { }` |
+
+  Never `map` in a name (`toContent`, not `mapToContent`: `map` is the word of collections), never
+  `make`, `do`, `handle` or `process`. A function with no arguments that only returns a stored value is a
+  `val`.
 * Keep functions small and focused.
 * Each function should do one thing.
 * Avoid deeply nested logic.
