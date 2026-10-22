@@ -104,6 +104,9 @@ explicitly; there is no scanning. The DI rule has the details.
   nested in it. A class with behaviour always has its own file, even a private helper of one class.
 - A new data class that is a property type of exactly one class is nested in it. A type returned to another
   class is a top-level family in `model`.
+- The state type of a screen or a menu (`SplashPaywallState`, `RatingPlayersState`) is always its own file
+  in `model/`: the view or the menu reads it, so it is returned to another class. It is never nested in the
+  view model or state holder, and never a second declaration in that file.
 - An `enum` used only through one type is nested in it; otherwise it is a top-level family of its own.
 - Same file as the type: its companion object, nothing else. A file that declares a class holds no top-level
   function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
