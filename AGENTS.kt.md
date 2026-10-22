@@ -6,6 +6,7 @@
 @.claude/docs/clean-code.kt.md
 @.claude/docs/code-ordering.kt.md
 @.claude/docs/codebase-memory.md
+@.claude/docs/coroutines.kt.md
 @.claude/docs/data-class-default-values.kt.md
 @.claude/docs/di-manual-constructors.kt.md
 @.claude/docs/di-manual.kt.md
