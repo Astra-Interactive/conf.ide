@@ -15,6 +15,9 @@ Core requirements:
 * Avoid deeply nested logic.
 * Prefer early returns and guard clauses.
 * Avoid duplicated code.
+* Before writing a helper, look for one that exists in the project or in a library the project already
+  depends on, and use it: an extension the project has over `stringResource(…)`, mikro's
+  `Result.propagateCancellationException()`. A helper that duplicates one that exists is dead weight.
 * Remove dead code, unused variables, and unnecessary comments.
 * No `Helper`, `Util` or `Manager` classes: a class with behaviour has a role, and the role names it and its package.
 * A file holds one type family: a sealed hierarchy with all its variants, a data class with the data classes nested in it. The Kotlin package-layout rule says what goes in one file.
