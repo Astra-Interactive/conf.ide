@@ -73,22 +73,33 @@ Do not mix unrelated responsibilities in one class or function.
 * Do not write overly complex one-liners.
 * An expression body (`fun f() = …`) only when the whole function fits on one line. A body that needs a line
   break is a block body with an explicit `return`.
-* A condition that does not fit on one line is never wrapped at `&&` or `||`. Write it as a chain, one step per
-  line, joined with `.and(…)` and `.or(…)`. These evaluate both sides, so when the right side must not run (it
-  depends on the left one, or it is costly), use a named `val` or an early return instead.
+* A condition that does not fit on one line is never wrapped at `&&` or `||`. Split it, in this order:
+  1. a guard clause (`if (current !is SplashPaywallState.Content) return current`) for a clause that a later
+     one depends on through a smart cast or a null check, and for a clause that is costly;
+  2. a named `val` per remaining clause, named for what it means, so that the condition itself reads as a
+     sentence;
+  3. only when the named values still do not fit on one line, a chain joined with `.and(…)` and `.or(…)`, one
+     step per line. The chain evaluates both sides, so it holds only values that are already named or single
+     calls.
 
   ```kotlin
   // Bad
-  private fun isProductionConfiguration(name: String): Boolean =
-      PRODUCTION_CONFIGURATION_SUFFIXES.any { suffix -> name.endsWith(suffix, ignoreCase = true) } &&
-          !name.contains("test", ignoreCase = true)
+  if (current is SplashPaywallState.Content && current.stage == SplashPaywallStage.OFFER && !current.isBusy) {
+      current.copy(isBusy = true)
+  } else {
+      current
+  }
 
   // Good
-  private fun isProductionConfiguration(name: String): Boolean {
-      return PRODUCTION_CONFIGURATION_SUFFIXES
-          .any { suffix -> name.endsWith(suffix, ignoreCase = true) }
-          .and(!name.contains("test", ignoreCase = true))
+  if (current !is SplashPaywallState.Content) {
+      return current
   }
+  val isOfferStage = current.stage == SplashPaywallStage.OFFER
+  val isIdle = !current.isBusy
+  if (isOfferStage && isIdle) {
+      return current.copy(isBusy = true)
+  }
+  return current
   ```
 
 * Do not use advanced language features unless they improve readability.
