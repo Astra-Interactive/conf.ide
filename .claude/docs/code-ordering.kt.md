@@ -18,6 +18,38 @@ Inside a class the `companion object` is the last declaration, and class-level c
 shared defaults, keys, limits) live there. Rule 1 covers instance properties and top-level properties
 only; it does not pull constants to the top of the class.
 
+This holds for an `interface` too: an interface has a `companion object`, and a DI module declared as one
+keeps its constants there. A `private object` beside a type that only holds that type's constants is
+forbidden.
+
+```kotlin
+// Bad
+private object PostHogFeatureFlagDefaults {
+    val ReloadInterval = 1.minutes
+}
+
+@ContributesTo(AppGraph::class)
+interface PostHogFeatureFlagModule {
+    @Provides
+    fun provideFeatureFlagReloader(scope: CoroutineScope): FeatureFlagReloader {
+        return PostHogFeatureFlagReloader(interval = PostHogFeatureFlagDefaults.ReloadInterval, scope = scope)
+    }
+}
+
+// Good
+@ContributesTo(AppGraph::class)
+interface PostHogFeatureFlagModule {
+    @Provides
+    fun provideFeatureFlagReloader(scope: CoroutineScope): FeatureFlagReloader {
+        return PostHogFeatureFlagReloader(interval = RELOAD_INTERVAL, scope = scope)
+    }
+
+    companion object {
+        private val RELOAD_INTERVAL = 1.minutes
+    }
+}
+```
+
 ```kotlin
 class OrderPricing(
     private val taxRate: Double
