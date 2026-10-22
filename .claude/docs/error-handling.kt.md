@@ -109,7 +109,7 @@ a project with no mikro in its version catalog is the check written inline, and 
 flat and nothing is thrown.
 
 ```kotlin
-fun orderTotal(raw: String): Result<Money> {
+fun computeOrderTotal(raw: String): Result<Money> {
     val order = parseOrder(raw).getOrElse { error -> return Result.failure(error) }
     val validOrder = order.validate().getOrElse { error -> return Result.failure(error) }
     return Result.success(validOrder.total)

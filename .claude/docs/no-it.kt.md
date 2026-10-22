@@ -7,7 +7,7 @@ Always give lambda parameters explicit, meaningful names.
 ### Bad
 
 ```kotlin
-getRequest().let {
+loadRequest().let {
     println("$it")
 }
 ```
@@ -15,7 +15,7 @@ getRequest().let {
 ### Good
 
 ```kotlin
-getRequest().let { request ->
+loadRequest().let { request ->
     println("$request")
 }
 ```

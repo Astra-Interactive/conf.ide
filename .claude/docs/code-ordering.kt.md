@@ -58,7 +58,7 @@ class OrderPricing(
 
     private fun applyTax(subtotal: Money): Money = subtotal * (1 + taxRate)
 
-    fun priceOf(order: Order): Money {
+    fun computePrice(order: Order): Money {
         if (order.items.size > MAX_ITEMS) {
             return Money.ZERO
         }
