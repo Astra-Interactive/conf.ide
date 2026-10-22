@@ -27,3 +27,6 @@ class LivePredictionService(
 ```
 
 When adding a new dependency, update the root wiring instead of adding `= SomeImplementation()` in the class.
+
+A value derived from the class's own lifecycle, such as a scope built on `viewModelScope`
+(`viewModelScope.asSingleJobScope()`), is not a dependency: it is part of the class and stays a field.
