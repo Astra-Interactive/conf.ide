@@ -61,14 +61,15 @@ serialization. Translate the caught exception into a domain error right there, s
 see library exceptions.
 
 ```kotlin
-fun loadOrder(id: OrderId): Result<Order> =
-    runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
+fun loadOrder(id: OrderId): Result<Order> {
+    return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
         .fold(
             onSuccess = { order -> Result.success(order) },
             onFailure = { error ->
                 Result.failure(OrderLoadError("Could not load order ${id.value}", error))
             }
         )
+}
 ```
 
 `mapCatching` and `recoverCatching` are boundary tools in the same sense: use them only when the
@@ -84,8 +85,8 @@ re-label an error; use `fold` as above.
 rethrow it before doing anything else with the result:
 
 ```kotlin
-suspend fun loadOrder(id: OrderId): Result<Order> =
-    runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
+suspend fun loadOrder(id: OrderId): Result<Order> {
+    return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
         .onFailure { error -> if (error is CancellationException) throw error }
         .fold(
             onSuccess = { order -> Result.success(order) },
@@ -93,6 +94,7 @@ suspend fun loadOrder(id: OrderId): Result<Order> =
                 Result.failure(OrderLoadError("Could not load order ${id.value}", error))
             }
         )
+}
 ```
 
 ### Composing fallible steps
