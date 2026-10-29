@@ -12,7 +12,7 @@ Enforce state-hoisting for `@Composable` functions and extract layout from `Deco
 
 ### 1. State-hoisted `@Composable` functions
 
-Every `@Composable` function must accept only models and callbacks — no internal `var … by remember { mutableStateOf(…) }` unless the state is purely local UI mechanics with no business meaning (e.g. scroll position, focus holder). Password visibility toggles, loading flags, form values — all must be parameters.
+Every `@Composable` function must accept only models and event handlers — no internal `var … by remember { mutableStateOf(…) }` unless the state is purely local UI mechanics with no business meaning (e.g. scroll position, focus holder). Password visibility toggles, loading flags, form values — all must be parameters.
 
 ```kotlin
 // ✅ correct

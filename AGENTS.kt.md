@@ -18,6 +18,7 @@
 @.claude/docs/javadoc.kt.md
 @.claude/docs/kotlin-lsp.kt.md
 @.claude/docs/ksrc.kt.md
+@.claude/docs/no-callbacks.kt.md
 @.claude/docs/no-it.kt.md
 @.claude/docs/no-pair.kt.md
 @.claude/docs/notes.kt.md

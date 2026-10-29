@@ -25,7 +25,7 @@ offers.forEach(repository::save)
 The forms: `::topLevel` and `::Constructor`; `Type::member` for a member, an extension or a property of the
 receiver; `Type::companionMember` for a companion function (`Instant::fromEpochMilliseconds`);
 `instance::member` for a bound reference (`repository::save`, `viewModel::onPurchase`). A reference also
-replaces a lambda passed as a callback: `onClick = viewModel::onPurchase`, not `onClick = { viewModel.onPurchase() }`.
+replaces a lambda passed as an event handler: `onClick = viewModel::onPurchase`, not `onClick = { viewModel.onPurchase() }`.
 
 When the lambda first adapts its parameter (`date.time`) and then calls one function, move the adaptation
 into the chain and reference the function: `expirationDate?.let { date -> Instant.fromEpochMilliseconds(date.time) }`

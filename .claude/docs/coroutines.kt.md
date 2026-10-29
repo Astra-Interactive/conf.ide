@@ -86,3 +86,6 @@
       purchaseScope.launch(SingleJobMode.SKIP_IF_RUNNING) { offerRepository.purchase(plan) }
   }
   ```
+
+- A result that arrives later is a `suspend fun`, things that happen are a `Flow`, and a library's callback is
+  bridged once at its boundary: `no-callbacks.kt.md`.
