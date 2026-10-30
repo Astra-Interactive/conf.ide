@@ -23,7 +23,9 @@ package created inside a unit).
   impl/checkout/model/CheckoutState.kt         the screen state, its own file, in its concept
   ```
 
-  The input of a composable is `<Thing>Content`; the state of a screen is `<Screen>State`.
+  The input of a composable is `<Thing>Content`; the state of a screen is `<Screen>State`. `<Thing>Content`
+  names a data class made to feed composables, in the UI unit's `model`; primitives, enums, lambdas, `Modifier`,
+  a screen's `<Screen>State` and domain types passed as they are keep their names.
 - `composable` is the one kind that may hold sub-packages, named from Compose's vocabulary and the project's
   existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a
   parent composable calls, and the screen content it delegates to), `component` (a reusable part with content:
@@ -87,8 +89,9 @@ package created inside a unit).
 
 A composable reads a resource through `DrawableResource.asPainter()` and `StringResource.asComposableString(…)`,
 never through `painterResource(…)` or `stringResource(…)` directly. The extensions come from mikro when the
-project's mikro has them; otherwise the project declares them once, in the `util` of its design-system unit
-(`util/DrawableResourceExt.kt`, `util/StringResourceExt.kt`).
+project's mikro has them; otherwise the project declares them once, in the `util` of the one UI unit that uses them, moved to the
+design-system unit's `util` once a second UI unit needs them (`util/DrawableResourceExt.kt`,
+`util/StringResourceExt.kt`).
 
 ### Constants of a composable
 

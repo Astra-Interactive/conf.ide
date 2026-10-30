@@ -79,10 +79,13 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 No cycles anywhere. These two tables are the whole list.
 
 A checker knows the fixed kinds by name: `api`, `model`, `usecase`, `util`, `di`, `theme`, `stub`, `warmup`,
-`migration`, `error`, `table`, `entity`, `database`. Any other package that holds files is a technology package
-when it holds an implementation of a contract (a class implementing an interface from an `api` package), and an
-entry-point or UI kind otherwise.
+`migration`, `error`, `table`, `entity`, `database`. A technology package is named after a library the unit
+depends on (read from its build file), or `file`, `memory`. In a unit that is wholly one technology, a concept
+package holds its implementations directly (`router/BukkitGuiRouter`). Any other package that holds files is an
+entry-point or UI kind (`expansion`). A unit's type is the convention plugin its build file applies (one per
+unit type, `arch-package.kt.md`); the checker's config maps each plugin to a row of the table above, and a unit
+without such a plugin is checked by hand.
 
-Every row of these tables, the package names, the naming of implementations and the imports allowed in
-`model`, `api` and `usecase` are meant to be checked by a tool in the build. The checker is not written yet; until
+Every row of these tables, the package names and the naming of implementations are meant to be checked by a
+tool in the build; the platform and framework imports of `model`, `api` and `usecase` are the reviewer's call. The checker is not written yet; until
 it exists, the skill's checklist is answered by hand.

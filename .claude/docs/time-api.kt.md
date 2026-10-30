@@ -44,8 +44,8 @@ Only convert timestamps or durations to `Long`, `Int`, or `String` at external b
   `kotlin.time.Clock`.
 - `java.time.Instant`, `java.time.Duration`, `java.time.LocalDateTime` and `java.util.Calendar` are imported
   only in a technology package or unit (`exposed`, `room`, `ktor`, `krate`, `sqldelight`, `datastore`,
-  `retrofit`, `okhttp`) and its `table` and `entity` kinds, or in a `contract` unit, where a library or the wire format demands
-  them, and are converted to `kotlin.time` there.
+  `retrofit`, `okhttp`), the `table` and `entity` kinds of such a unit included, or in a `contract` unit,
+  where a library or the wire format demands them, and are converted to `kotlin.time` there.
 - The current moment comes from `kotlin.time.Clock` (`Clock.System.now()`), and an elapsed time from
   `kotlin.time.TimeSource.Monotonic`; `System.currentTimeMillis()` and `System.nanoTime()` are never called. A
   class that must be testable takes the `Clock` through its constructor, built in the DI module

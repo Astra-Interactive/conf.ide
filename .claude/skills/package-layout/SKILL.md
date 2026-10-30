@@ -6,8 +6,8 @@ version: 3.1.0
 
 # Package layout
 
-The rules `arch-package.md`, `arch-domain.md` and `arch-context.md` (with their `.kt.md` and `.rs.md`
-companions) say what a finished tree looks like. This skill is the procedure for getting there and the
+The rules `arch-package.md`, `arch-domain.md` and `arch-context.md` (the first two with their `.kt.md` and
+`.rs.md` companions) say what a finished tree looks like. This skill is the procedure for getting there and the
 checklist for proving it. Read the rules first; this file does not repeat them.
 
 ## 1. Before the first new file
@@ -34,8 +34,8 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 **T1. Which unit?**
 - The platform main class or `RootModule`: the entry-point unit.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
-  even though the platform starts it): that sub-context's unit; code other units call, and every use case, in
-  its `api` unit; code only the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
+  even though the platform starts it): that sub-context's unit; code other units call, and every plugin use case,
+  in its `api` unit; code only the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
 - A config, translation or permission model, a function, a generic class or a scope used by several
   sub-contexts: `core`, in the concept → kind shape. A rule of a model that two units use is the exception:
   the `util` of the model's own unit.
@@ -45,15 +45,17 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 **T2. Is this a use case, and where?**
 Only when the flow has more than one step: a contract call whose result a model rule judges before acting, or
 two or more contracts combined. Named `<Verb><Object>UseCase`, in the `usecase` package of its concept, in the
-`api` unit of the sub-context that owns the operation. In an app, the interface sits in `usecase` of the owner's
-`api` unit and its `Default…` implementation in `usecase` of the `impl` unit. Never in `core`. If the owner is
+`api` unit of the sub-context that owns the operation. In an app, a use case lives in `usecase` of the `impl` unit; when another unit
+calls it, its interface sits in `usecase` of the owner's `api` unit and the `Default…` implementation stays in
+`impl`. Never in `core`. If the owner is
 unclear, ask.
 
 **T3. Which concept and which kind?**
 Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind for Compose's `composable` only
 (T4). The concept is the thing in the project's words (`rating`). The
 kind, asked in this order:
-1. Contract → `api`. Implements, wraps or narrows a contract (a cache included) → beside the other
+1. Contract → `api`; a use case's or a state holder's interface → `usecase` or the state-holder kind, with its
+   implementation. Implements, wraps or narrows a contract (a cache included) → beside the other
    implementations, in storage when it caches storage.
 2. Data class, result, error, event, config → `model`, fields only. A rule over a type → an extension of
    that type in `util` (`arch-domain.md`).
@@ -105,14 +107,16 @@ have. `util` and `model` are never the fallback for a class. A task does not ext
 
 ### A plugin with one context cut into sub-contexts (AstraRating)
 
-The tree as it stands, real class names, root packages without `ru.astrainteractive.astrarating`:
+The tree as it stands, real class names, root packages without `ru.astrainteractive.astrarating`. Some parts
+predate the rules and stay until the owner asks to move them (`players` in the plural, the state `Model` nested in
+`RatingPlayersComponent`, a service passed to `RatingPlayersModule` instead of its module); new files follow
+the rules:
 
 ```
 instances/bukkit         AstraRating.kt, di/RootModule.kt (builds roots, lists their lifecycles)
 modules/core/api         …core
   settings/model/{AstraRatingConfig, AstraRatingPermission, AstraRatingTranslation}.kt
   settings/migration/ConfigSnakeCaseMigration.kt
-  util/SortExt.kt
   di/CoreModule.kt
 modules/core/bukkit      …core: di/BukkitModule.kt
 modules/data/dao         …data.dao (contracts, models, in-memory doubles; no DI module)
@@ -133,7 +137,7 @@ modules/gui/api          …gui.api
   rating/players/component/{RatingPlayersComponent, DefaultRatingPlayersComponent}.kt
   rating/players/model/UsersRatingsSort.kt
   rating/players/di/RatingPlayersModule.kt     takes RatedUsersCache and KotlinDispatchers as parameters
-  rating/player/{component, model, util, di}/…   router/api/GuiRouter.kt  util/SortCycleExt.kt  di/GuiModule.kt
+  rating/player/{component, model, util, di}/…   router/api/GuiRouter.kt  util/{IterableExt, ListExt}.kt  di/GuiModule.kt
 modules/gui/bukkit       …gui.bukkit
   rating/players/gui/RatingsGUI.kt  rating/player/gui/PlayerRatingsGUI.kt
   slot/{EventSlot, NavigationSlots, RatingsSlot, PlayerRatingsSlot, SortSlot, GuiLoadingIndicator, ConnectionLines}.kt
@@ -178,7 +182,7 @@ modules/jail/bukkit                …module.jail.bukkit
 components/shop/payment/api    …payment.api: offer/api/PaymentApi.kt, offer/model/Plan.kt,
                                offer/usecase/CheckEntitlementUseCase.kt (interface), offer/stub/StubPaymentApi.kt
 components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckEntitlementUseCase.kt,
-                               offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatEntitlementRepository.kt,
+                               offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatPaymentApi.kt,
                                offer/di/PaymentModule.kt; androidMain at the same paths
 ```
 
@@ -199,7 +203,8 @@ line. A "no" is fixed by moving the new file, never an old one.
 3. Was every new sub-context offered to the user as "own unit or package", and does every new unit have a
    one-sentence `README.md`?
 4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation (in an
-   app, its interface there and its `Default…` implementation in `impl`), and never in `core`? Does `core` depend on no feature unit?
+   app, in `impl`, with its interface in the owner's `api` unit when another unit calls it), and never in
+   `core`? Does `core` depend on no feature unit?
 5. Does any package hold both files and packages, other than the concept package of a unit that is wholly one
    technology? Does every concept package hold only kind packages, except a technology implementation? Does
    every kind package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
@@ -228,5 +233,5 @@ line. A "no" is fixed by moving the new file, never an old one.
 16. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
 17. Does the final message list the old files the rules would move, and where?
 
-The checker that runs items 5, 7, 8, 11 (a class in `util`), 13 and 14 mechanically is not written yet; until it exists,
+The checker that runs items 5, 7, 8, 11 (a class in `util`) and 14 mechanically is not written yet; until it exists,
 answer them by hand and say so in the final message.

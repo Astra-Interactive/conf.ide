@@ -43,4 +43,5 @@ How the domain rule is written in Kotlin.
   are never imported in `model`, in a use case or in a contract. Two exceptions: in a UI unit, one whose
   build already depends on Compose, `model` may import `androidx.compose.*` and `org.jetbrains.compose.*`
   (`Painter`, `Dp`, `Color`), see `compose.kt.md`; in the unit of a framework's entry point, `model` may hold
-  that framework's exception subclasses (`arch-domain.md`). The imports are meant to be checked by the checker.
+  that framework's exception subclasses (`arch-domain.md`). Which imports count as a platform or framework
+  type is the reviewer's call.

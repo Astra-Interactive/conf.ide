@@ -43,7 +43,8 @@ If the answer is "no" — the element is **not written**. A partially documented
 
 - The first sentence — the essence in one line. Beyond that — only the non-obvious: contract, side effects, invariants, thread safety, units of measurement, behavior on null/empty values.
 - **Why**, not **what**. The code shows "what"; the comment explains "why" and "under which conditions".
-- Units and ranges always explicit: `timeoutMs`, "in the range 0..1", "UTC".
+- Units and ranges always explicit: `distanceMeters`, "in the range 0..1", "UTC"; a time value carries its
+  unit in its type (the time rule).
 - `@param` describes semantics and constraints, never a restatement of the name.
 
 ### What is forbidden

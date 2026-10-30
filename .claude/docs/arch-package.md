@@ -82,8 +82,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    …data.dao.rating.api.RatingRepository             storage contract, in the concept it stores
    ```
 
-2. **Implementation exception.** In a unit that is wholly one technology's implementation
-   (`data/exposed`), the concept package holds the implementations directly, and beside them the classes only
+2. **Implementation exception.** A unit is wholly one technology when it exists to implement contracts on one
+   storage or platform technology (`data/exposed` on Exposed, `gui/bukkit` on Bukkit); the helper libraries it
+   uses (cache4k) do not change that, and their implementations sit beside the others, named by their library
+   (`Cache4kRatedUsersCache`). In such a unit (`data/exposed`), the concept package holds the implementations directly, and beside them the classes only
    they use (`RefreshingCache`). Everything else of that
    technology sits in kind packages (`table`, `entity`, `model`, `database`, `di`) at the level that uses it:
    inside the concept when only that concept uses it, under the unit root when several do. A technology
@@ -133,10 +135,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even when it only loads
    a cache (AstraRating's `LoginEvent`, a name from before the `…Listener` rule); a failure handler sits with the mechanism that fails.
 7. **`model` and `util` live at every level.** A model or a function lives in the `model` or `util` of the
-   level that uses it, even as one file (`integration/papi/model/PapiConfig.kt`). A higher level's `model` or
-   `util` holds only what several lower levels share; a rule of a model that two units use lives in the `util`
-   of the model's own unit. `core` has the same concept → kind shape
-   (`core/settings/model`, `core/util`).
+   level that uses it, even as one file (`integration/papi/placeholder/model/PapiConfig.kt`). A higher level's
+   `model` or `util` holds only what several lower levels share; a rule of a model that two units use lives in
+   the `util` of the model's own unit. `core` has the same concept → kind shape (`core/settings/model`,
+   `core/util`).
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
    implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
    the unit it serves. Is it generic code that two units need? `core`, in the technology package of the library
@@ -161,11 +163,15 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   a fake, which is allowed only for a contract over I/O or the platform. Pure logic, entities and use cases get
   no interface, except an app's use case that another unit calls (Units 6). Whether one is known to come and
   whether a test must replace it are the reviewer's call.
-- A contract sits in the `api` package of its concept. Its implementation sits in the technology's package or
-  unit, under the same concept, and is named by its technology or variant (`ExposedRatingRepository`,
-  `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). `Impl`, the `I` prefix and the `Interface`
-  suffix are forbidden. `database`, `network`, `local` and `remote` are not technology names. An
-  implementation with no technology and no variant, such as an app's use case behind its interface, is named
+- A contract sits in the `api` package of its concept. Two kinds keep their interface with their
+  implementation, named by what the class is: an app use case's interface sits in `usecase` (Units 6), and a
+  state holder's interface in the project's state-holder kind (`component`, `viewmodel`), beside its
+  `Default…` implementation (`gui/api/rating/players/component/RatingPlayersComponent`). A contract's
+  implementation sits in the technology's package or unit, under the same concept, and is named by its
+  technology or variant (`ExposedRatingRepository`, `InMemoryJailRepository`,
+  `CacheRefreshingRatingRepository`). `Impl`, the `I` prefix and the `Interface` suffix are forbidden.
+  `database`, `network`, `local` and `remote` are not technology names. An implementation with no technology
+  and no variant, such as an app's use case or a state holder behind its interface, is named
   `Default<Interface>` (`DefaultAddRatingUseCase`).
 - A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
   another implementation beside it (`CacheRefreshingRatingRepository`). One that caches part of it gets its own
@@ -173,10 +179,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   `Cache4kRatedUsersCache`).
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
   contracts they implement and `model`; use cases on contracts, `model` and `util`; entry points on use cases,
-  contracts, `model` and `util`; nothing depends on an
-  entry point; `di` depends on everything, and only another `di` and the platform main class that creates the
-  composition root depend on it: a DI module takes DI modules through its constructor. A use case and a contract import no
-  platform or framework type.
+  contracts, `model` and `util`; nothing outside its unit depends on an entry point, and inside it UI kinds
+  depend on each other as `arch-context.md` says; `di` depends on everything, and only another `di` and the
+  platform main class that creates the composition root depend on it: a DI module takes DI modules through its
+  constructor. A use case and a contract import no platform or framework type.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
   more contracts. A use case never calls another use case.
@@ -226,9 +232,9 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 ### Enforcement
 
 Every line of this rule that a tool can check is meant to be checked in the build: package names, the
-concept/kind shape, the naming of implementations, the imports allowed in `model`, `api` and `usecase`, the
-dependencies between units. A checker checks what a rule states as a fixed name, number or shape; everything
-else in these rules is the reviewer's call. The checker is not written yet; until it exists, the skill's checklist is answered
-by hand and the final message says so.
+concept/kind shape, the naming of implementations, the dependencies between units. A checker checks what a rule
+states as a fixed name, number or shape; everything else in these rules is the reviewer's call, the platform and
+framework imports of `model`, `api` and `usecase` included. The checker is not written yet; until it exists, the
+skill's checklist is answered by hand and the final message says so.
 
 **Load the `package-layout` skill before the first new file of a task.**

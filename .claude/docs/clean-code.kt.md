@@ -41,8 +41,10 @@ these rules is the reviewer's call.
 
   Never `map` in a name (`toContent`, not `mapToContent`: `map` is the word of collections), never
   `make`, `do`, `handle` or `process`. A function with no arguments that only returns a stored value is a
-  `val`. A checker enforces only the bans (a `get` prefix except `getState()`, `make`, `do`, `handle`,
-  `process`, `map`); whether another verb says what happens as plainly is the reviewer's call.
+  `val`. A banned verb is the first camelCase word of a function name (`getUser`, `mapToContent`, `handleClick`,
+  `doWork`); the same letters later in the name are not banned. `getState()` is allowed only in a view model of
+  a project whose view models already declare it. A checker enforces only these bans; whether another verb says
+  what happens as plainly is the reviewer's call.
 * Keep functions small and focused.
 * Each function should do one thing.
 * Avoid deeply nested logic. "Small" and "deeply nested" are the project's detekt `LongMethod` and

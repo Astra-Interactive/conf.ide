@@ -32,7 +32,7 @@ import and Validation apply to every context.
   `JailId`), never a bare string or number.
 - A **value object** is defined by its fields alone and has no identity. It exists only to guard an invariant
   or to carry a unit or meaning the primitive lacks (`Duration`, `Money`, `UniqueWorldKey`); its constructor or
-  factory guarantees the invariant. A wrapper that adds no check and no meaning is forbidden;
+  its `parse<Type>` function guarantees the invariant. A wrapper that adds no check and no meaning is forbidden;
   whether it adds meaning is the reviewer's call.
 - **Typed identifiers** are value objects, and the one kind of model type a context may share with another.
   Across contexts a thing is referred to by its identifier; inside a context by reference.
@@ -54,9 +54,10 @@ import and Validation apply to every context.
 ### Repository
 
 - The data contract is the repository: `<Aggregate>Repository`, one per aggregate or per model family, in the
-  `api` package of the concept it stores (`data.dao.rating.api.RatingRepository`). It speaks the context's words (`findUnreconciled(account)`, not
-  `findByAccountAndDateRange`), holds no business rule and extends no generic base. `Api`, `Dao`, `Krate` and
-  `Storage` are not names for the repository contract; `Krate` stays for an implementation that is a krate.
+  `api` package of the concept it stores (`data.dao.rating.api.RatingRepository`). It speaks the context's
+  words (`findUnreconciled(account)`, not `findByAccountAndDateRange`), holds no business rule and extends no
+  generic base. `Api`, `Dao`, `Krate` and `Storage` are not names for the repository contract (which interface
+  is one is the reviewer's call); `Krate` stays for an implementation that is a krate.
 - A cache is part of storage, never of its consumer. One that wraps the whole repository is another
   implementation beside it (`data.exposed.rating.CacheRefreshingRatingRepository` beside
   `ExposedRatingRepository`). One that caches part of it gets its own contract in the same `api`
@@ -96,7 +97,7 @@ which lives in `service/`.
 
 - An event type is a model type in `model` with the aggregate it concerns, named in the past tense
   (`PlayerJailed`); a sealed family of events is named `<Subject>Event` and its variants in the past tense
-  (`TimerEvent.Started`). The suffix is meant to be checked by a tool, the past tense by the reviewer.
+  (`TimerEvent.Started`). Which types are events, and the past tense, are the reviewer's call.
 - An event another unit of the project listens to is such a model type in the publisher's `api` unit,
   published through a publisher contract there (`val events: Flow<PlayerJailed>`); it depends on no platform.
   A platform event type (a Bukkit `Event` subclass, `PlayerJailedEvent`) is declared only for other plugins:

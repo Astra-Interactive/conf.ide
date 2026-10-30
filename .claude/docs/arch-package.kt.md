@@ -9,8 +9,8 @@ The package-layout rule says which package a file goes to. This rule says how Ko
   declares `package ru.astrainteractive.astrarating.data.dao.rating.api`.
 - A unit's root package follows the project's existing convention, and a new unit takes the root package its
   neighbours would give it: AspeKt keeps the container in the singular (`modules/jail` →
-  `ru.astrainteractive.aspekt.module.jail`), an app may keep the path as is (`components/shop/payment/impl` →
-  `com.example.shop.payment.impl`), AstraRating drops the platform suffix
+  `ru.astrainteractive.aspekt.module.jail`), an app keeps the path after its container
+  (`components/shop/payment/impl` → `com.example.shop.payment.impl`), AstraRating drops the platform suffix
   (`modules/event-bukkit` → `ru.astrainteractive.astrarating.event`). A new project uses the base package
   followed by the unit path with hyphens removed and the container dropped. An Android unit's `namespace` is
   its root package.

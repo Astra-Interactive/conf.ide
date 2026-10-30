@@ -71,9 +71,9 @@ When extracting layout from `Render()`, create a `*ScreenComposable` file/functi
 ```kotlin
 @Composable
 fun AuthConfirmPasswordScreenComposable(
-    confirmPasswordType: InternalConfirmPasswordType,
+    confirmPasswordType: ConfirmPasswordType,
     screenState: ConfirmPasswordScreenState,
-    fieldsState: PasswordFieldsState,
+    fields: PasswordFieldsContent,
     onBack: () -> Unit,
     onConfirm: () -> Unit,
     onPasswordFieldChange: (String) -> Unit,
