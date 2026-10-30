@@ -4,7 +4,8 @@ You are a senior software engineer. Your task is not only to make the code work,
 
 Follow the principles from **Clean Code by Robert C. Martin** and apply appropriate **software design patterns** where they improve the solution.
 
-Core requirements:
+Core requirements. A checker checks what a rule states as a fixed name, number or shape; everything else in
+these rules is the reviewer's call.
 
 ### 1. Write clean, readable code
 

@@ -19,23 +19,24 @@ package created inside a unit).
 
   ```
   impl/model/PerkContent.kt                    data class PerkContent(val painter: Painter, val label: String)
-  impl/checkout/model/CheckoutState.kt         the screen state, its own file
-  impl/composable/component/PerkComposable.kt  the function that reads it
+  impl/composable/component/PerkComposable.kt  the function that reads it, shared by the whole unit
+  impl/checkout/model/CheckoutState.kt         the screen state, its own file, in its concept
   ```
 
   The input of a composable is `<Thing>Content`; the state of a screen is `<Screen>State`.
 - `composable` is the one kind that may hold sub-packages, named from Compose's vocabulary and the project's
-  existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a parent composable calls,
-  and the screen content it delegates to), `component` (a reusable part with content: a button, a card, an app bar,
-  an icon; a UI part, not the state-holder `component` of AstraRating), `layout` (a container that arranges
-  or frames its children and has no content of its own: a scaffold, a grid, a fade frame), and a project's
-  own words such as `sheet`, `dialog`, `appbar`; never `components`. `composable` holds either files only or
-  sub-packages only, never both. When a new file would make it hold a second screen or an eighth file, the
-  agent proposes the split; moving the old files needs the approval the package-layout rule asks for.
+  existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a
+  parent composable calls, and the screen content it delegates to), `component` (a reusable part with content:
+  a button, a card, an app bar, an icon; a UI part, not the state-holder `component` of AstraRating), `layout`
+  (a container that arranges or frames its children and has no content of its own: a scaffold, a grid, a fade
+  frame), and a project's own words such as `sheet`, `dialog`, `appbar`; never `components`. `composable`
+  holds either files only or sub-packages only, never both. When a new file would make it hold a second screen
+  or an eighth file, the agent proposes the split; moving the old files needs the approval the package-layout
+  rule asks for.
 
   ```
-  impl/composable/screen/CheckoutScreenComposable.kt
-  impl/composable/component/OrderSummaryComposable.kt
+  impl/checkout/composable/screen/CheckoutScreenComposable.kt
+  impl/checkout/composable/component/OrderSummaryComposable.kt
   impl/composable/component/GlassIconComposable.kt
   impl/composable/layout/ScrollFadeComposable.kt
   ```
@@ -68,7 +69,7 @@ package created inside a unit).
 
 - Values that several composables of one level must share (the timings and easings of one screen's
   animation, the spacing of one feature) live in the kind `theme` of that level, as an `internal object`
-  named for what it is: `impl/theme/CheckoutMotion.kt`. At a feature level the object holds values only, no
+  named for what it is: `impl/checkout/theme/CheckoutMotion.kt`. At a feature level the object holds values only, no
   function, so it is not a namespace of helpers. A timing is a `Duration` (`val CardIn = 400.milliseconds`),
   never an `Int` or `Long` under an `_MS` name; `.inWholeMilliseconds.toInt()` is written only at the Compose
   call that demands milliseconds, and a `tween(duration: Duration, …)` wrapper goes to the design-system

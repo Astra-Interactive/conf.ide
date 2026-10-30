@@ -5,13 +5,14 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 
 ### The dependency graph
 
-- The units form an acyclic graph. An edge is one of five kinds: a call on a contract or a use case of an
+- The units form an acyclic graph. An edge is one of six kinds: a call on a contract or a use case of an
   `api` unit or of the storage contracts unit; a subscription to its events; a use of `core` (its models,
-  helpers and scopes); a technology unit implementing the storage contracts (`data/exposed` → `data/dao`); the
-  entry point building every unit's DI module. Nothing else crosses: no implementation is called across units,
-  no table, no platform type.
+  helpers and scopes); a use of a context's `contract` unit; a unit implementing a contract of a unit it may
+  depend on (a technology unit the storage contracts, a platform unit its own `api`, a `<feature>/fake` the
+  `api` it fakes); the entry point building every unit's DI module. Nothing else crosses: no implementation is
+  called across units, no table, no platform type.
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
-  `RatePlayerUseCase`). Only the entry point depends on a feature's platform unit (`gui/bukkit`), and nothing
+  `AddRatingUseCase`). Only the entry point depends on a feature's platform unit (`gui/bukkit`), and nothing
   depends on the entry point. In an app, only the entry point depends on an `impl` unit.
 - A use case several sub-contexts need lives in the `api` unit of the sub-context that owns the operation. When
   no owner can be named, the agent asks the user.
@@ -40,7 +41,7 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 
 - `core` is the project's common unit for what is not worth a unit of its own: config, translation and
   permission models, shared functions, shared coroutine scopes, generic classes two units need
-  (`core/cache/cache4k/RefreshingCache`), small platform pieces as packages (`core/coroutine`). It has the same
+  (`core/cache/cache4k/<Class>`, moved there once a second unit needs it), small platform pieces as packages (`core/coroutine`). It has the same
   concept → kind shape as any unit. It may be split by platform (`core/api`, `core/bukkit`).
 - `core` holds no use case and no repository, and depends on no feature unit. Nothing enters it before its
   second consumer.
@@ -53,8 +54,8 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `model` | nothing of its level |
 | `api` (contracts) | `model` |
 | `usecase` | `api`, `model`, `util` |
-| implementations (technology packages and units), `stub` | the contracts they implement, `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them) |
-| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router) |
+| implementations (technology packages and units), `stub` | the contracts they implement, `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
 | `theme` (Compose) | `model` |
 | `util` | `api`, `model`; `theme` in a Compose unit |
 | `di` | everything |
@@ -71,6 +72,7 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `contract` | nothing of the project |
 | `core` (`core/api`) | nothing of the project |
 | the platform unit of `core` (`core/bukkit`) | `core/api` |
+| the design-system unit of `core` (`core/ui`) | `core/api` |
 | `<feature>/fake` | the `api` it fakes |
 | a unit that serves or calls a context's routes | its row above, plus that context's `contract` unit |
 

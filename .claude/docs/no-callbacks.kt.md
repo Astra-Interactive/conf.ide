@@ -9,7 +9,9 @@ builder, a `Flow` operator, a `Modifier` factory or a lifecycle hook (`Lifecycle
 the project's own, runs inside a job, a collection or a lifecycle the caller owns. Declaring a callback is
 adding an `on…: (T) -> Unit` parameter, a `…Listener` or `…Callback` type, or a field of that kind to the
 project's own API, outside the two cases under Handlers and outputs. A class in the `event` kind that
-implements the platform's listener (`SitListener : Listener`) declares no callback.
+implements the platform's listener (`SitListener : Listener`) declares no callback. A checker flags every
+`on…` function parameter and every `…Listener` and `…Callback` type outside the two kept cases; the reviewer
+clears one that runs before the function returns.
 
 Project code declares no callback. A result that arrives later is the return value of a `suspend fun`; things
 that happen are a `Flow`. A callback exists only at the boundary with a library or platform that offers

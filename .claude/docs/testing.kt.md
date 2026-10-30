@@ -27,7 +27,7 @@ Example:
 ```kotlin
 @file:Suppress("FunctionNaming")
 
-package com.example.order
+package com.example.order.usecase
 
 @Test
 fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty() {
@@ -37,10 +37,7 @@ fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty() {
     )
 
     val result = createOrderUseCase.invoke(
-        CreateOrderCommand(
-            customerId = CustomerId("customer-1"),
-            items = emptyList()
-        )
+        CreateOrderCommand(customerId = CustomerId("customer-1"), items = emptyList())
     )
 
     assertEquals(CreateOrderResult.CartIsEmpty, result)

@@ -53,7 +53,8 @@ Terms used below:
    code is a source set of the unit, never a unit.
 6. A use case that several sub-contexts need lives in the `api` unit of the sub-context that owns the
    operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an
-   app, the owner's `api` unit holds the use case's interface and its `impl` unit the implementation; the
+   app, the `usecase` package of the owner's `api` unit holds the use case's interface and the `usecase` package
+   of its `impl` unit the `Default…` implementation; the
    others call the interface. When no owner can be named, the agent asks.
 7. A unit's directory never holds another unit: a split sub-context's directory is a container with no build
    file and no sources (`gui/api`, `gui/bukkit`).
@@ -76,9 +77,9 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    technology (Implementation exception, 2).
 
    ```
-   …gui.api.rating.model.RatedPlayer               data it returns
-   …gui.api.rating.usecase.RatePlayerUseCase       operation others call
-   …data.dao.rating.api.RatingRepository           storage contract, in the concept it stores
+   …gui.api.rating.change.model.RatingPlayer         data it returns
+   …gui.api.rating.change.usecase.AddRatingUseCase   operation others call
+   …data.dao.rating.api.RatingRepository             storage contract, in the concept it stores
    ```
 
 2. **Implementation exception.** In a unit that is wholly one technology's implementation
@@ -91,7 +92,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 
    ```
    …data.exposed.rating.ExposedRatingRepository
-   …data.exposed.rating.CachedRatingRepository
+   …data.exposed.rating.CacheRefreshingRatingRepository
    …data.exposed.rating.RefreshingCache
    …data.exposed.rating.table.UserRatingTable
    …data.exposed.database.RatingDatabase
@@ -121,13 +122,16 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    of a level share; the Kotlin Compose rule says what else a Compose unit holds). For any other UI framework
    the names come from the framework's own classes and from the words the project already uses. AstraRating
    uses AstraLibs' `Menu` inside a `gui` sub-context, with its own words: `gui` (menus), `slot` (menu parts),
-   `context` (`SlotContext`), `component` (the holder of a menu's state), `router`, `model` (`RatingSlotKey`).
+   `context` (`SlotContext`), `component` (the holder of a menu's state), `model` (`RatingSlotKey`). A router, the class through which
+   the code opens a screen or a menu, is a contract like any other: its interface in `api` of the unit that owns
+   navigation (`gui/api/router/api/GuiRouter`), its implementation beside the other implementations in the
+   platform or `impl` unit (`gui/bukkit/router/BukkitGuiRouter`).
 5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
    state holder), new files of that kind use it, unless the word is forbidden below or plural (9).
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
    seeds the rating cache at start, so it belongs to `data` (`warmup`) and reaches the server through
    AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even when it only loads
-   a cache (`LoginEvent`); a failure handler sits with the mechanism that fails.
+   a cache (AstraRating's `LoginEvent`, a name from before the `…Listener` rule); a failure handler sits with the mechanism that fails.
 7. **`model` and `util` live at every level.** A model or a function lives in the `model` or `util` of the
    level that uses it, even as one file (`integration/papi/model/PapiConfig.kt`). A higher level's `model` or
    `util` holds only what several lower levels share; a rule of a model that two units use lives in the `util`
@@ -136,16 +140,17 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
    implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
    the unit it serves. Is it generic code that two units need? `core`, in the technology package of the library
-   it is built on (`core/cache/cache4k/RefreshingCache.kt`). Only when every answer is no and the file holds
+   it is built on (`core/cache/cache4k/<Class>.kt`), moved there once a second unit needs it; until then
+   it sits beside its only user. Only when every answer is no and the file holds
    functions, a rule of the model included, is it `util`. `util` and `model` are never the place for a class no
    kind fits: the agent asks the user and proposes a word.
 9. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
-   singular, except an inherently plural concept (`news`).
+   singular, except an inherently plural concept (`news`); which concept is plural is the reviewer's call.
 10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
    `entrypoint`, `impl`, `internal`, `repository`, `valueobject`, `aggregate`, `factory`, `exception`, `dto`,
    `type`, `enum`, `dao`, `common`, `shared`, `helpers`, `misc`, `port`, `adapter`, `in`, `out`, `spi`,
-   `inbound`, `outbound`, `validation`. `table`, `entity` and `database` are allowed only inside a
-   technology's implementation. The list applies to packages inside a unit: a unit's root package follows its
+   `inbound`, `outbound`, `validation`. `table`, `entity` and `database` are allowed only in a unit
+   that is wholly one technology. The list applies to packages inside a unit: a unit's root package follows its
    unit path, and a unit name may keep a project's existing word (`data/dao` → `…data.dao`, `payment/impl` →
    `…payment.impl`).
 
@@ -158,12 +163,12 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   whether a test must replace it are the reviewer's call.
 - A contract sits in the `api` package of its concept. Its implementation sits in the technology's package or
   unit, under the same concept, and is named by its technology or variant (`ExposedRatingRepository`,
-  `InMemoryJailRepository`, `CachedRatingRepository`). `Impl`, the `I` prefix and the `Interface` suffix are
-  forbidden. `database`, `network`, `local` and `remote` are not technology names. An implementation with no
-  technology and no variant, such as an app's use case behind its interface, is named `Default<Interface>`
-  (`DefaultRatePlayerUseCase`).
+  `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). `Impl`, the `I` prefix and the `Interface`
+  suffix are forbidden. `database`, `network`, `local` and `remote` are not technology names. An
+  implementation with no technology and no variant, such as an app's use case behind its interface, is named
+  `Default<Interface>` (`DefaultAddRatingUseCase`).
 - A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
-  another implementation beside it (`CachedRatingRepository`). One that caches part of it gets its own
+  another implementation beside it (`CacheRefreshingRatingRepository`). One that caches part of it gets its own
   contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
   `Cache4kRatedUsersCache`).
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
@@ -180,9 +185,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 
 - A file holds one type family: a sealed hierarchy with its variants, or a data class with the data classes
   nested in it. A class with behaviour always has its own file, even a private helper of one class
-  (`RefreshingCache` is not inside `CachedRatingRepository.kt`). A class with behaviour is any class or object
-  with a function body of its own (not a data class's generated members, not an enum's entries). A file is
-  split only when it passes 400 lines.
+  (`RefreshingCache` is not inside `CacheRefreshingRatingRepository.kt`). A class with behaviour is any class
+  or object with a function body of its own (not a data class's generated members, not an enum's entries); a
+  design-system component's public `<Component>Defaults` object is the one that sits in its component's file
+  (`compose.kt.md`). A file is split only when it passes 400 lines.
 - A data class that is a property type of exactly one class is nested in it. A type that is a property of two
   or more classes, or is returned to another class, is top-level in `model`.
 - Every error family is its own file in `model`, a sealed error with all its subclasses or a single error
@@ -221,7 +227,8 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 
 Every line of this rule that a tool can check is meant to be checked in the build: package names, the
 concept/kind shape, the naming of implementations, the imports allowed in `model`, `api` and `usecase`, the
-dependencies between units. The checker is not written yet; until it exists, the skill's checklist is answered
+dependencies between units. A checker checks what a rule states as a fixed name, number or shape; everything
+else in these rules is the reviewer's call. The checker is not written yet; until it exists, the skill's checklist is answered
 by hand and the final message says so.
 
 **Load the `package-layout` skill before the first new file of a task.**

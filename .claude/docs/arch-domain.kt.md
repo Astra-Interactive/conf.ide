@@ -2,7 +2,8 @@
 
 How the domain rule is written in Kotlin.
 
-- An entity and a value object are immutable `data class`es with fields only. The constructor check of a
+- An entity and a value object are immutable `data class`es (a single-property value object a `value class`)
+  holding what the domain rule lists, no function. The constructor check of a
   value object's invariant is an `init` block of `require` calls and nothing else. A rule is an extension in
   the `util` of the level that uses it; a state transition returns a copy.
 
@@ -39,6 +40,7 @@ How the domain rule is written in Kotlin.
   Bukkit event type that carries it, declared only for other plugins, lives in the `event` kind of the
   platform unit.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
-  are never imported in `model`, in a use case or in a contract. The one exception: in a UI unit, one whose
+  are never imported in `model`, in a use case or in a contract. Two exceptions: in a UI unit, one whose
   build already depends on Compose, `model` may import `androidx.compose.*` and `org.jetbrains.compose.*`
-  (`Painter`, `Dp`, `Color`), see `compose.kt.md`. The imports are meant to be checked by the architecture test.
+  (`Painter`, `Dp`, `Color`), see `compose.kt.md`; in the unit of a framework's entry point, `model` may hold
+  that framework's exception subclasses (`arch-domain.md`). The imports are meant to be checked by the checker.

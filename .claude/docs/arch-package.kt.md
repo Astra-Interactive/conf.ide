@@ -37,7 +37,7 @@ Decide the tier while writing the declaration:
 
 Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
 only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class
-members are `private` unless another class uses them. Entry points such as `JailCommand` and `JailEvent` are
+members are `private` unless another class uses them. Entry points such as `JailCommand` and `JailListener` are
 `internal`: other units construct the unit's DI module, not its classes. The `test` source set sees `internal`, so nothing
 is widened for tests.
 
@@ -80,10 +80,10 @@ internal class FileJailRepository(
   framework's words: `command`, `event`, `service` (an `IntervalService` task), `route` (a Ktor route), `job`.
   A task run once at start is `warmup`, a format converter `migration`, a failure handler `error`. UI kinds
   come from the UI framework: `composable` and `viewmodel` only with Compose; for AstraLibs menus the
-  project's words (AstraRating: `gui`, `slot`, `context`, `component`, `router`). Entry-point kinds and
+  project's words (AstraRating: `gui`, `slot`, `context`, `component`). Entry-point kinds and
   technology packages may import the platform; a `warmup` or `migration` in a platform-free unit reaches the
   server through AstraLibs' `PlatformServer`.
-- A use case is `<Verb><Object>UseCase` (`RatePlayerUseCase`) in the `usecase` package of its concept, with one
+- A use case is `<Verb><Object>UseCase` (`AddRatingUseCase`) in the `usecase` package of its concept, with one
   public `operator fun invoke` and no interface, except an app's use case another unit calls (package-layout
   rule, Units 6). A use case and a contract import no platform or framework type; the server is reached
   through AstraLibs' abstractions (`server/player`, `server/location`, `server/permission`) or the
@@ -106,13 +106,13 @@ explicitly; there is no scanning. The DI rule has the details.
   file holds the data class and nothing else: its rules and its factory are in `util` (`arch-domain.md`).
 - A new data class that is a property type of exactly one class is nested in it. A type returned to another
   class is a top-level family in `model`.
-- The state type of a screen or a menu (`CheckoutState`, `RatingPlayersState`) is always its own file
+- The state type of a screen or a menu (`CheckoutState`) is always its own file
   in `model/`: the view or the menu reads it, so it is returned to another class. It is never nested in the
   view model or state holder, and never a second declaration in that file.
 - An `enum` used only through one type is nested in it; otherwise it is a top-level family of its own.
 - Same file as the type: its companion object, nothing else. A file that declares a class holds no top-level
   function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
-  that uses it, even when one file uses it (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`). Never a
+  that uses it, even when one file uses it (`KPlayer.toRatingPlayer()` of `RatingCommandExecutor`). Never a
   named class inside a function body, never an `inner class`. An anonymous `object :` inside a function only
   implements a type the project does not declare (a library's listener in a bridge, `no-callbacks.kt.md`). A
   Compose composable file declares no class, so an extension only it uses is `private` in it (`compose.kt.md`).

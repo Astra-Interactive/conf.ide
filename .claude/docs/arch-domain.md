@@ -58,20 +58,22 @@ import and Validation apply to every context.
   `findByAccountAndDateRange`), holds no business rule and extends no generic base. `Api`, `Dao`, `Krate` and
   `Storage` are not names for the repository contract; `Krate` stays for an implementation that is a krate.
 - A cache is part of storage, never of its consumer. One that wraps the whole repository is another
-  implementation beside it (`data.exposed.rating.CachedRatingRepository` beside `ExposedRatingRepository`).
-  One that caches part of it gets its own contract in the same `api` (`RatedUsersCache`) and an implementation
-  in the technology unit (`Cache4kRatedUsersCache`). A class it uses has its own file beside it, or in `core`
-  when two units use it (`core/cache/cache4k/RefreshingCache`).
+  implementation beside it (`data.exposed.rating.CacheRefreshingRatingRepository` beside
+  `ExposedRatingRepository`). One that caches part of it gets its own contract in the same `api`
+  (`RatedUsersCache`) and an implementation in the technology unit (`Cache4kRatedUsersCache`). A class it uses
+  has its own file beside it (`RefreshingCache`), and moves to `core` only once a second unit needs it
+  (`core/cache/cache4k/<Class>`).
 - A read that decides nothing is a query function on the repository returning a projection type declared in
   `model`; it does not load the aggregate. A use case is either a command that changes an aggregate or a query
   that only reads, never both.
 
 ### Use case
 
-- A use case is named `<Verb><Object>UseCase` (`RatePlayerUseCase`, `LowerKillerRatingUseCase`) and lives in
+- A use case is named `<Verb><Object>UseCase` (`AddRatingUseCase`, `LowerKillerRatingUseCase`) and lives in
   the `usecase` package of its concept, with one public entry and no interface. In a plugin it lives in the
   `api` unit of the sub-context that owns the operation; other sub-contexts depend on that unit. In an app,
-  when another unit calls it, its interface lives in the owner's `api` unit and its implementation in `impl`. It never
+  when another unit calls it, its interface lives in `usecase` of the owner's `api` unit
+  and its `Default…` implementation in `usecase` of `impl`. It never
   lives in `core`.
 - It exists only when the flow has more than one step: a contract call whose result a model rule judges
   before the next action, or two or more contracts combined. A single contract call with no branch is made

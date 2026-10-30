@@ -34,8 +34,8 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 **T1. Which unit?**
 - The platform main class or `RootModule`: the entry-point unit.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
-  even though the platform starts it): that sub-context's unit; platform-free code in its `api` unit,
-  platform code in its platform unit.
+  even though the platform starts it): that sub-context's unit; code other units call, and every use case, in
+  its `api` unit; code only the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
 - A config, translation or permission model, a function, a generic class or a scope used by several
   sub-contexts: `core`, in the concept → kind shape. A rule of a model that two units use is the exception:
   the `util` of the model's own unit.
@@ -45,10 +45,12 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 **T2. Is this a use case, and where?**
 Only when the flow has more than one step: a contract call whose result a model rule judges before acting, or
 two or more contracts combined. Named `<Verb><Object>UseCase`, in the `usecase` package of its concept, in the
-`api` unit of the sub-context that owns the operation. Never in `core`. If the owner is unclear, ask.
+`api` unit of the sub-context that owns the operation. In an app, the interface sits in `usecase` of the owner's
+`api` unit and its `Default…` implementation in `usecase` of the `impl` unit. Never in `core`. If the owner is
+unclear, ask.
 
 **T3. Which concept and which kind?**
-Path: `<unit root>[/<concept>]/<kind>[/<sub-kind>]/<File>`, the sub-kind for Compose's `composable` only
+Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind for Compose's `composable` only
 (T4). The concept is the thing in the project's words (`rating`). The
 kind, asked in this order:
 1. Contract → `api`. Implements, wraps or narrows a contract (a cache included) → beside the other
@@ -68,7 +70,8 @@ Compose extensions in its `util`, a one-file one `private` in the composable fil
 `composable/util`; `composable` alone may split into `screen`, `component`, `layout` and the project's own words,
 files or sub-packages but never both (`compose.kt.md`). Anything else: derive from the framework's classes and
 the project's words.
-AstraLibs menus: the project's words (AstraRating: `gui`, `slot`, `context`, `component`, `router`, `model`).
+AstraLibs menus: the project's words (AstraRating: `gui`, `slot`, `context`, `component`, `model`). A router is a
+contract in `api` with its implementation beside the other implementations, not a UI kind.
 The project's existing word wins unless it is forbidden.
 
 **T5. Does this need an interface?**
@@ -77,11 +80,12 @@ inner part declares what it needs from an outer one; a test must replace a contr
 
 **T6. One file or several?**
 A sealed type with its variants, or a data class with its nested data classes, is one file. Every class with
-behaviour and every error type has its own file. Extensions go to `util/<Subject>Ext.kt`, except one that
+behaviour and every error family has its own file. Extensions go to `util/<Subject>Ext.kt`, except one that
 only a Compose composable file uses, which is `private` there. There is no `Helper`, `Util` or `Manager` class.
 
 **T7. Which DI module?**
-The unit's own DI module in `di` of the level it wires, with its own `lifecycle`; a database or other resource
+The unit's own DI module in `di` of the level it wires, with its own `lifecycle` when it starts or stops
+something; a database or other resource
 with its own lifecycle gets its own DI module. Add the new module as a child of the module that owns its
 dependencies, or list it in `RootModule`. A `warmup` or `migration` is built and started by the DI module of
 the resource it prepares. A DI module that cannot reach the providing module takes the contract as a
@@ -108,7 +112,6 @@ instances/bukkit         AstraRating.kt, di/RootModule.kt (builds roots, lists t
 modules/core/api         …core
   settings/model/{AstraRatingConfig, AstraRatingPermission, AstraRatingTranslation}.kt
   settings/migration/ConfigSnakeCaseMigration.kt
-  cache/cache4k/RefreshingCache.kt         generic, built on cache4k, two units use it
   util/SortExt.kt
   di/CoreModule.kt
 modules/core/bukkit      …core: di/BukkitModule.kt
@@ -119,6 +122,7 @@ modules/data/dao         …data.dao (contracts, models, in-memory doubles; no D
   rating/util/RatingRepositoryExt.kt
 modules/data/exposed     …data.exposed
   rating/{ExposedRatingRepository, CacheRefreshingRatingRepository, Cache4kRatingCache, Cache4kRatedUsersCache}.kt
+  rating/RefreshingCache.kt                 the helper only CacheRefreshingRatingRepository uses, beside it
   rating/warmup/RatingCacheWarmUp.kt       seeds RatingCache at start through PlatformServer
   rating/di/RatingStorageModule.kt         builds the caches, starts the warm-up in its lifecycle
   table/{UserTable, UserRatingTable}.kt  model/DbRatingConfiguration.kt  di/ExposedModule.kt
@@ -128,7 +132,7 @@ modules/gui/api          …gui.api
   rating/change/util/AstraRatingConfigExt.kt   isRatingMessageLengthAllowed(message)
   rating/players/component/{RatingPlayersComponent, DefaultRatingPlayersComponent}.kt
   rating/players/model/UsersRatingsSort.kt
-  rating/players/di/RatingPlayersModule.kt     takes RatingRepository and RatedUsersCache as parameters
+  rating/players/di/RatingPlayersModule.kt     takes RatedUsersCache and KotlinDispatchers as parameters
   rating/player/{component, model, util, di}/…   router/api/GuiRouter.kt  util/SortCycleExt.kt  di/GuiModule.kt
 modules/gui/bukkit       …gui.bukkit
   rating/players/gui/RatingsGUI.kt  rating/player/gui/PlayerRatingsGUI.kt
@@ -140,7 +144,8 @@ modules/command          …command
   rating/command/{RatingCommandExecutor, RatingLiteralArgumentBuilder}.kt  rating/model/RatingCommand.kt
   rating/util/KPlayerExt.kt  reload/command/ReloadLiteralArgumentBuilder.kt
   error/CommandExceptionHandler.kt  model/UsageCommandException.kt  di/CommandsModule.kt
-modules/event-bukkit     …event: login/event/LoginEvent.kt (val job), kill/event/KillEventListener.kt, di/EventModule.kt
+modules/event-bukkit     …event: login/event/LoginEvent.kt (val job; an old name, new ones are …Listener),
+                         kill/event/KillEventListener.kt, di/EventModule.kt
 modules/integration-papi …integration.papi
   placeholder/expansion/{RatingPlaceholderExpansion, RatingAmountPlaceholder, ColorPlaceholder}.kt
   placeholder/api/RatingPlaceholder.kt  placeholder/model/{PapiConfig, Coloring}.kt  di/PapiModule.kt
@@ -163,18 +168,18 @@ modules/jail/api                   …module.jail.api
   jail/memory/{InMemoryJailRepository}.kt
   jail/di/JailModule.kt
 modules/jail/bukkit                …module.jail.bukkit
-  jail/command/JailCommand.kt  jail/event/JailEvent.kt  jail/service/UnJailServiceTask.kt
+  jail/command/JailCommand.kt  jail/event/JailListener.kt  jail/service/UnJailServiceTask.kt
   jail/util/LocationExt.kt  jail/di/JailBukkitModule.kt
 ```
 
-### An app feature (BUSY, `monetization`)
+### An app feature (`payment`)
 
 ```
-components/bsb/monetization/api    …monetization.api: offer/api/MonetizationApi.kt, offer/model/Plan.kt,
-                                   offer/stub/StubMonetizationApi.kt
-components/bsb/monetization/impl   …monetization.impl: offer/usecase/CheckEntitlementUseCase.kt,
-                                   offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatEntitlementRepository.kt,
-                                   offer/di/MonetizationModule.kt; androidMain at the same paths
+components/shop/payment/api    …payment.api: offer/api/PaymentApi.kt, offer/model/Plan.kt,
+                               offer/usecase/CheckEntitlementUseCase.kt (interface), offer/stub/StubPaymentApi.kt
+components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckEntitlementUseCase.kt,
+                               offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatEntitlementRepository.kt,
+                               offer/di/PaymentModule.kt; androidMain at the same paths
 ```
 
 ### A Rust crate
@@ -193,8 +198,8 @@ line. A "no" is fixed by moving the new file, never an old one.
    they were?
 3. Was every new sub-context offered to the user as "own unit or package", and does every new unit have a
    one-sentence `README.md`?
-4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation, and
-   never in `core`? Does `core` depend on no feature unit?
+4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation (in an
+   app, its interface there and its `Default…` implementation in `impl`), and never in `core`? Does `core` depend on no feature unit?
 5. Does any package hold both files and packages, other than the concept package of a unit that is wholly one
    technology? Does every concept package hold only kind packages, except a technology implementation? Does
    every kind package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
@@ -202,7 +207,7 @@ line. A "no" is fixed by moving the new file, never an old one.
    Compose and the project's own word kept?
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,
    `exception`, `dto`, `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names
-   singular?
+   singular (the reviewer's call)?
 8. Does every contract sit in `api` of its concept, with its implementation named by technology or variant, no
    `Impl`, no `I` prefix?
 9. Does every new interface pass one of the four triggers?
@@ -215,13 +220,13 @@ line. A "no" is fixed by moving the new file, never an old one.
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
     handler in `error` of its mechanism, every format converter in `migration` of what it converts?
 13. Does `model` import nothing of its level and no platform or ORM type (Compose types only in a UI unit's
-    `model`)? Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform
+    `model`, a framework's exception subclasses only in the unit of that framework's entry point)? Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform
     dependency?
 14. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
-15. Does every new unit that constructs something have its own DI module with its own `lifecycle`, in a
-    tree, and did the existing DI wiring stay as it was?
+15. Does every new unit that constructs something have its own DI module, with its own `lifecycle` when it
+    starts or stops something, in a tree, and did the existing DI wiring stay as it was?
 16. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
 17. Does the final message list the old files the rules would move, and where?
 
-The checker that runs items 5, 7, 8, 11 (a class in `util`), 13 and 14 mechanically is defined in the checker stage; until it exists,
+The checker that runs items 5, 7, 8, 11 (a class in `util`), 13 and 14 mechanically is not written yet; until it exists,
 answer them by hand and say so in the final message.

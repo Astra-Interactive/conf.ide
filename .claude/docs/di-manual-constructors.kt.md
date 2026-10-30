@@ -2,6 +2,9 @@
 
 Never instantiate concrete dependencies inside class constructors, constructor default parameters, fields, or methods.
 
+A dependency is an object with behaviour the class calls and a test might replace (a repository, a client, a
+clock). The class's own state (`MutableStateFlow`, `Channel`, a map) is not one.
+
 Dependencies must be created only at the composition root / DI module / application wiring layer, then passed down from parent to child.
 
 Bad:

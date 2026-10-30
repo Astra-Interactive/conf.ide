@@ -1,18 +1,18 @@
 ---
 name: compose-hoisting
-description: Use this skill when working with @Composable functions, Decompose screen components, or Compose previews in this project. Applies when asked to "add previews", "refactor composable", "hoist state", or when editing any file containing @Composable annotations or DecomposeComponent.Render() implementations.
+description: Use this skill when working with @Composable functions, Decompose screen components, or Compose previews in this project. Applies when asked to "add previews", "refactor composable", "hoist state", or when editing any file containing @Composable annotations or a component's `Render()`.
 version: 1.0.0
 ---
 
 # Compose State Hoisting & Decompose
 
-Enforce state-hoisting for `@Composable` functions and extract layout from `DecomposeComponent.Render()` into dedicated composables.
+Enforce state-hoisting for `@Composable` functions and extract layout from a component's `Render()` into dedicated composables.
 
 ## Rules
 
 ### 1. State-hoisted `@Composable` functions
 
-Every `@Composable` function must accept only models and event handlers — no internal `var … by remember { mutableStateOf(…) }` unless the state is purely local UI mechanics with no business meaning (e.g. scroll position, focus holder). Password visibility toggles, loading flags, form values — all must be parameters.
+Every `@Composable` function must accept only models and event handlers — no internal `var … by remember { mutableStateOf(…) }` unless the state is purely local UI mechanics with no business meaning (e.g. scroll position, focus holder). Loading flags and form values must be parameters. Pure UI state with no business meaning (password visibility, expansion toggles) may live only in the screen-level composable (rule 3); every composable it calls takes that state as a parameter.
 
 ```kotlin
 // ✅ correct
@@ -32,7 +32,7 @@ fun MyComposable(...) {
 }
 ```
 
-### 2. `DecomposeComponent.Render()` — collect state only
+### 2. A component's `Render()` — collect state only
 
 `Render()` must contain nothing but `collectAsState()` calls and a single delegating composable call. No `Column`, no `padding`, no `AppBar`, no layout whatsoever.
 
@@ -84,9 +84,9 @@ fun AuthConfirmPasswordScreenComposable(
 
     Column(modifier.fillMaxSize().navigationBarsPadding()) {
         LogInAppBarComposable(text = confirmPasswordType.textTitle, onBack = onBack)
-        ConfirmPasswordScreenComposable(
+        ConfirmPasswordContentComposable(
             passwordFieldHidden = passwordFieldHidden,
-            onPasswordFieldHiddenChange = { passwordFieldHidden = it },
+            onPasswordFieldHiddenChange = { hidden -> passwordFieldHidden = hidden },
             ...
         )
     }
@@ -96,7 +96,7 @@ fun AuthConfirmPasswordScreenComposable(
 ### 4. Previews
 
 Add `@Preview` functions at the **bottom of the file** they preview. Rules:
-- Always wrap with `BusyBarThemeInternal { }`
+- Always wrap with the project's theme composable (`AppTheme { }`)
 - Always `private`
 - Cover: default/empty state, filled/enabled state, in-progress/loading state, error/invalid state
 - Name pattern: `<ComposableName><Scenario>Preview`
@@ -105,22 +105,16 @@ Add `@Preview` functions at the **bottom of the file** they preview. Rules:
 @Preview
 @Composable
 private fun MyComposableEmptyPreview() {
-    BusyBarThemeInternal {
-        MyComposable(
-            value = "",
-            onSubmit = {}
-        )
+    AppTheme {
+        MyComposable(value = "", onSubmit = {})
     }
 }
 
 @Preview
 @Composable
 private fun MyComposableFilledPreview() {
-    BusyBarThemeInternal {
-        MyComposable(
-            value = "Hello",
-            onSubmit = {}
-        )
+    AppTheme {
+        MyComposable(value = "Hello", onSubmit = {})
     }
 }
 ```
@@ -158,6 +152,6 @@ When asked to "add previews" to a directory or file:
 
 1. Read every `@Composable` file in scope.
 2. For each composable — check state-hoisting. If it has internal `var … mutableStateOf`, hoist the state as parameters; find the caller and pass the state down (or create a screen-level wrapper if none exists).
-3. If a `DecomposeComponent.Render()` contains layout: extract it into a new `*ScreenComposable` file, update `Render()` to only collect state and call it.
+3. If a component's `Render()` contains layout: extract it into a new `*ScreenComposable` file, update `Render()` to only collect state and call it.
 4. Add previews at the bottom of each composable file covering all meaningful visual states.
 5. Apply focus/autofill preview guards where `LaunchedEffect { requestFocus() }` or `autofill {}` modifier is present.
