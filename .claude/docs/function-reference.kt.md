@@ -6,17 +6,17 @@ lambda adds a parameter name and a call that carry no information.
 
 ```kotlin
 // Bad
-entitlement.expirationDate?.time?.let { millis -> Instant.fromEpochMilliseconds(millis) }
+subscription.expirationDate?.time?.let { millis -> Instant.fromEpochMilliseconds(millis) }
 ids.map { id -> UserId(id) }
-plans.map { plan -> plan.toPlanContent() }
+items.map { item -> item.toItemContent() }
 users.map { user -> user.name }
 lines.mapNotNull { line -> line.toIntOrNull() }
 offers.forEach { offer -> repository.save(offer) }
 
 // Good
-entitlement.expirationDate?.time?.let(Instant::fromEpochMilliseconds)
+subscription.expirationDate?.time?.let(Instant::fromEpochMilliseconds)
 ids.map(::UserId)
-plans.map(PaywallOffer.Plan::toPlanContent)
+items.map(Cart.Item::toItemContent)
 users.map(User::name)
 lines.mapNotNull(String::toIntOrNull)
 offers.forEach(repository::save)
@@ -24,8 +24,11 @@ offers.forEach(repository::save)
 
 The forms: `::topLevel` and `::Constructor`; `Type::member` for a member, an extension or a property of the
 receiver; `Type::companionMember` for a companion function (`Instant::fromEpochMilliseconds`);
-`instance::member` for a bound reference (`repository::save`, `viewModel::onPurchase`). A reference also
-replaces a lambda passed as an event handler: `onClick = viewModel::onPurchase`, not `onClick = { viewModel.onPurchase() }`.
+`instance::member` for a bound reference (`repository::save`, `viewModel::onPurchase`). A companion member
+of a generic class cannot be referenced through the class name (`Result::success` does not compile): import it
+from its companion and reference it as `::member` (`import kotlin.Result.Companion.success`,
+`onSuccess = ::success`). A reference also replaces a lambda passed as an event handler:
+`onClick = viewModel::onPurchase`, not `onClick = { viewModel.onPurchase() }`.
 
 When the lambda first adapts its parameter (`date.time`) and then calls one function, move the adaptation
 into the chain and reference the function: `expirationDate?.let { date -> Instant.fromEpochMilliseconds(date.time) }`

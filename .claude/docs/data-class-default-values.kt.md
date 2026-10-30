@@ -27,8 +27,9 @@ data class PredictionInput(
 Allowed exception: data classes marked with `@Serializable`, where defaults are required for serialization/backward compatibility.
 
 ```kotlin
+// a config read from a file; the defaults keep old files readable
 @Serializable
-data class PredictionInputDto(
+data class PredictionConfig(
     val symbol: String = "",
     val window: Int = 100,
     val features: List<Double> = emptyList()

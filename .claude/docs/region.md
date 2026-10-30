@@ -15,7 +15,8 @@ Forbidden examples:
 ```
 
 Do not add decorative comments, separator comments, or "section header" comments. Existing markers in a
-file are not a reason to add new ones. When you refactor a file that already has them, delete them.
+file are not a reason to add new ones. When the user asks to refactor a file that already has them, delete them; a task that plugs new code into an
+old file leaves them.
 
 Prefer simple, readable code structure instead:
 

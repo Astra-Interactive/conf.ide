@@ -3,8 +3,8 @@
 When writing a test, make sure that:
 
 * Test domain logic without frameworks.
-* Test application use cases with fake ports.
-* Test adapters and infrastructure with integration tests where appropriate.
+* Test use cases with fakes of the contracts they call.
+* Test technology packages with integration tests where appropriate.
 * Avoid mocking value objects and simple data classes.
 * Prefer fakes over mocks for repositories and gateways when behavior matters.
 * Tests should verify expected behavior, not implementation details.

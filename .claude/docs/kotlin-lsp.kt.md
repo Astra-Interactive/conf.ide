@@ -4,7 +4,9 @@
 
 1. `codebase-memory-mcp` — search for symbols, call chains, architecture overview.
 2. LSP tool (`kotlin-lsp`) — precise navigation: go-to-definition, references, hover/type info.
-3. Bash (`grep`, `find`, `cat`) — last resort only, when the tools above cannot answer.
+
+Text search in code goes through codebase-memory's `search_code`; `grep`/`find`/`cat` are for non-code files
+only (`codebase-memory.md`).
 
 ### Kotlin project source files → `kotlin-lsp` via the LSP tool
 

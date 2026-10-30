@@ -9,7 +9,10 @@
 | Caller must handle several outcomes differently                                         | per-use-case `sealed interface` |
 | Programmer error or broken invariant (`require`, `check`, unreachable branch)           | throw                           |
 
-Never throw for an expected business or validation failure. Throwing is reserved for bugs.
+Never throw for an expected business or validation failure. Throwing is reserved for bugs, with one
+exception: a framework that takes a failure only as a thrown exception (a command framework's
+`CommandException`). There the exception extends the framework's type, lives in `model`, is thrown only
+inside that framework's entry point (`command`), and the handler that turns it into a reply lives in `error`.
 
 ### Contract
 
@@ -28,16 +31,12 @@ class OrderLoadError(message: String, cause: Throwable) : OrderError(message, ca
 
 ```kotlin
 fun parseOrder(raw: String): Result<Order> {
-    if (raw.isBlank()) {
-        return Result.failure(OrderParseError("Order payload is blank"))
-    }
+    if (raw.isBlank()) return Result.failure(OrderParseError("Order payload is blank"))
     return Result.success(Order(/* ... */))
 }
 
 fun Order.validate(): Result<Order> {
-    if (items.isEmpty()) {
-        return Result.failure(OrderValidationError("Order must contain at least one item"))
-    }
+    if (items.isEmpty()) return Result.failure(OrderValidationError("Order must contain at least one item"))
     return Result.success(this)
 }
 ```
@@ -51,7 +50,7 @@ fun Order.validate(): Result<Order> {
   nested next to the success ones.
 - Any other error type, or error hierarchy with its subclasses, is its own file in the `model/` of the level
   that uses it, even one that never leaves one class (`…command.model.UsageCommandException`), never a private
-  class inside the file that throws it.
+  class inside the file that returns or throws it.
 - An old `exception/` package stays as it is; new error types of its concept still go to `model/`.
 
 ### Boundaries: converting exceptions
@@ -61,10 +60,12 @@ serialization. Translate the caught exception into a domain error right there, s
 see library exceptions.
 
 ```kotlin
-fun loadOrder(id: OrderId): Result<Order> {
+import kotlin.Result.Companion.success
+
+fun fetchOrder(id: OrderId): Result<Order> {
     return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
         .fold(
-            onSuccess = { order -> Result.success(order) },
+            onSuccess = ::success,
             onFailure = { error ->
                 Result.failure(OrderLoadError("Could not load order ${id.value}", error))
             }
@@ -86,11 +87,14 @@ rethrow it before doing anything else with the result, through mikro-core's
 `Result<T>.propagateCancellationException()` (`ru.astrainteractive.klibs.mikro.core.coroutines`):
 
 ```kotlin
-suspend fun loadOrder(id: OrderId): Result<Order> {
+import ru.astrainteractive.klibs.mikro.core.coroutines.propagateCancellationException
+import kotlin.Result.Companion.success
+
+suspend fun fetchOrder(id: OrderId): Result<Order> {
     return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
         .propagateCancellationException()
         .fold(
-            onSuccess = { order -> Result.success(order) },
+            onSuccess = ::success,
             onFailure = { error ->
                 Result.failure(OrderLoadError("Could not load order ${id.value}", error))
             }
@@ -119,7 +123,7 @@ fun computeOrderTotal(raw: String): Result<Money> {
 Use `map` for a pure transformation of the success value and `recover` for a fallback value:
 
 ```kotlin
-val total: Result<Money> = parseOrder(raw).map { order -> order.total }
+val total: Result<Money> = parseOrder(raw).map(Order::total)
 
 val totalOrZero: Result<Money> = total.recover { _ -> Money.ZERO }
 ```
@@ -131,7 +135,7 @@ logging:
 
 ```kotlin
 val response: HttpResponse = result.fold(
-    onSuccess = { order -> HttpResponse.ok(order) },
+    onSuccess = HttpResponse::ok,
     onFailure = { error -> HttpResponse.badRequest(error.message ?: "Invalid order") }
 )
 

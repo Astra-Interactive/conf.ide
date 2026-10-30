@@ -64,10 +64,11 @@ for Compose's `composable` only (Concepts and kinds 1). A kind directly under th
 unit root holds what the whole unit shares: its DI module, a model or a helper several concepts use
 (`…command.model.UsageCommandException`).
 
-1. A concept package holds only packages. A kind package holds only files. A one-file kind package is normal.
-   A kind package exists only when it has a file. The one exception is Compose's `composable`, which may hold
+1. A package holds files or packages, never both: a concept holds packages, a kind holds files. A one-file
+   kind package is normal. A kind package exists only when it has a file. Compose's `composable` may hold
    sub-packages (`screen`, `component`, `layout`, a project's own words) instead of files; the Kotlin Compose
-   rule says when.
+   rule says when. The one package that holds both is the concept package of a unit that is wholly one
+   technology (Implementation exception, 2).
 
    ```
    …gui.api.rating.api.RatingPlayersRepository     contract
@@ -107,6 +108,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | `error` | classes that turn a failure into the user's reply, in the unit of the mechanism that fails (`command/error/CommandExceptionHandler.kt`) |
    | technology packages | an implementation of a contract, or code built on one library, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
    | `stub` | a stub or preview implementation of a contract that other units need |
+   | `table`, `entity`, `database` | only in a unit that is wholly one technology: its tables, its row entities, its connection |
 
 4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose, `viewmodel` an
    Android style view model, and all three are used only there (`theme` holds the values several composables
@@ -136,10 +138,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
    `entrypoint`, `impl`, `internal`, `repository`, `valueobject`, `aggregate`, `factory`, `exception`, `dto`,
    `type`, `enum`, `dao`, `common`, `shared`, `helpers`, `misc`, `port`, `adapter`, `in`, `out`, `spi`,
-   `inbound`, `outbound`, `validation`. `table` and `entity` are allowed only inside a technology's
-   implementation. The list applies to packages inside a unit: a unit's root package follows its unit path,
-   and a unit name may keep a project's existing word (`data/dao` → `…data.dao`, `monetization/impl` →
-   `…monetization.impl`).
+   `inbound`, `outbound`, `validation`. `table`, `entity` and `database` are allowed only inside a
+   technology's implementation. The list applies to packages inside a unit: a unit's root package follows its
+   unit path, and a unit name may keep a project's existing word (`data/dao` → `…data.dao`, `payment/impl` →
+   `…payment.impl`).
 
 ### Contracts and implementations
 
@@ -158,7 +160,8 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
   contracts they implement and `model`; use cases on contracts, `model` and `util`; entry points on use cases,
   contracts, `model` and `util`; nothing depends on an
-  entry point; `di` depends on everything and nothing depends on it. A use case and a contract import no
+  entry point; `di` depends on everything, and only another `di` depends on it: a DI module takes DI modules
+  through its constructor, and the composition root builds them. A use case and a contract import no
   platform or framework type.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
@@ -171,9 +174,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   (`RefreshingCache` is not inside `CachedRatingRepository.kt`). A file is split only above about 400 lines.
 - A data class that is a property type of exactly one class is nested in it. A type that is a property of two
   or more classes, or is returned to another class, is top-level in `model`.
-- Every error type is its own file in `model`: an error a contract names in the `model` of the contract's
-  level, any other in the `model` of the level that uses it, even one used by one class
-  (`modules/command`: `…command.model.UsageCommandException`). There is no `exception` package.
+- Every error family is its own file in `model`, a sealed error with all its subclasses or a single error
+  class: an error a contract names in the `model` of the contract's level, any other in the `model` of the
+  level that uses it, even one used by one class (`modules/command`: `…command.model.UsageCommandException`).
+  There is no `exception` package.
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
   the type's own file. A file that declares a class holds no top-level function; a Compose composable file
   declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is

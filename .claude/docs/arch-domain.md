@@ -8,8 +8,9 @@ import and Validation apply to every context.
 
 ### Rules live in `util`
 
-- The model is data: a `data class` holds fields and nothing else. A rule about one type is an extension of
-  that type in `util/<Type>Ext.kt`, returning a copy or a decision and taking what it needs as parameters
+- The model is data: a `data class` holds fields and, when it is a value object with an invariant, the check
+  of that invariant in its constructor; nothing else. A rule about one type is an extension of that type in
+  `util/<Type>Ext.kt`, returning a copy or a decision and taking what it needs as parameters
   (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
   `fun Dictionary.canRead(user: User?)` in `dictionary/util/DictionaryExt.kt`). It is never a member of the
   type, and never a top-level function that takes the type as a parameter.
@@ -85,8 +86,12 @@ which lives in `service/`.
 
 ### Domain event
 
-- An event type is a model type, named in the past tense (`PlayerJailed`), in `model` with the aggregate it
-  concerns. It is published through the platform's event bus or through a publisher contract in `api`.
+- An event type is a model type in `model` with the aggregate it concerns, named in the past tense
+  (`PlayerJailed`); a sealed family of events is named `<Subject>Event` and its variants in the past tense
+  (`TimerEvent.Started`). It is published through the platform's event bus or through a publisher contract in
+  `api`. A platform event type the project declares (a Bukkit `Event` subclass) keeps the platform's `Event`
+  suffix (`PlayerJoinedEvent`) and lives in the `event` kind of the platform unit. The suffix is checked by a
+  tool, the past tense by the reviewer.
 - Listeners sit in the `event` kind of the sub-context that reacts.
 - An event another unit listens to lives in the `api` unit of the publisher, with its contracts.
 
@@ -96,7 +101,9 @@ which lives in `service/`.
   the aggregate's `util` returning a `Result` (`fun createJail(name: String, location: JailLocation):
   Result<Jail>`), never a companion `create`: the model is data.
 - The construction of dependencies belongs to `di/` and is not called a factory. A `Factory` class for a single
-  implementation is forbidden.
+  implementation is forbidden. The exception is an object that needs arguments known only when it is created
+  (a UI component's context and callbacks): its `fun interface Factory` is nested in the class it builds, and a
+  DI module implements it.
 
 ### What the model may import
 

@@ -16,17 +16,17 @@ When writing or modifying code, order declarations by dependency, not by call-si
 5. Preserve this ordering when refactoring existing code.
 
 ```kotlin
-class PlanPaywallViewModel(
-    private val offerRepository: OfferRepository
+class CartViewModel(
+    private val cartRepository: CartRepository
 ) : ViewModel() {
-    private val state = MutableStateFlow<PlanPaywallState>(PlanPaywallState.Loading)
+    private val state = MutableStateFlow<CartState>(CartState.Loading)
 
-    private suspend fun loadOffer() {
-        state.value = offerRepository.loadOffer()
+    private suspend fun loadCart() {
+        state.value = cartRepository.loadCart()
     }
 
     init {
-        viewModelScope.launch { loadOffer() }
+        viewModelScope.launch { loadCart() }
     }
 }
 ```
@@ -37,31 +37,22 @@ Inside a class the `companion object` is the last declaration, and class-level c
 shared defaults, keys, limits) live there. Rule 1 covers instance properties and top-level properties
 only; it does not pull constants to the top of the class.
 
-This holds for an `interface` too: an interface has a `companion object`, and a DI module declared as one
-keeps its constants there. A `private object` beside a type that only holds that type's constants is
-forbidden.
+This holds for a DI module and for an `interface` too: both keep their constants in a `companion object`. A
+`private object` beside a type that only holds that type's constants is forbidden.
 
 ```kotlin
 // Bad
-private object PostHogFeatureFlagDefaults {
+private object FeatureFlagModuleDefaults {
     val ReloadInterval = 1.minutes
 }
 
-@ContributesTo(AppGraph::class)
-interface PostHogFeatureFlagModule {
-    @Provides
-    fun provideFeatureFlagReloader(scope: CoroutineScope): FeatureFlagReloader {
-        return PostHogFeatureFlagReloader(interval = PostHogFeatureFlagDefaults.ReloadInterval, scope = scope)
-    }
+internal class FeatureFlagModule(coreModule: CoreModule) {
+    val featureFlagReloader = IntervalFeatureFlagReloader(FeatureFlagModuleDefaults.ReloadInterval, coreModule.ioScope)
 }
 
 // Good
-@ContributesTo(AppGraph::class)
-interface PostHogFeatureFlagModule {
-    @Provides
-    fun provideFeatureFlagReloader(scope: CoroutineScope): FeatureFlagReloader {
-        return PostHogFeatureFlagReloader(interval = RELOAD_INTERVAL, scope = scope)
-    }
+internal class FeatureFlagModule(coreModule: CoreModule) {
+    val featureFlagReloader = IntervalFeatureFlagReloader(RELOAD_INTERVAL, coreModule.ioScope)
 
     companion object {
         private val RELOAD_INTERVAL = 1.minutes
@@ -78,9 +69,7 @@ class OrderPricing(
     private fun applyTax(subtotal: Money): Money = subtotal * (1 + taxRate)
 
     fun computePrice(order: Order): Money {
-        if (order.items.size > MAX_ITEMS) {
-            return Money.ZERO
-        }
+        if (order.items.size > MAX_ITEMS) return Money.ZERO
         return priceCache.getOrPut(order.id) { applyTax(order.subtotal) }
     }
 
@@ -107,6 +96,6 @@ class ReportBuilder(
 ) {
     private val columns: List<Column> = resolveColumns()
 
-    private fun resolveColumns(): List<Column> = source.schema.columns.filter { column -> column.visible }
+    private fun resolveColumns(): List<Column> = source.schema.columns.filter(Column::visible)
 }
 ```

@@ -195,8 +195,9 @@ line. A "no" is fixed by moving the new file, never an old one.
    one-sentence `README.md`?
 4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation, and
    never in `core`? Does `core` depend on no feature unit?
-5. Does every concept package hold only kind packages, except a technology implementation? Does every kind
-   package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
+5. Does any package hold both files and packages, other than the concept package of a unit that is wholly one
+   technology? Does every concept package hold only kind packages, except a technology implementation? Does
+   every kind package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
 6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel`/`theme` only under
    Compose and the project's own word kept?
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,

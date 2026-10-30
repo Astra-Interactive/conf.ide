@@ -21,8 +21,8 @@
 
   ```kotlin
   state.update { current -> current.copy(isBusy = false) }   // depends on the current value
-  state.value = SplashPaywallState.Finished                   // does not
-  state.emit(SplashPaywallState.Finished)                     // never
+  state.value = CheckoutState.Finished                       // does not
+  state.emit(CheckoutState.Finished)                         // never
   ```
 
 - The lambda of `update`, `getAndUpdate` and `updateAndGet` is pure: it is a compare-and-set loop, so the
@@ -34,31 +34,27 @@
 
   ```kotlin
   // Bad
-  private fun startBusyOffer(): SplashPaywallState.Content? {
-      var started: SplashPaywallState.Content? = null
+  private fun startPayment(): CheckoutState.Content? {
+      var started: CheckoutState.Content? = null
       state.update { current ->
-          val content = current as? SplashPaywallState.Content ?: return@update current
+          val content = current as? CheckoutState.Content ?: return@update current
           content.copy(isBusy = true).also { busy -> started = busy }
       }
       return started
   }
 
-  // Good: splash/util/SplashPaywallStateExt.kt, the pure transition
-  internal fun SplashPaywallState.startBusyOffer(): SplashPaywallState.Content? {
-      if (this !is SplashPaywallState.Content) {
-          return null
-      }
-      val isOfferShown = stage == SplashPaywallStage.OFFER
-      if (!isOfferShown || isBusy) {
-          return null
-      }
+  // Good: checkout/util/CheckoutStateExt.kt, the pure transition
+  internal fun CheckoutState.startPayment(): CheckoutState.Content? {
+      if (this !is CheckoutState.Content) return null
+      val isPaymentStage = stage == CheckoutStage.PAYMENT
+      if (!isPaymentStage || isBusy) return null
       return copy(isBusy = true)
   }
 
   // Good: the view model
-  private fun claimBusyOffer(): SplashPaywallState.Content? {
-      val previous = state.getAndUpdate { current -> current.startBusyOffer() ?: current }
-      return previous.startBusyOffer()
+  private fun claimPayment(): CheckoutState.Content? {
+      val previous = state.getAndUpdate { current -> current.startPayment() ?: current }
+      return previous.startPayment()
   }
   ```
 
@@ -76,14 +72,14 @@
   ```kotlin
   // Bad: a second click launches a second purchase
   fun onPurchase() {
-      viewModelScope.launch { offerRepository.purchase(plan) }
+      viewModelScope.launch { checkoutRepository.purchase(order) }
   }
 
   // Good
   private val purchaseScope = viewModelScope.asSingleJobScope()
 
   fun onPurchase() {
-      purchaseScope.launch(SingleJobMode.SKIP_IF_RUNNING) { offerRepository.purchase(plan) }
+      purchaseScope.launch(SingleJobMode.SKIP_IF_RUNNING) { checkoutRepository.purchase(order) }
   }
   ```
 

@@ -1,13 +1,13 @@
 ## Constructors Dependency Injection Rule
 
-Never instantiate concrete dependencies inside service/class constructors, constructor default parameters, fields, or methods.
+Never instantiate concrete dependencies inside class constructors, constructor default parameters, fields, or methods.
 
 Dependencies must be created only at the composition root / DI module / application wiring layer, then passed down from parent to child.
 
 Bad:
 
 ```kotlin
-class LivePredictionService(
+class LivePredictor(
     private val repo: MarketDataRepository,
     private val pipeline: FeatureLabelPipeline = FeatureLabelPipeline(),
     private val model: DirectionModel = TemperatureCalibratedDirectionModel(),
@@ -18,7 +18,7 @@ class LivePredictionService(
 Good:
 
 ```kotlin
-class LivePredictionService(
+class LivePredictor(
     private val repo: MarketDataRepository,
     private val pipeline: FeatureLabelPipeline,
     private val model: DirectionModel,

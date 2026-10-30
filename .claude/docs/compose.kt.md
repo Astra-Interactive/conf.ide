@@ -4,7 +4,7 @@ How a UI unit built on Compose is laid out and written. The package-layout rule 
 (`<concept>/<kind>/<File>`); the `compose-hoisting` skill gives state hoisting, `Render()` and previews; this
 rule fills what is specific to Compose. The verb table of `clean-code.kt.md` and the flow rules of
 `coroutines.kt.md` apply unchanged. A UI unit is one whose build already depends on Compose: the `impl` unit
-of a screen feature, the design-system unit (`core/ui` in BUSY: a unit path, which may keep its word, not a
+of a screen feature, the design-system unit (`core/ui`: a unit path, which may keep its word, not a
 package created inside a unit).
 
 ### Packages of a UI unit
@@ -17,9 +17,9 @@ package created inside a unit).
   stays, and a UI type is never a copy of a domain type with the same fields.
 
   ```
-  impl/model/BenefitContent.kt                 data class BenefitContent(val painter: Painter, val label: String)
-  impl/splash/model/SplashPaywallState.kt      the screen state, its own file
-  impl/composable/component/BenefitComposable.kt   the function that reads it
+  impl/model/PerkContent.kt                    data class PerkContent(val painter: Painter, val label: String)
+  impl/checkout/model/CheckoutState.kt         the screen state, its own file
+  impl/composable/component/PerkComposable.kt  the function that reads it
   ```
 
   The input of a composable is `<Thing>Content`; the state of a screen is `<Screen>State`.
@@ -33,8 +33,8 @@ package created inside a unit).
   agent proposes the split; moving the old files needs the approval the package-layout rule asks for.
 
   ```
-  impl/composable/screen/SplashPaywallScreenComposable.kt
-  impl/composable/component/HeroCopyComposable.kt
+  impl/composable/screen/CheckoutScreenComposable.kt
+  impl/composable/component/OrderSummaryComposable.kt
   impl/composable/component/GlassIconComposable.kt
   impl/composable/layout/ScrollFadeComposable.kt
   ```
@@ -47,10 +47,10 @@ package created inside a unit).
   the level, like any extension. There is no `composable/util`. The pure rules of a domain type stay in the
   `util` of its `api` unit, where Compose is not on the classpath. A file of functions with no `@Composable`
   in it (`DrawScope.draw…` extensions, a brush builder) is a `util` file, never in `composable`, under the
-  ordinary names: `subscription/util/DrawScopeExt.kt` for the drawing extensions of the card,
+  ordinary names: `checkout/util/DrawScopeExt.kt` for the drawing extensions of the payment card,
   `util/LinearGradient.kt` for `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention
   in `@param angleDegrees`, a reason that points outside the code (the CSS angle), the KDoc rule's second
-  case. A `DrawScope` extension one composable file uses stays `private` there, like any extension.
+  exception. A `DrawScope` extension one composable file uses stays `private` there, like any extension.
 - The file rule has no exception for `private` types of a composable file. A `data class` goes to `model`
   with fields only, its formulas to `util/<Type>Ext.kt`; an `enum` used only through one model type is nested
   in it, otherwise it is its own file.
@@ -66,19 +66,26 @@ package created inside a unit).
 
 - Values that several composables of one level must share (the timings and easings of one screen's
   animation, the spacing of one feature) live in the kind `theme` of that level, as an `internal object`
-  named for what it is: `impl/theme/PaywallMotion.kt`. At a feature level the object holds values only, no
+  named for what it is: `impl/theme/CheckoutMotion.kt`. At a feature level the object holds values only, no
   function, so it is not a namespace of helpers. A timing is a `Duration` (`val CardIn = 400.milliseconds`),
   never an `Int` or `Long` under an `_MS` name; `.inWholeMilliseconds.toInt()` is written only at the Compose
   call that demands milliseconds, and a `tween(duration: Duration, …)` wrapper goes to the design-system
   unit once two units convert:
 
   ```kotlin
-  tween(durationMillis = PaywallMotion.CardIn.inWholeMilliseconds.toInt())
+  tween(durationMillis = CheckoutMotion.CardIn.inWholeMilliseconds.toInt())
   ```
- Values of the whole application live only in the
-  design-system unit, whose `theme` also holds the theme itself: the `CompositionLocal`s and the
-  `@Composable` theme function. Not `composable` (it holds functions), not `model`, not `util`. A value one
-  file uses stays private in that file.
+
+  Values of the whole application live only in the design-system unit, whose `theme` also holds the theme
+  itself: the `CompositionLocal`s and the `@Composable` theme function. Not `composable` (it holds
+  functions), not `model`, not `util`. A value one file uses stays private in that file.
+
+### Resources
+
+A composable reads a resource through `DrawableResource.asPainter()` and `StringResource.asComposableString(…)`,
+never through `painterResource(…)` or `stringResource(…)` directly. The extensions come from mikro when the
+project's mikro has them; otherwise the project declares them once, in the `util` of its design-system unit
+(`util/ComposeResourceExt.kt`).
 
 ### Constants of a composable
 
@@ -137,23 +144,23 @@ package created inside a unit).
 ### Previews
 
 Previews close the file (the `compose-hoisting` skill). Everything that only previews use, constants,
-fixtures (`PreviewPlans`), helper composables, sits in that block, before the first function that uses it,
+fixtures (`PreviewItems`), helper composables, sits in that block, before the first function that uses it,
 never at the top of the file. Preview constants start with `PREVIEW_`, preview vals with `Preview`, and every
 function of the block carries `Preview` in its name (`<Composable><Scenario>Preview` for a `@Preview`, as the
-skill says; `HeroCopyPreviewSheet` for a helper). This is an exception to rule 1 of the code-ordering rule.
+skill says; `OrderSummaryPreviewSheet` for a helper). This is an exception to rule 1 of the code-ordering rule.
 
 ```kotlin
 @Composable
-internal fun HeroCopyComposable(...) { ... }
+internal fun OrderSummaryComposable(...) { ... }
 
-private const val PREVIEW_TITLE = "Unlock more control."
+private const val PREVIEW_TITLE = "Two items, ready to pay."
 
 @Composable
-private fun HeroCopyPreviewSheet(align: HeroCopyAlign) { ... }
+private fun OrderSummaryPreviewSheet(align: OrderSummaryAlign) { ... }
 
 @Preview
 @Composable
-private fun HeroCopyCenterPreview() { ... }
+private fun OrderSummaryCenterPreview() { ... }
 ```
 
 ### Naming
@@ -164,14 +171,17 @@ private fun HeroCopyCenterPreview() { ... }
   ```kotlin
   // Bad: builds the list on every recomposition under a name that promises remember
   @Composable
-  private fun rememberFeatureShortcuts(): ImmutableList<FeatureShortcutContent> = persistentListOf(...)
+  private fun rememberShortcuts(): ImmutableList<ShortcutContent> = persistentListOf(...)
 
   // Good
   @Composable
-  private fun rememberFeatureShortcuts(): ImmutableList<FeatureShortcutContent> {
-      val timerIcon = IconsRes.drawable.ic_bi_timer_fill.asPainter()
-      val timerLabel = StringsRes.string.paywall_feature_timer_settings.asComposableString()
-      return remember(timerIcon, timerLabel) { persistentListOf(FeatureShortcutContent(timerIcon, timerLabel)) }
+  private fun rememberShortcuts(): ImmutableList<ShortcutContent> {
+      val timerIcon = Res.drawable.ic_timer.asPainter()
+      val timerLabel = Res.string.shortcut_timer.asComposableString()
+      return remember(
+          timerIcon,
+          timerLabel
+      ) { persistentListOf(ShortcutContent(timerIcon, timerLabel)) }
   }
   ```
 
@@ -188,11 +198,11 @@ statements that cannot be extracted.
 
 ```kotlin
 // Bad
-SplashPaywallStage.SUCCESS -> Column {
-    Spacer(Modifier.height(PaywallMotion.CardDrop + SuccessHeroTopSpacing))
-    PurchaseSuccessContentComposable(modifier = Modifier.weight(1f), onStart = onStart)
+CheckoutStage.SUCCESS -> Column {
+    Spacer(Modifier.height(CheckoutMotion.CardDrop + SuccessTopSpacing))
+    PaymentSuccessContentComposable(modifier = Modifier.weight(1f), onStart = onStart)
 }
 
 // Good
-SplashPaywallStage.SUCCESS -> SplashSuccessStageComposable(onStart = onStart)
+CheckoutStage.SUCCESS -> CheckoutSuccessStageComposable(onStart = onStart)
 ```

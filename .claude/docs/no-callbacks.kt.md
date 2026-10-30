@@ -98,35 +98,45 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
   `onValueChange: (String) -> Unit`) are state hoisting (the `compose-hoisting` skill): an event sent up,
   invoked synchronously by the UI when the user acts. They stay and are never replaced by a flow.
 - The output of a Decompose component to its parent is one constructor parameter per event, each a
-  `fun interface On<Event>Callback`, and the parent decides the navigation. Not one `onOutput: (Output) -> Unit`
+  `fun interface On<Event>Callback` nested in the class of the component whose output it is (beside the
+  component's factory, when the project builds components through one), and the parent decides the navigation. Not one `onOutput: (Output) -> Unit`
   with a sealed `Output` and a `when` at the parent, and not a `Flow` of outputs of any kind (`SharedFlow`,
   `Channel.receiveAsFlow()`), which loses the result while the parent is not yet collecting. A stream enters a
   component only as the parent's input or as the component's own UI events.
 
   ```kotlin
   // Bad
-  fun interface Factory {
-      operator fun invoke(componentContext: ComponentContext, onOutput: (CheckoutOutput) -> Unit): CheckoutComponent
+  abstract class CheckoutComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
+      fun interface Factory {
+          operator fun invoke(componentContext: ComponentContext, onOutput: (CheckoutOutput) -> Unit): CheckoutComponent
+      }
   }
 
   // Good
-  fun interface Factory {
-      operator fun invoke(
-          componentContext: ComponentContext,
-          onPaidCallback: OnPaidCallback,
-          onCancelledCallback: OnCancelledCallback
-      ): CheckoutComponent
-  }
+  abstract class CheckoutComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
+      fun interface OnPaidCallback {
+          operator fun invoke(order: OrderId)
+      }
 
-  fun interface OnPaidCallback {
-      operator fun invoke(order: OrderId)
+      fun interface OnCancelledCallback {
+          operator fun invoke()
+      }
+
+      fun interface Factory {
+          operator fun invoke(
+              componentContext: ComponentContext,
+              onPaidCallback: OnPaidCallback,
+              onCancelledCallback: OnCancelledCallback
+          ): CheckoutComponent
+      }
   }
   ```
 
 ### The bridge
 
-- A library callback is converted in the technology package or unit of that library, inside the
-  implementation of a contract. The contract in `api` declares only `suspend` functions and `Flow`s; `usecase`,
+- A library callback is converted in the technology package or unit of that library: inside the
+  implementation of a contract, or as an extension of the library's own type (`ExoPlayer.asPlaybackStateFlow()`)
+  in the `util` of the unit that is wholly that library. The contract in `api` declares only `suspend` functions and `Flow`s; `usecase`,
   `model`, a view model and a composable never see the library's callback or listener type. This is the
   anti-corruption boundary of `arch-context.md`.
 - Before writing a bridge, use the adapter that exists: the library's own (`Task.await()`,
@@ -177,7 +187,7 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
   (`replay = 1`, or `stateIn`, for a value; `replay = 0` for events), not a registration per collector.
 
   ```kotlin
-  // player/exo/util/ExoPlayerExt.kt, in the unit that is wholly ExoPlayer
+  // player/util/ExoPlayerExt.kt, in the unit that is wholly ExoPlayer
   internal fun ExoPlayer.asPlaybackStateFlow(): Flow<PlaybackState> {
       return callbackFlow {
           val listener = object : Player.Listener {

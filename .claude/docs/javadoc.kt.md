@@ -2,11 +2,11 @@
 
 This is a Kotlin project. Documentation is written in KDoc format. The core principle: **a comment exists only if it adds information not already present in the signature**. If the signature says everything on its own — no comment at all.
 
-This document says when a KDoc is written and how. It does not decide whether a function should throw or return `Result` — that is governed by the error-handling rules. `@throws` is documented whenever the function in question actually throws: a library API, an SDK wrapper, a boundary adapter. The examples below are generic API signatures, not templates for domain code.
+This document says when a KDoc is written and how. It does not decide whether a function should throw or return `Result` — that is governed by the error-handling rules. `@throws` is documented whenever a function of a published library throws. The examples below are generic API signatures, not templates for domain code.
 
 ### Application code: no KDoc
 
-In a plugin, an application or a service the code is understandable without KDoc, and KDoc is not written. The one exception is a line that says what the code cannot: the failure case of a contract (`@return failure with [DictionaryError.NotFound] when no dictionary has this id`) or a reason that points outside the code (a platform quirk, a workaround for a bug in a library). A KDoc that says what a declaration does, why a module exists, or repeats a rule the body shows is deleted.
+In a plugin, an application or a service the code is understandable without KDoc, and KDoc is not written. There are two exceptions, each a line that says what the code cannot: the failure case of a contract (`@return failure with [DictionaryError.NotFound] when no dictionary has this id`) and a reason that points outside the code (a platform quirk, a workaround for a bug in a library). A KDoc that says what a declaration does, why a module exists, or repeats a rule the body shows is not written; in an old file it is removed only in a refactoring the user asked for, never by a task that plugs new code in.
 
 ```kotlin
 // Deleted: the name says it, and the body shows the rule
@@ -67,7 +67,7 @@ If the answer is "no" — the element is **not written**. A partially documented
  * @param userId the identifier of the user
  * @return the user object
  */
-fun getUser(userId: Long): User
+fun loadUser(userId: Long): User
 ```
 
 **Good** (only what the signature doesn't say; a throwing library API, so the contract the caller must handle is the one thing worth writing down):
@@ -76,7 +76,7 @@ fun getUser(userId: Long): User
 /**
  * @throws UserNotFoundException if the user is deleted or does not exist
  */
-fun getUser(userId: Long): User
+fun loadUser(userId: Long): User
 ```
 
 The same principle applied to a `Result`-returning function: document the failure cases only when the name and type do not make them obvious.
@@ -92,21 +92,21 @@ fun findUser(userId: Long): Result<User>
 
 ```kotlin
 /**
- * Function for calculating a discount. Takes a price and a rate and returns the discount.
+ * Function for computing a discount. Takes a price and a rate and returns the discount.
  */
-fun calculateDiscount(price: BigDecimal, rate: Double): BigDecimal
+fun computeDiscount(price: BigDecimal, rate: Double): BigDecimal
 ```
 
 **Good** (semantics and constraints not expressed by the types):
 
 ```kotlin
 /**
- * Calculates the discount amount, excluding promotional items.
+ * Computes the discount amount, excluding promotional items.
  *
  * @param rate discount as a fraction in the range 0.0..1.0, not a percentage
  * @return amount rounded to cents using HALF_UP
  */
-fun calculateDiscount(price: BigDecimal, rate: Double): BigDecimal
+fun computeDiscount(price: BigDecimal, rate: Double): BigDecimal
 ```
 
 **Good** (no comment, because none is needed):

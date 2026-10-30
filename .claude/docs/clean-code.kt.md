@@ -13,20 +13,22 @@ Core requirements:
 * A function is named with a verb that says what happens; one that returns a value is never a bare noun
   (`cardSegments()`, `featureShortcuts()`, `titleStyle()` mislead) and never starts with `get`, except
   `getState()` where a project already uses it as the view model's state accessor. `operator fun invoke`,
-  a DI `provide…` and an override of a framework signature keep their names. The usual verbs; another verb
-  is fine when it says what happens as plainly:
+  a DI `provide…` and an override of a framework signature keep their names. A `@Composable` that emits UI
+  and returns `Unit` is named for what it shows, in PascalCase, as Compose names its own (`Text`, `Button`); a
+  `Modifier` extension is named like Compose's modifiers (`padding`, `background`); a test is named by the
+  testing rule. The usual verbs; another verb is fine when it says what happens as plainly:
 
   | Verb | When | Example |
   |---|---|---|
   | `select` | one of fixed values, chosen by a condition | `selectCardSegments(stage)` |
   | `resolve` | a value from several sources or by precedence, a `@Composable` reading the theme included | `resolveTitleStyle(size)` |
-  | `build` | a new object or list assembled from parts | `buildFeatureShortcuts()` |
+  | `build` | a new object or list assembled from parts | `buildShortcuts()` |
   | `create` | an aggregate factory with a rule, returning `Result` | `createJail(name, location)` |
   | `compute` | a number or geometry | `computeOpacity(distance)` |
   | `format` | a value turned into text for display | `formatPrice(plan)` |
   | `parse` | text turned into a value, returning `Result` | `parseOrder(raw)` |
   | `find` | a lookup that may return `null` | `findPlan(id)` |
-  | `load` / `fetch` | a read from storage / from the network | `loadOffer()`, `fetchCustomerInfo()` |
+  | `load` / `fetch` | a read from storage / from the network | `loadOffer()`, `fetchExchangeRate()` |
   | `save` / `send` / `notify` | a write, a dispatch | `notifyPurchaseFailed()` |
   | `is` / `has` / `can` / `should` | a `Boolean` predicate | `isSentenceOver(now)`, `canRead(user)` |
   | `to<Type>` | a conversion that copies; an extension | `Plan.toPlanContent()` |
@@ -41,12 +43,14 @@ Core requirements:
 * Keep functions small and focused.
 * Each function should do one thing.
 * Avoid deeply nested logic.
-* Prefer early returns and guard clauses.
+* Prefer early returns and guard clauses. An `if` whose whole body is one `return` (a labelled one included)
+  is one line without braces when it fits the project's line limit: `if (!isVisible) return@LaunchedEffect`.
 * Avoid duplicated code.
 * Before writing a helper, look for one that exists in the project or in a library the project already
   depends on, and use it: an extension the project has over `stringResource(…)`, mikro's
   `Result.propagateCancellationException()`. A helper that duplicates one that exists is dead weight.
-* Remove dead code, unused variables, and unnecessary comments.
+* New code has no dead code, unused variables or unnecessary comments; in an old file they are removed only in
+  a refactoring the user asked for, never by a task that plugs new code in.
 * No `Helper`, `Util` or `Manager` classes: a class with behaviour has a role, and the role names it and its package.
 * A file holds one type family: a sealed hierarchy with all its variants, a data class with the data classes nested in it. The Kotlin package-layout rule says what goes in one file.
 
@@ -65,7 +69,7 @@ Use design patterns only when they make the code simpler, cleaner, or easier to 
 Consider patterns such as:
 
 * Strategy Pattern for interchangeable algorithms or behaviors.
-* Factory Pattern only as the domain rule allows it: a function that creates an aggregate under a rule; dependencies are constructed at the composition root.
+* Factory Pattern only as the domain rule allows it: a function that creates an aggregate under a rule, or a nested `fun interface Factory` for an object that needs arguments known only when it is created; dependencies are constructed at the composition root.
 * Builder Pattern for constructing complex objects step by step.
 * Observer/Event Pattern for event-driven systems.
 * Repository Pattern for data access abstraction.
@@ -88,7 +92,7 @@ Do not mix unrelated responsibilities in one class or function.
 * Inject dependencies where possible.
 * Keep pure logic separate from I/O.
 * Make functions deterministic when practical.
-* Include unit tests or explain how the code should be tested.
+* Cover new code with tests as the testing rule says.
 * Cover important edge cases.
 
 ### 6. Handle errors properly
@@ -108,30 +112,31 @@ Do not mix unrelated responsibilities in one class or function.
 
   ```kotlin
   // Bad
-  internal fun Modifier.paywallCardCanvas(): Modifier =
+  internal fun Modifier.cardCanvas(): Modifier =
       canvasAnchoredToCard(CARD_TOP_IN_CARD_ART)
 
   // Good
-  internal fun Modifier.paywallCardCanvas(): Modifier = canvasAnchoredToCard(CARD_TOP_IN_CARD_ART)
+  internal fun Modifier.cardCanvas(): Modifier = canvasAnchoredToCard(CARD_TOP_IN_CARD_ART)
   ```
 
-* A lambda whose whole body is one `if` without `else` is a guard with a labelled return, in
-  `pointerInput`, `LaunchedEffect`, `launch`, `forEach` alike.
+* A lambda whose whole body is one `if` without `else` around two or more statements is a guard with a
+  labelled return, in `pointerInput`, `LaunchedEffect`, `launch`, `forEach` alike. An `if` around one
+  statement stays as it is: the guard would only add lines.
 
   ```kotlin
   // Bad
-  .pointerInput(stage) {
-      if (stage == SplashPaywallStage.REVEAL) {
-          detectTapGestures(onDoubleTap = { onReveal.invoke() })
+  LaunchedEffect(isVisible) {
+      if (isVisible) {
+          delay(AutoHideDelay)
+          onHide.invoke()
       }
   }
 
   // Good
-  .pointerInput(stage) {
-      if (stage != SplashPaywallStage.REVEAL) {
-          return@pointerInput
-      }
-      detectTapGestures(onDoubleTap = { onReveal.invoke() })
+  LaunchedEffect(isVisible) {
+      if (!isVisible) return@LaunchedEffect
+      delay(AutoHideDelay)
+      onHide.invoke()
   }
   ```
 
@@ -150,7 +155,7 @@ Do not mix unrelated responsibilities in one class or function.
   ```
 
 * A condition that does not fit on one line is never wrapped at `&&` or `||`. Split it, in this order:
-  1. a guard clause (`if (current !is SplashPaywallState.Content) return current`) for a clause that a later
+  1. a guard clause (`if (current !is CheckoutState.Content) return current`) for a clause that a later
      one depends on through a smart cast or a null check, and for a clause that is costly;
   2. a named `val` per remaining clause, named for what it means, so that the condition itself reads as a
      sentence;
@@ -160,8 +165,8 @@ Do not mix unrelated responsibilities in one class or function.
 
   ```kotlin
   // Bad
-  if (current is SplashPaywallState.Content && current.stage == SplashPaywallStage.OFFER &&
-      !current.isBusy && current.offer.expiresAt > now
+  if (current is CheckoutState.Content && current.stage == CheckoutStage.PAYMENT &&
+      !current.isBusy && current.cart.expiresAt > now
   ) {
       current.copy(isBusy = true)
   } else {
@@ -169,28 +174,26 @@ Do not mix unrelated responsibilities in one class or function.
   }
 
   // Good
-  if (current !is SplashPaywallState.Content) {
-      return current
-  }
-  val isOfferStage = current.stage == SplashPaywallStage.OFFER
+  if (current !is CheckoutState.Content) return current
+  val isPaymentStage = current.stage == CheckoutStage.PAYMENT
   val isIdle = !current.isBusy
-  val isOfferAlive = current.offer.expiresAt > now
-  if (isOfferStage && isIdle && isOfferAlive) {
-      return current.copy(isBusy = true)
-  }
+  val isCartAlive = current.cart.expiresAt > now
+  if (isPaymentStage && isIdle && isCartAlive) return current.copy(isBusy = true)
   return current
   ```
 
 * A call with three or more arguments puts each argument on its own line, whether or not it would fit; one or
-  two arguments stay on one line when they fit. The column limit decides nothing here.
+  two arguments stay on one line when they fit. The column limit decides nothing here. A trailing lambda
+  counts as an argument: `remember(icon, label) { … }` has three, so `icon` and `label` go on their own lines
+  and the lambda follows the closing parenthesis.
 
   ```kotlin
   // Bad
-  current.copy(stage = SplashPaywallStage.SUCCESS, isBusy = false, expiresAt = result.expiresAt)
+  current.copy(stage = CheckoutStage.SUCCESS, isBusy = false, expiresAt = result.expiresAt)
 
   // Good
   current.copy(
-      stage = SplashPaywallStage.SUCCESS,
+      stage = CheckoutStage.SUCCESS,
       isBusy = false,
       expiresAt = result.expiresAt
   )
@@ -216,7 +219,7 @@ Do not mix unrelated responsibilities in one class or function.
 
 * Do not comment obvious code.
 * Use comments only to explain “why”, not “what”.
-* The public API of a published library, complex algorithms, and important architectural decisions should be documented. Application code carries no KDoc beyond the two cases the KDoc rule allows.
+* The public API of a published library is documented by the KDoc rule; application code carries no KDoc beyond the KDoc rule's two exceptions.
 
 ### 9. Refactor before final answer
 

@@ -9,13 +9,13 @@ The package-layout rule says which package a file goes to. This rule says how Ko
   declares `package ru.astrainteractive.astrarating.data.dao.rating.api`.
 - A unit's root package follows the project's existing convention, and a new unit takes the root package its
   neighbours would give it: AspeKt keeps the container in the singular (`modules/jail` →
-  `ru.astrainteractive.aspekt.module.jail`), BUSY keeps the path as is (`components/bsb/monetization/impl` →
-  `com.flipperdevices.bsb.monetization.impl`), AstraRating drops the platform suffix
+  `ru.astrainteractive.aspekt.module.jail`), an app may keep the path as is (`components/shop/payment/impl` →
+  `com.example.shop.payment.impl`), AstraRating drops the platform suffix
   (`modules/event-bukkit` → `ru.astrainteractive.astrarating.event`). A new project uses the base package
   followed by the unit path with hyphens removed and the container dropped. An Android unit's `namespace` is
   its root package.
 - `api` is both a unit name (`gui/api`) and a kind package (`rating/api`); `impl` is only a unit name, in
-  apps. A word on the forbidden list may appear in a unit's root package (`…data.dao`, `…monetization.impl`),
+  apps. A word on the forbidden list may appear in a unit's root package (`…data.dao`, `…payment.impl`),
   never in a package created inside the unit.
 - Platform code of a Multiplatform unit goes to its source set (`androidMain`, `iosMain`, `jvmMain`) at the
   same package path, never to a package named after the platform. `expect` sits in `commonMain` in the kind
@@ -105,15 +105,16 @@ explicitly; there is no scanning. The DI rule has the details.
   file holds the data class and nothing else: its rules and its factory are in `util` (`arch-domain.md`).
 - A new data class that is a property type of exactly one class is nested in it. A type returned to another
   class is a top-level family in `model`.
-- The state type of a screen or a menu (`SplashPaywallState`, `RatingPlayersState`) is always its own file
+- The state type of a screen or a menu (`CheckoutState`, `RatingPlayersState`) is always its own file
   in `model/`: the view or the menu reads it, so it is returned to another class. It is never nested in the
   view model or state holder, and never a second declaration in that file.
 - An `enum` used only through one type is nested in it; otherwise it is a top-level family of its own.
 - Same file as the type: its companion object, nothing else. A file that declares a class holds no top-level
   function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
   that uses it, even when one file uses it (`KPlayer.toPlayerModel()` of `RatingCommandExecutor`). Never a
-  class inside a function body, never an `inner class`. A Compose composable file declares no class, so an
-  extension only it uses is `private` in it (`compose.kt.md`).
+  named class inside a function body, never an `inner class`. An anonymous `object :` inside a function only
+  implements a type the project does not declare (a library's listener in a bridge, `no-callbacks.kt.md`). A
+  Compose composable file declares no class, so an extension only it uses is `private` in it (`compose.kt.md`).
 - A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a rule
   over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme` object
   of shared values holds no function; a design-system component's public `<Component>Defaults` is the one
