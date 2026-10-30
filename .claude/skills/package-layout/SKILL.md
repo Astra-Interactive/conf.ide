@@ -32,7 +32,8 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 ## 2. Decision tests
 
 **T1. Which unit?**
-- The platform main class or `RootModule`: the entry-point unit.
+- A class the platform starts (a plugin's main class, an Android `Application` or `Activity`) or `RootModule`:
+  the entry-point unit.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
   even though the platform starts it): that sub-context's unit; code other units call, and every plugin use case,
   in its `api` unit; code only the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
@@ -181,9 +182,11 @@ modules/jail/bukkit                …module.jail.bukkit
 
 ```
 components/shop/payment/api    …payment.api: offer/api/PaymentApi.kt, offer/model/Plan.kt,
-                               offer/usecase/CheckSubscriptionUseCase.kt (interface), offer/stub/StubPaymentApi.kt
+                               offer/usecase/CheckSubscriptionUseCase.kt (interface), offer/stub/StubPaymentApi.kt,
+                               offer/component/OfferComponent.kt (interface, another unit opens the offer)
 components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckSubscriptionUseCase.kt,
-                               offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatPaymentApi.kt,
+                               offer/composable/…, offer/component/DefaultOfferComponent.kt,
+                               offer/revenuecat/RevenueCatPaymentApi.kt,
                                offer/di/PaymentModule.kt; androidMain at the same paths
 ```
 

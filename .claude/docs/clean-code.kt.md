@@ -18,9 +18,11 @@ these rules is the reviewer's call.
   `provide…`, an override of a framework signature and an overload of a library function that only changes a
   parameter's type (`tween(duration: Duration, …)` beside Compose's `tween(durationMillis)`) keep their names.
   A `@Composable` that emits UI and returns `Unit` is named for what it shows, in PascalCase, ending in
-  `Composable` (`OrderSummaryComposable`, a screen `<Feature>ScreenComposable`, `compose.kt.md`); a `Modifier`
-  extension is named like Compose's modifiers (`padding`, `background`); a test is named by the testing rule.
-  The usual verbs; another verb is fine when it says what happens as plainly:
+  `Composable` (`OrderSummaryComposable`, a screen `<Feature>ScreenComposable`, `compose.kt.md`), except a
+  function of the preview block (`…Preview`, `OrderSummaryPreviewSheet`), the theme function (`AppTheme`) and
+  a component's `Render()`; a `Modifier` extension is named like Compose's modifiers (`padding`,
+  `background`); a test is named by the testing rule. The usual verbs; another verb is fine when it says what
+  happens as plainly:
 
   | Verb | When | Example |
   |---|---|---|
@@ -38,7 +40,7 @@ these rules is the reviewer's call.
   | `to<Type>` | a conversion that copies; an extension | `Plan.toPlanContent()` |
   | `as<Type>` | a view over the same object, no copy; a Compose resource read as what it shows | `asStateFlow()`, `asPainter()` |
   | `remember<Thing>` | a `@Composable` that calls `remember` | `rememberAppearProgress(...)` |
-  | `on<Event>` | a view-model handler of a user action | `onPurchase()` |
+  | `on<Event>` | a view-model handler of a user action, one per action; one `onAction(action)` where the project already dispatches so | `onPurchase()` |
   | `update<Thing>` | a state transition | `updateContent { }` |
 
   Never `map` in a name (`toContent`, not `mapToContent`: `map` is the word of collections), never

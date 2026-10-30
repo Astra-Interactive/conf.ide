@@ -21,8 +21,9 @@ Terms used below:
 
 1. A project has these kinds of unit:
    - **sub-context units** of a context (`modules/command`, `modules/gui/api`, `modules/data/exposed`);
-   - an **entry point** (`instances/bukkit`, `androidApp`): the platform main class and `RootModule`, nothing
-     else. Nothing depends on it. An application may have several, one per platform or a debug instance;
+   - an **entry point** (`instances/bukkit`, `androidApp`): the classes the platform starts (a plugin's main
+     class; an Android `Application` and its `Activity`) and `RootModule`, nothing else. Nothing depends on
+     it. An application may have several, one per platform or a debug instance;
    - **`core`**: the common unit for what is not worth a unit of its own: config, translation and permission
      models, shared helpers, shared coroutine scopes, small platform pieces. It holds no use case and no
      repository, and depends on no feature unit. It may be split by platform (`core/api`, `core/bukkit`) and, in an app
@@ -182,10 +183,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on contracts
   and `model`; use cases on contracts, `model` and `util`; entry points on use cases, contracts, `model` and
   `util`; nothing outside its unit depends on an entry point, and inside it UI kinds depend on each other as
-  `arch-context.md` says; `di` depends on everything, and only another `di` and the platform main class that
-  creates the composition root depend on it: a DI module takes DI modules through its constructor. A use case
-  and a contract import no platform or framework type; a state holder's interface may import its UI framework
-  (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
+  `arch-context.md` says; `di` depends on everything, and only another `di` and the classes the platform
+  starts in the entry-point unit depend on it: a DI module takes DI modules through its constructor. A use
+  case and a contract import no platform or framework type; a state holder's interface may import its UI
+  framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
   more contracts. A use case never calls another use case.

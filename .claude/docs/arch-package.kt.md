@@ -33,7 +33,7 @@ Decide the tier while writing the declaration:
 |---|---|
 | used by one file only, an extension in its `util` file included | `private` in that file |
 | used by other files of the same unit, such as an implementation its DI module constructs | `internal` |
-| used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the platform main class of an entry-point unit | none (public) |
+| used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the classes the platform starts in an entry-point unit | none (public) |
 
 Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
 only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class

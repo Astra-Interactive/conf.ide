@@ -4,8 +4,8 @@ How a UI unit built on Compose is laid out and written. The package-layout rule 
 (`<concept>/<kind>/<File>`); the `compose-hoisting` skill gives state hoisting, `Render()` and previews; this
 rule fills what is specific to Compose. The verb table of `clean-code.kt.md` and the flow rules of
 `coroutines.kt.md` apply unchanged. A UI unit is one whose build already depends on Compose: the `impl` unit
-of a screen feature, the design-system unit (`core/ui`: a unit path, which may keep its word, not a
-package created inside a unit).
+of a screen feature, an `api` unit whose state holder declares `Render()`, the design-system unit (`core/ui`:
+a unit path, which may keep its word, not a package created inside a unit).
 
 ### Packages of a UI unit
 
@@ -45,17 +45,18 @@ package created inside a unit).
 
 - A composable file declares no class: it holds `@Composable` functions, their constants and the preview
   block; the one declaration beside them is the public `<Component>Defaults` object of a design-system
-  component, in that component's file (Material's shape: `GlassButtonDefaults` in `GlassButtonComposable.kt`).
-  An extension that only this file uses, a `@Composable` one or one returning a Compose type (`Modifier`,
-  `Brush`, `TextStyle`) included, is `private` in this file; one that several files use is
-  `util/<Subject>Ext.kt` of the level, like any extension. There is no `composable/util`. A pure function over
-  a domain type is placed by the domain rule: the `util` of the level that uses it, the type's own unit once
-  two units use it; never in a composable file. A file of functions with no `@Composable` in it
-  (`DrawScope.draw…` extensions, a brush builder) is a `util` file, never in `composable`, under the ordinary
-  names: `checkout/util/DrawScopeExt.kt` for the drawing extensions of the payment card,
-  `util/LinearGradient.kt` for `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention in
-  `@param angleDegrees`, a reason that points outside the code (the CSS angle), the KDoc rule's second
-  exception. A `DrawScope` extension one composable file uses stays `private` there, like any extension.
+  component (`<Component>` being its composable's name without `Composable`), in that component's file
+  (Material's shape: `GlassButtonDefaults` in `GlassButtonComposable.kt`). An extension that only this file
+  uses, a `@Composable` one or one returning a Compose type (`Modifier`, `Brush`, `TextStyle`) included, is
+  `private` in this file; one that several files use is `util/<Subject>Ext.kt` of the level, like any
+  extension. There is no `composable/util`. A pure function over a domain type is placed by the domain rule:
+  the `util` of the level that uses it, the type's own unit once two units use it; never in a composable file.
+  A file of functions with no `@Composable` in it (`DrawScope.draw…` extensions, a brush builder) is a `util`
+  file, never in `composable`, under the ordinary names: `checkout/util/DrawScopeExt.kt` for the drawing
+  extensions of the payment card, `util/LinearGradient.kt` for
+  `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention in `@param angleDegrees`, a
+  reason that points outside the code (the CSS angle), the KDoc rule's second exception. A `DrawScope`
+  extension one composable file uses stays `private` there, like any extension.
 - The file rule has no exception for `private` types of a composable file. A `data class` goes to `model`
   with fields only, its formulas to `util/<Type>Ext.kt`; an `enum` used only through one model type is nested
   in it, otherwise it is its own file.
@@ -70,9 +71,10 @@ package created inside a unit).
   ```
 
 - Values that several composables of one level must share (the timings and easings of one screen's animation,
-  the spacing of one feature) live in the kind `theme` of that level, as an `internal object` named for what
-  it is: `impl/checkout/theme/CheckoutMotion.kt`. The object holds values only, no function, so it is not a
-  namespace of helpers; the design-system unit's theme object may read its `CompositionLocal`s through
+  the spacing of one feature) live in the kind `theme` of that level, as an `internal object` (public in the
+  design-system unit, whose theme other units read) named for what it is:
+  `impl/checkout/theme/CheckoutMotion.kt`. The object holds values only, no function, so it is not a namespace
+  of helpers; the design-system unit's theme object may read its `CompositionLocal`s through
   `@Composable get()` (Material's `MaterialTheme.colorScheme`), nothing else. A timing is a `Duration`
   (`val CardIn = 400.milliseconds`), never an `Int` or `Long` under an `_MS` name;
   `.inWholeMilliseconds.toInt()` is written only at the Compose call that demands milliseconds, and a
@@ -172,9 +174,11 @@ private fun OrderSummaryCenterPreview() { ... }
 
 ### Naming
 
-- A `@Composable` that emits UI is named for what it shows and ends in `Composable`, a design-system
-  component included (`OrderSummaryComposable`, `GlassButtonComposable`); a screen-level one is
-  `<Feature>ScreenComposable` (`CheckoutScreenComposable`), and its file carries the same name.
+- A `@Composable` that emits UI is named for what it shows and ends in `Composable`, a design-system component
+  included (`OrderSummaryComposable`, `GlassButtonComposable`); a screen-level one is
+  `<Feature>ScreenComposable` (`CheckoutScreenComposable`), and its file carries the same name. Three keep
+  other names: a function of the preview block (Previews), the theme function (`AppTheme`) and a component's
+  `Render()`.
 - `remember` in a name means `remember` in the body. A `@Composable` that builds a list of content on every
   composition is not `rememberX`; it remembers the list, and then the prefix is earned.
 
