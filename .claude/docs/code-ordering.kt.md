@@ -74,7 +74,7 @@ class OrderPricing(
     }
 
     companion object {
-        const val MAX_ITEMS = 100
+        private const val MAX_ITEMS = 100
     }
 }
 ```

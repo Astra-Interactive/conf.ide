@@ -11,7 +11,7 @@ ids.map { id -> UserId(id) }
 items.map { item -> item.toItemContent() }
 users.map { user -> user.name }
 lines.mapNotNull { line -> line.toIntOrNull() }
-offers.forEach { offer -> repository.save(offer) }
+offers.forEach { offer -> selectedOffers.add(offer) }
 
 // Good
 subscription.expirationDate?.time?.let(Instant::fromEpochMilliseconds)
@@ -19,12 +19,12 @@ ids.map(::UserId)
 items.map(Cart.Item::toItemContent)
 users.map(User::name)
 lines.mapNotNull(String::toIntOrNull)
-offers.forEach(repository::save)
+offers.forEach(selectedOffers::add)
 ```
 
 The forms: `::topLevel` and `::Constructor`; `Type::member` for a member, an extension or a property of the
 receiver; `Type::companionMember` for a companion function (`Instant::fromEpochMilliseconds`);
-`instance::member` for a bound reference (`repository::save`, `viewModel::onPurchase`). A companion member
+`instance::member` for a bound reference (`selectedOffers::add`, `viewModel::onPurchase`). A companion member
 of a generic class cannot be referenced through the class name (`Result::success` does not compile): import it
 from its companion and reference it as `::member` (`import kotlin.Result.Companion.success`,
 `onSuccess = ::success`). A reference also replaces a lambda passed as an event handler:

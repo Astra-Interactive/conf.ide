@@ -6,7 +6,7 @@
 2. LSP tool (`kotlin-lsp`) — precise navigation: go-to-definition, references, hover/type info.
 
 Text search in code goes through codebase-memory's `search_code`; `grep`/`find`/`cat` are for non-code files
-only (`codebase-memory.md`).
+only, and for reading a file before editing it (`codebase-memory.md`).
 
 ### Kotlin project source files → `kotlin-lsp` via the LSP tool
 
