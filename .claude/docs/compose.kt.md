@@ -1,7 +1,7 @@
 ## Kotlin: Compose screens
 
-How a UI unit built on Compose is laid out and written. The package-layout rule gives the shape
-(`<concept>/<kind>/<File>`); the `compose-hoisting` skill gives state hoisting, `Render()` and previews; this
+How a UI unit built on Compose is laid out and written. The package-layout rule gives the shape (the source
+path of Concepts and kinds); the `compose-hoisting` skill gives state hoisting, `Render()` and previews; this
 rule fills what is specific to Compose. The verb table of `clean-code.kt.md` and the flow rules of
 `coroutines.kt.md` apply unchanged. A UI unit is one whose build already depends on Compose: the `impl` unit
 of a screen feature, an `api` unit whose state holder declares `Render()`, the design-system unit (`core/ui`:
@@ -46,20 +46,22 @@ a unit path, which may keep its word, not a package created inside a unit).
 - A composable file declares no class: it holds `@Composable` functions, their constants and the preview
   block; the one declaration beside them is the public `<Component>Defaults` object of a design-system
   component (`<Component>` being its composable's name without `Composable`), in that component's file
-  (Material's shape: `GlassButtonDefaults` in `GlassButtonComposable.kt`). An extension that only this file
-  uses, a `@Composable` one or one returning a Compose type (`Modifier`, `Brush`, `TextStyle`) included, is
-  `private` in this file; one that several files use is `util/<Subject>Ext.kt` of the level, like any
-  extension. There is no `composable/util`. A pure function over a domain type is placed by the domain rule:
-  the `util` of the level that uses it, the type's own unit once two units use it; never in a composable file.
-  A file of functions with no `@Composable` in it (`DrawScope.draw…` extensions, a brush builder) is a `util`
-  file, never in `composable`, under the ordinary names: `checkout/util/DrawScopeExt.kt` for the drawing
-  extensions of the payment card, `util/LinearGradient.kt` for
-  `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention in `@param angleDegrees`, a
-  reason that points outside the code (the CSS angle), the KDoc rule's second exception. A `DrawScope`
-  extension one composable file uses stays `private` there, like any extension.
-- The file rule has no exception for `private` types of a composable file. A `data class` goes to `model`
-  with fields only, its formulas to `util/<Type>Ext.kt`; an `enum` used only through one model type is nested
-  in it, otherwise it is its own file.
+  (Material's shape: `GlassButtonDefaults` in `GlassButtonComposable.kt`). An extension of a type the project
+  does not declare (`Modifier`, `DrawScope`, `Brush`, `String`) that only this file uses, a `@Composable` one
+  or one returning a Compose type included, is `private` in this file; one that several files use is
+  `util/<Subject>Ext.kt` of the level, like any extension. An extension of the project's own type is a rule of
+  that model and goes to `util/<Type>Ext.kt` of the level even when one file uses it. There is no
+  `composable/util`. A pure function over a domain type is placed by the domain rule: the `util` of the level
+  that uses it, the type's own unit once two units use it; never in a composable file. A file of functions
+  with no `@Composable` in it (`DrawScope.draw…` extensions, a brush builder) is a `util` file, never in
+  `composable`, under the ordinary names: `checkout/util/DrawScopeExt.kt` for the drawing extensions of the
+  payment card, `util/LinearGradient.kt` for `buildLinearGradient(angleDegrees, size, stops)`, with the angle
+  convention in `@param angleDegrees`, a reason that points outside the code (the CSS angle), the KDoc rule's
+  second exception. A `DrawScope` extension one composable file uses stays `private` there, like any extension
+  of a library type.
+- The file rule has no exception for `private` types of a composable file. A `data class` goes to `model` as
+  data (`arch-domain.md`), its formulas to `util/<Type>Ext.kt`; an `enum` used only through one model type is
+  nested in it, otherwise it is its own file.
 
   ```
   // Bad: ScrollFadeComposable.kt holds FadeSide, SoftEdge with opacityAt(), ScrollFadeDefaults and six previews

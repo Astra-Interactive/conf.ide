@@ -87,9 +87,10 @@ Exactly four triggers: another unit calls it; two or more implementations exist 
 inner part declares what it needs from an outer one; a test must replace a contract over I/O or the platform.
 
 **T6. One file or several?**
-A sealed type with its variants, or a data class with its nested data classes, is one file. Every class with
-behaviour and every error family has its own file. Extensions go to `util/<Subject>Ext.kt`, except one that
-only a Compose composable file uses, which is `private` there. There is no `Helper`, `Util` or `Manager` class.
+A sealed type with its variants, or a data class with its nested data classes, is
+one file. Every class with behaviour and every error family has its own file. Extensions go to
+`util/<Subject>Ext.kt`, except an extension of a type the project does not declare that only a Compose
+composable file uses, which is `private` there. There is no `Helper`, `Util` or `Manager` class.
 
 **T7. Which DI module?**
 The unit's own DI module in `di` of the level it wires, with its own `lifecycle` when it starts or stops
@@ -229,9 +230,10 @@ line. A "no" is fixed by moving the new file, never an old one.
 10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
     units use, in the `util` of the model's own unit?
 11. Does every class with behaviour and every error type have its own file, and every extension sit in
-    `util/<Subject>Ext.kt` (or `private` in the one Compose composable file that uses it)? Does any `util`
-    hold a class or an `object` declaration (an anonymous `object :` of a bridge is allowed)? Does any
-    top-level function take a type as a parameter where an extension of that type is the rule?
+    `util/<Subject>Ext.kt` (or, for a type the project does not declare, `private` in the one Compose
+    composable file that uses it)? Does any `util` hold a class or an `object` declaration (an anonymous
+    `object :` of a bridge is allowed)? Does any top-level function take a type as a parameter where an
+    extension of that type is the rule?
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
     handler in `error` of its mechanism, every format converter in `migration` of what it converts?
 13. Does `model` import no kind but other `model` packages, and no platform or ORM type (Compose types only in

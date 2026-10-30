@@ -12,12 +12,12 @@ Enforce state-hoisting for `@Composable` functions and extract layout from a com
 
 ### 1. State-hoisted `@Composable` functions
 
-Every `@Composable` function must accept only models and event handlers — no internal `var … by remember { mutableStateOf(…) }` unless the state is purely local UI mechanics with no business meaning (e.g. scroll position, focus holder). Loading flags and form values must be parameters. Pure UI state with no business meaning (password visibility, expansion toggles) may live only in the screen-level composable (rule 3); every composable it calls takes that state as a parameter.
+Every `@Composable` function must accept only models, event handlers, a `Modifier` and Compose's own state objects (`SnackbarHostState`, `LazyListState`). It holds no internal `var … by remember { mutableStateOf(…) }`, with two exceptions: UI mechanics (scroll position, focus holder) may live in any composable; UI toggles with no business meaning (password visibility, expansion) may live only in the screen-level composable (rule 3), and every composable it calls takes that state as a parameter. Loading flags and form values are always parameters.
 
 ```kotlin
 // ✅ correct
 @Composable
-fun PasswordFieldComposable(
+internal fun PasswordFieldComposable(
     value: String,
     isHidden: Boolean,
     onHiddenChange: (Boolean) -> Unit,
@@ -25,16 +25,16 @@ fun PasswordFieldComposable(
     modifier: Modifier = Modifier,
 )
 
-// ❌ wrong — owns business-relevant state
+// ❌ wrong — a UI toggle below the screen level
 @Composable
-fun PasswordFieldComposable(...) {
+internal fun PasswordFieldComposable(...) {
     var isHidden by remember { mutableStateOf(true) }  // hoist this
 }
 ```
 
 ### 2. A component's `Render()` — collect state only
 
-`Render()` must contain nothing but `collectAsState()` calls and a single delegating composable call. No `Column`, no `padding`, no `AppBar`, no layout whatsoever.
+`Render()` holds only `collectAsState()` calls, the Compose state objects the events act on (`remember { SnackbarHostState() }`), at most one `LaunchedEffect` that collects the component's one-off events (`no-callbacks.kt.md`), and a single delegating composable call. No `Column`, no `padding`, no `AppBar`, no layout whatsoever.
 
 ```kotlin
 // ✅ correct
@@ -62,7 +62,7 @@ override fun Render(modifier: Modifier) {
 ### 3. Screen-level composable (`*ScreenComposable`)
 
 When extracting layout from `Render()`, create a `*ScreenComposable` file/function. This composable:
-- Owns pure-UI state that has no business meaning (password visibility, expansion toggles)
+- Owns the UI toggles (password visibility, expansion)
 - Contains the outer scaffold: `Column`, `AppBar`, `navigationBarsPadding`, `fillMaxSize`
 - Calls the inner content composable (which must itself be fully state-hoisted)
 
@@ -70,7 +70,7 @@ When extracting layout from `Render()`, create a `*ScreenComposable` file/functi
 
 ```kotlin
 @Composable
-fun ConfirmPasswordScreenComposable(
+internal fun ConfirmPasswordScreenComposable(
     confirmPasswordType: ConfirmPasswordType,
     state: ConfirmPasswordState,
     fields: PasswordFieldsContent,
@@ -163,6 +163,6 @@ When asked to "add previews" to a directory or file:
 
 1. Read every `@Composable` file in scope.
 2. For each composable — check state-hoisting. If it has internal `var … mutableStateOf`, hoist the state as parameters; find the caller and pass the state down (or create a screen-level wrapper if none exists).
-3. If a component's `Render()` contains layout: extract it into a new `*ScreenComposable` file, update `Render()` to only collect state and call it.
+3. If a component's `Render()` contains layout: extract it into a new `*ScreenComposable` file, update `Render()` to only collect state and events and call it.
 4. Add previews at the bottom of each composable file covering all meaningful visual states.
 5. Apply focus/autofill preview guards where `LaunchedEffect { requestFocus() }` or `autofill {}` modifier is present.

@@ -211,11 +211,11 @@ root package of the entry-point unit, which holds the classes the platform const
   level that uses it, even one used by one class. There is no `exception` package.
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
   the type's own file. A file that declares a class holds no top-level function; a Compose composable file
-  declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is never an
-  `object` used as a namespace (a `theme` object holds values, not functions; Compose's two exceptions: the
-  design-system theme object's `@Composable get()` of a `CompositionLocal`, Material's
-  `MaterialTheme.colorScheme`, and a design-system component's public `<Component>Defaults`), and there is no
-  `Helper`, `Util` or `Manager` class.
+  declares no class, so an extension of a type the project does not declare that only it uses is `private` in
+  it (`compose.kt.md`). A function is never an `object` used as a namespace (a `theme` object holds values,
+  not functions; Compose's two exceptions: the design-system theme object's `@Composable get()` of a
+  `CompositionLocal`, Material's `MaterialTheme.colorScheme`, and a design-system component's public
+  `<Component>Defaults`), and there is no `Helper`, `Util` or `Manager` class.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the

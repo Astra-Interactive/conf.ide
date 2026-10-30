@@ -120,8 +120,8 @@ explicitly; there is no scanning. The DI rule has the details.
   `util/<Subject>Ext.kt` of the level that uses it, even when one file uses it (`KPlayer.toRatingPlayer()` of
   `RatingCommandExecutor`). Never a named class inside a function body, never an `inner class`. An anonymous
   `object :` inside a function only implements a type the project does not declare (a library's listener in a
-  bridge, `no-callbacks.kt.md`). A Compose composable file declares no class, so an extension only it uses is
-  `private` in it (`compose.kt.md`).
+  bridge, `no-callbacks.kt.md`). A Compose composable file declares no class, so an extension of a type the
+  project does not declare that only it uses is `private` in it (`compose.kt.md`).
 - A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a
   rule over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme`
   object of shared values holds no function; Compose's two exceptions: the design-system theme object's
