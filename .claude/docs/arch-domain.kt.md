@@ -40,8 +40,9 @@ How the domain rule is written in Kotlin.
   Bukkit event type that carries it, declared only for other plugins, lives in the `event` kind of the
   platform unit.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
-  are never imported in `model`, in a use case or in a contract. Two exceptions: in a UI unit, one whose
-  build already depends on Compose, `model` may import `androidx.compose.*` and `org.jetbrains.compose.*`
-  (`Painter`, `Dp`, `Color`), see `compose.kt.md`; in the unit of a framework's entry point, `model` may hold
-  that framework's exception subclasses (`arch-domain.md`). Which imports count as a platform or framework
-  type is the reviewer's call.
+  are never imported in `model`, in a use case or in a contract; a state holder's interface may import its UI
+  framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform. Two exceptions for
+  `model`: in a UI unit, one whose build already depends on Compose, `model` may import `androidx.compose.*`
+  and `org.jetbrains.compose.*` (`Painter`, `Dp`, `Color`), see `compose.kt.md`; in the unit of a framework's
+  entry point, `model` may hold that framework's exception subclasses (`arch-domain.md`). Which imports count
+  as a platform or framework type is the reviewer's call.

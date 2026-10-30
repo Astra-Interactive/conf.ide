@@ -20,7 +20,7 @@ When writing a test, make sure that:
 * Tests should cover as many scenarios and edge cases as possible without duplicating existing tests.
 * Focus on multithreading and race conditions corner cases.
 * For tests involving coroutines/reactivity, `cashapp/turbine` can be used, if `kotlinx.coroutines.test` is not enough. Otherwise tests can be flaky.
-* A coroutine test runs in `runTest` from `kotlinx.coroutines.test`, never in `runBlocking`: `runTest` skips `delay` and reports coroutines that leak from the test.
+* A coroutine test runs in `runTest` from `kotlinx.coroutines.test`, never in `runBlocking`: `runTest` skips `delay` and reports coroutines that leak from the test. The test returns it, `fun GIVEN_…(): TestResult { return runTest { … } }`: on JS a test must return what `runTest` returns.
 
 Example:
 
@@ -29,18 +29,22 @@ Example:
 
 package com.example.order.usecase
 
-@Test
-fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty() {
-    val createOrderUseCase = CreateOrderUseCase(
-        orderRepository = FakeOrderRepository(),
-        paymentGateway = FakePaymentGateway()
-    )
+class CreateOrderUseCaseTest {
+    @Test
+    fun GIVEN_empty_cart_WHEN_order_is_created_THEN_returns_cart_is_empty(): TestResult {
+        return runTest {
+            val createOrderUseCase = CreateOrderUseCase(
+                orderRepository = FakeOrderRepository(),
+                paymentGateway = FakePaymentGateway()
+            )
 
-    val result = createOrderUseCase.invoke(
-        CreateOrderCommand(customerId = CustomerId("customer-1"), items = emptyList())
-    )
+            val result = createOrderUseCase.invoke(
+                CreateOrderCommand(customerId = CustomerId("customer-1"), items = emptyList())
+            )
 
-    assertEquals(CreateOrderResult.CartIsEmpty, result)
+            assertEquals(CreateOrderResult.CartIsEmpty, result)
+        }
+    }
 }
 ```
 

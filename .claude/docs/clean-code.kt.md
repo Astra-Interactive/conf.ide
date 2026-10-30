@@ -14,11 +14,13 @@ these rules is the reviewer's call.
   reviewer's call).
 * A function is named with a verb that says what happens; one that returns a value is never a bare noun
   (`cardSegments()`, `featureShortcuts()`, `titleStyle()` mislead) and never starts with `get`, except
-  `getState()` where a project already uses it as the view model's state accessor. `operator fun invoke`,
-  a DI `provide…` and an override of a framework signature keep their names. A `@Composable` that emits UI
-  and returns `Unit` is named for what it shows, in PascalCase, as Compose names its own (`Text`, `Button`); a
-  `Modifier` extension is named like Compose's modifiers (`padding`, `background`); a test is named by the
-  testing rule. The usual verbs; another verb is fine when it says what happens as plainly:
+  `getState()` where a project already uses it as the view model's state accessor. `operator fun invoke`, a DI
+  `provide…`, an override of a framework signature and an overload of a library function that only changes a
+  parameter's type (`tween(duration: Duration, …)` beside Compose's `tween(durationMillis)`) keep their names.
+  A `@Composable` that emits UI and returns `Unit` is named for what it shows, in PascalCase, ending in
+  `Composable` (`OrderSummaryComposable`, a screen `<Feature>ScreenComposable`, `compose.kt.md`); a `Modifier`
+  extension is named like Compose's modifiers (`padding`, `background`); a test is named by the testing rule.
+  The usual verbs; another verb is fine when it says what happens as plainly:
 
   | Verb | When | Example |
   |---|---|---|

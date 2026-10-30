@@ -45,16 +45,16 @@ package created inside a unit).
 
 - A composable file declares no class: it holds `@Composable` functions, their constants and the preview
   block; the one declaration beside them is the public `<Component>Defaults` object of a design-system
-  component, in that component's file (Material's shape: `ButtonDefaults` in `Button.kt`). An extension that
-  only this file uses, a `@Composable` one or one returning a Compose type (`Modifier`, `Brush`,
-  `TextStyle`) included, is `private` in this file; one that several files use is `util/<Subject>Ext.kt` of
-  the level, like any extension. There is no `composable/util`. A pure function over a domain type is placed by
-  the domain rule: the `util` of the level that uses it, the type's own unit once two units use it; never in a
-  composable file. A file of functions with no `@Composable`
-  in it (`DrawScope.draw…` extensions, a brush builder) is a `util` file, never in `composable`, under the
-  ordinary names: `checkout/util/DrawScopeExt.kt` for the drawing extensions of the payment card,
-  `util/LinearGradient.kt` for `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention
-  in `@param angleDegrees`, a reason that points outside the code (the CSS angle), the KDoc rule's second
+  component, in that component's file (Material's shape: `GlassButtonDefaults` in `GlassButtonComposable.kt`).
+  An extension that only this file uses, a `@Composable` one or one returning a Compose type (`Modifier`,
+  `Brush`, `TextStyle`) included, is `private` in this file; one that several files use is
+  `util/<Subject>Ext.kt` of the level, like any extension. There is no `composable/util`. A pure function over
+  a domain type is placed by the domain rule: the `util` of the level that uses it, the type's own unit once
+  two units use it; never in a composable file. A file of functions with no `@Composable` in it
+  (`DrawScope.draw…` extensions, a brush builder) is a `util` file, never in `composable`, under the ordinary
+  names: `checkout/util/DrawScopeExt.kt` for the drawing extensions of the payment card,
+  `util/LinearGradient.kt` for `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention in
+  `@param angleDegrees`, a reason that points outside the code (the CSS angle), the KDoc rule's second
   exception. A `DrawScope` extension one composable file uses stays `private` there, like any extension.
 - The file rule has no exception for `private` types of a composable file. A `data class` goes to `model`
   with fields only, its formulas to `util/<Type>Ext.kt`; an `enum` used only through one model type is nested
@@ -69,13 +69,14 @@ package created inside a unit).
   impl/composable/layout/ScrollFadeComposable.kt   @Composable functions, private vals, previews
   ```
 
-- Values that several composables of one level must share (the timings and easings of one screen's
-  animation, the spacing of one feature) live in the kind `theme` of that level, as an `internal object`
-  named for what it is: `impl/checkout/theme/CheckoutMotion.kt`. At a feature level the object holds values only, no
-  function, so it is not a namespace of helpers. A timing is a `Duration` (`val CardIn = 400.milliseconds`),
-  never an `Int` or `Long` under an `_MS` name; `.inWholeMilliseconds.toInt()` is written only at the Compose
-  call that demands milliseconds, and a `tween(duration: Duration, …)` wrapper goes to the design-system
-  unit once two units convert:
+- Values that several composables of one level must share (the timings and easings of one screen's animation,
+  the spacing of one feature) live in the kind `theme` of that level, as an `internal object` named for what
+  it is: `impl/checkout/theme/CheckoutMotion.kt`. The object holds values only, no function, so it is not a
+  namespace of helpers; the design-system unit's theme object may read its `CompositionLocal`s through
+  `@Composable get()` (Material's `MaterialTheme.colorScheme`), nothing else. A timing is a `Duration`
+  (`val CardIn = 400.milliseconds`), never an `Int` or `Long` under an `_MS` name;
+  `.inWholeMilliseconds.toInt()` is written only at the Compose call that demands milliseconds, and a
+  `tween(duration: Duration, …)` wrapper goes to the design-system unit once two units convert:
 
   ```kotlin
   tween(durationMillis = CheckoutMotion.CardIn.inWholeMilliseconds.toInt())
@@ -99,7 +100,7 @@ design-system unit's `util` once a second UI unit needs them (`util/DrawableReso
   (code-ordering rule 1). No `private object XxxDefaults`: top-level vals give the same grouping without a
   second declaration, and an `object` of values beside functions is a namespace. A `<Component>Defaults`
   object exists only as the public API of a reusable design-system component, where it is part of the
-  signature (`colors: ButtonColors = ButtonDefaults.colors()`).
+  signature (`colors: GlassButtonColors = GlassButtonDefaults.colors()`).
 
   ```kotlin
   // Bad
@@ -171,6 +172,9 @@ private fun OrderSummaryCenterPreview() { ... }
 
 ### Naming
 
+- A `@Composable` that emits UI is named for what it shows and ends in `Composable`, a design-system
+  component included (`OrderSummaryComposable`, `GlassButtonComposable`); a screen-level one is
+  `<Feature>ScreenComposable` (`CheckoutScreenComposable`), and its file carries the same name.
 - `remember` in a name means `remember` in the body. A `@Composable` that builds a list of content on every
   composition is not `rememberX`; it remembers the list, and then the prefix is earned.
 

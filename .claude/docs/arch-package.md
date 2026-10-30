@@ -85,9 +85,9 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 2. **Implementation exception.** A unit is wholly one technology when it exists to implement contracts on one
    storage or platform technology (`data/exposed` on Exposed, `gui/bukkit` on Bukkit); the helper libraries it
    uses (cache4k) do not change that, and their implementations sit beside the others, named by their library
-   (`Cache4kRatedUsersCache`). In such a unit (`data/exposed`), the concept package holds the implementations directly, and beside them the classes only
-   they use (`RefreshingCache`). Everything else of that
-   technology sits in kind packages (`table`, `entity`, `model`, `database`, `di`) at the level that uses it:
+   (`Cache4kRatedUsersCache`). In such a unit (`data/exposed`), the concept package holds the implementations
+   directly, and beside them the classes only they use (`RefreshingCache`). Everything else of that technology
+   sits in kind packages (`table`, `entity`, `model`, `util`, `database`, `di`) at the level that uses it:
    inside the concept when only that concept uses it, under the unit root when several do. A technology
    package inside another unit (`jail/file`, `core/cache/cache4k`) holds only code built on that technology:
    implementations of contracts and the classes they use, or generic code two units need.
@@ -166,23 +166,26 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - A contract sits in the `api` package of its concept. Two kinds keep their interface with their
   implementation, named by what the class is: an app use case's interface sits in `usecase` (Units 6), and a
   state holder's interface in the project's state-holder kind (`component`, `viewmodel`), beside its
-  `Default…` implementation (`gui/api/rating/players/component/RatingPlayersComponent`). A contract's
-  implementation sits in the technology's package or unit, under the same concept, and is named by its
-  technology or variant (`ExposedRatingRepository`, `InMemoryJailRepository`,
-  `CacheRefreshingRatingRepository`). `Impl`, the `I` prefix and the `Interface` suffix are forbidden.
-  `database`, `network`, `local` and `remote` are not technology names. An implementation with no technology
-  and no variant, such as an app's use case or a state holder behind its interface, is named
-  `Default<Interface>` (`DefaultAddRatingUseCase`).
+  `Default…` implementation (`gui/api/rating/players/component/RatingPlayersComponent`, `players` an old
+  plural name); in an app, when another unit calls it, its interface sits in that kind of the owner's `api`
+  unit and `Default…` in `impl`, as a use case's (`payment/api/offer/component/OfferComponent`,
+  `payment/impl/offer/component/DefaultOfferComponent`). A contract's implementation sits in the technology's
+  package or unit, under the same concept, and is named by its technology or variant
+  (`ExposedRatingRepository`, `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). `Impl`, the `I`
+  prefix and the `Interface` suffix are forbidden. `database`, `network`, `local` and `remote` are not
+  technology names. An implementation with no technology and no variant, such as an app's use case or a state
+  holder behind its interface, is named `Default<Interface>` (`DefaultAddRatingUseCase`).
 - A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
   another implementation beside it (`CacheRefreshingRatingRepository`). One that caches part of it gets its own
   contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
   `Cache4kRatedUsersCache`).
-- Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
-  contracts they implement and `model`; use cases on contracts, `model` and `util`; entry points on use cases,
-  contracts, `model` and `util`; nothing outside its unit depends on an entry point, and inside it UI kinds
-  depend on each other as `arch-context.md` says; `di` depends on everything, and only another `di` and the
-  platform main class that creates the composition root depend on it: a DI module takes DI modules through its
-  constructor. A use case and a contract import no platform or framework type.
+- Dependency direction: the first table of `arch-context.md`. In short: implementations depend on contracts
+  and `model`; use cases on contracts, `model` and `util`; entry points on use cases, contracts, `model` and
+  `util`; nothing outside its unit depends on an entry point, and inside it UI kinds depend on each other as
+  `arch-context.md` says; `di` depends on everything, and only another `di` and the platform main class that
+  creates the composition root depend on it: a DI module takes DI modules through its constructor. A use case
+  and a contract import no platform or framework type; a state holder's interface may import its UI framework
+  (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
   more contracts. A use case never calls another use case.
@@ -203,10 +206,11 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   There is no `exception` package.
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
   the type's own file. A file that declares a class holds no top-level function; a Compose composable file
-  declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is
-  never an `object` used as a namespace (a `theme` object holds values, not functions; the public
-  `<Component>Defaults` of a design-system component is Compose's one exception), and there is no `Helper`,
-  `Util` or `Manager` class.
+  declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is never an
+  `object` used as a namespace (a `theme` object holds values, not functions, and the design-system unit's
+  theme object may read its `CompositionLocal`s through `@Composable get()`, Material's
+  `MaterialTheme.colorScheme`; the public `<Component>Defaults` of a design-system component is Compose's one
+  exception), and there is no `Helper`, `Util` or `Manager` class.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the

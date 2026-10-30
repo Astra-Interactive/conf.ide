@@ -85,9 +85,9 @@ internal class FileJailRepository(
   server through AstraLibs' `PlatformServer`.
 - A use case is `<Verb><Object>UseCase` (`AddRatingUseCase`) in the `usecase` package of its concept, with one
   public `operator fun invoke` and no interface, except an app's use case another unit calls (package-layout
-  rule, Units 6). A use case and a contract import no platform or framework type; the server is reached
-  through AstraLibs' abstractions (`server/player`, `server/location`, `server/permission`) or the
-  sub-context's own contract.
+  rule, Units 6). A use case and a contract import no platform or framework type (a state holder's interface
+  may import its UI framework, Decompose's `ComponentContext`); the server is reached through AstraLibs'
+  abstractions (`server/player`, `server/location`, `server/permission`) or the sub-context's own contract.
 - A state holder of a menu or screen (`component` in AstraRating, `viewmodel` with Compose) holds no rule and calls
   use cases and contracts; the shared design system is the design-system unit (`core/ui`).
 
@@ -116,10 +116,11 @@ explicitly; there is no scanning. The DI rule has the details.
   named class inside a function body, never an `inner class`. An anonymous `object :` inside a function only
   implements a type the project does not declare (a library's listener in a bridge, `no-callbacks.kt.md`). A
   Compose composable file declares no class, so an extension only it uses is `private` in it (`compose.kt.md`).
-- A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a rule
-  over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme` object
-  of shared values holds no function; a design-system component's public `<Component>Defaults` is the one
-  exception, `compose.kt.md`).
+- A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a
+  rule over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme`
+  object of shared values holds no function, the design-system theme object's `@Composable get()` of a
+  `CompositionLocal` aside; a design-system component's public `<Component>Defaults` is the one exception,
+  `compose.kt.md`).
 - Multiplatform platform files carry the source-set suffix (`Platform.jvm.kt`).
 
 ### Tests

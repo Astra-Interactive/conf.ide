@@ -55,8 +55,9 @@ Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the 
 (T4). The concept is the thing in the project's words (`rating`). The
 kind, asked in this order:
 1. Contract → `api`; a use case's or a state holder's interface → `usecase` or the state-holder kind, with its
-   implementation. Implements, wraps or narrows a contract (a cache included) → beside the other
-   implementations, in storage when it caches storage.
+   implementation; in an app, when another unit calls it, the interface in that kind of the owner's `api`
+   unit. Implements, wraps or narrows a contract (a cache included) → beside the other implementations, in
+   storage when it caches storage.
 2. Data class, result, error, event, config → `model`, fields only. A rule over a type → an extension of
    that type in `util` (`arch-domain.md`).
 3. Operation of more than one step → `usecase`. Wiring → `di`.
@@ -108,9 +109,9 @@ have. `util` and `model` are never the fallback for a class. A task does not ext
 ### A plugin with one context cut into sub-contexts (AstraRating)
 
 The tree as it stands, real class names, root packages without `ru.astrainteractive.astrarating`. Some parts
-predate the rules and stay until the owner asks to move them (`players` in the plural, the state `Model` nested in
-`RatingPlayersComponent`, a service passed to `RatingPlayersModule` instead of its module); new files follow
-the rules:
+predate the rules and stay until the owner asks to move them (`players` in the plural, the state `Model`
+nested in `RatingPlayersComponent`, `KotlinDispatchers` passed to `RatingPlayersModule` instead of the module
+that provides it); new files follow the rules:
 
 ```
 instances/bukkit         AstraRating.kt, di/RootModule.kt (builds roots, lists their lifecycles)
@@ -180,8 +181,8 @@ modules/jail/bukkit                …module.jail.bukkit
 
 ```
 components/shop/payment/api    …payment.api: offer/api/PaymentApi.kt, offer/model/Plan.kt,
-                               offer/usecase/CheckEntitlementUseCase.kt (interface), offer/stub/StubPaymentApi.kt
-components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckEntitlementUseCase.kt,
+                               offer/usecase/CheckSubscriptionUseCase.kt (interface), offer/stub/StubPaymentApi.kt
+components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckSubscriptionUseCase.kt,
                                offer/composable/…, offer/viewmodel/…, offer/revenuecat/RevenueCatPaymentApi.kt,
                                offer/di/PaymentModule.kt; androidMain at the same paths
 ```
@@ -224,9 +225,9 @@ line. A "no" is fixed by moving the new file, never an old one.
     type is the rule?
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
     handler in `error` of its mechanism, every format converter in `migration` of what it converts?
-13. Does `model` import nothing of its level and no platform or ORM type (Compose types only in a UI unit's
-    `model`, a framework's exception subclasses only in the unit of that framework's entry point)? Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform
-    dependency?
+13. Does `model` import no kind but other `model` packages, and no platform or ORM type (Compose types only in
+    a UI unit's `model`, a framework's exception subclasses only in the unit of that framework's entry point)?
+    Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform dependency?
 14. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
 15. Does every new unit that constructs something have its own DI module, with its own `lifecycle` when it
     starts or stops something, in a tree, and did the existing DI wiring stay as it was?

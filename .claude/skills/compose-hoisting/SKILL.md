@@ -66,13 +66,13 @@ When extracting layout from `Render()`, create a `*ScreenComposable` file/functi
 - Contains the outer scaffold: `Column`, `AppBar`, `navigationBarsPadding`, `fillMaxSize`
 - Calls the inner content composable (which must itself be fully state-hoisted)
 
-**Naming:** `Auth<Feature>ScreenComposable` / `<Feature>ScreenComposable`
+**Naming:** `<Feature>ScreenComposable`
 
 ```kotlin
 @Composable
-fun AuthConfirmPasswordScreenComposable(
+fun ConfirmPasswordScreenComposable(
     confirmPasswordType: ConfirmPasswordType,
-    screenState: ConfirmPasswordScreenState,
+    state: ConfirmPasswordState,
     fields: PasswordFieldsContent,
     onBack: () -> Unit,
     onConfirm: () -> Unit,
@@ -106,7 +106,12 @@ Add `@Preview` functions at the **bottom of the file** they preview. Rules:
 @Composable
 private fun MyComposableEmptyPreview() {
     AppTheme {
-        MyComposable(value = "", onSubmit = {})
+        MyComposable(
+            value = "",
+            isHidden = true,
+            onHiddenChange = {},
+            onSubmit = {}
+        )
     }
 }
 
@@ -114,7 +119,12 @@ private fun MyComposableEmptyPreview() {
 @Composable
 private fun MyComposableFilledPreview() {
     AppTheme {
-        MyComposable(value = "Hello", onSubmit = {})
+        MyComposable(
+            value = "Hello",
+            isHidden = false,
+            onHiddenChange = {},
+            onSubmit = {}
+        )
     }
 }
 ```

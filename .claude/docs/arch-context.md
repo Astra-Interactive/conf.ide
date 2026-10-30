@@ -5,12 +5,13 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 
 ### The dependency graph
 
-- The units form an acyclic graph. An edge is one of six kinds: a call on a contract or a use case of an
-  `api` unit or of the storage contracts unit; a subscription to its events; a use of `core` (its models,
-  helpers and scopes); a use of a context's `contract` unit; a unit implementing a contract of a unit it may
-  depend on (a technology unit the storage contracts, a platform unit its own `api`, a `<feature>/fake` the
-  `api` it fakes); the entry point building every unit's DI module. Nothing else crosses: no implementation is
-  called across units, no table, no platform type.
+- The units form an acyclic graph. An edge is one of six kinds: a call on a contract or a use case of an `api`
+  unit or of the storage contracts unit; a subscription to its events; a use of `core` (its models, helpers
+  and scopes); a use of a context's `contract` unit; a unit implementing a contract of a unit it may depend on
+  (a technology unit the storage contracts, a platform unit its own `api`, a `<feature>/fake` the `api` it
+  fakes); the entry point building every unit's DI module. Nothing else crosses: no implementation is called
+  across units, no table, and no platform type into a platform-free unit (an `api` unit, `core/api`, the
+  storage contracts unit).
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
   `AddRatingUseCase`). Only the entry point depends on a feature's platform unit (`gui/bukkit`), and nothing
   depends on the entry point. In an app, only the entry point depends on an `impl` unit.
@@ -41,8 +42,9 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 
 - `core` is the project's common unit for what is not worth a unit of its own: config, translation and
   permission models, shared functions, shared coroutine scopes, generic classes two units need
-  (`core/cache/cache4k/<Class>`, moved there once a second unit needs it), small platform pieces as packages (`core/coroutine`). It has the same
-  concept → kind shape as any unit. It may be split by platform (`core/api`, `core/bukkit`).
+  (`core/cache/cache4k/<Class>`, moved there once a second unit needs it), small platform pieces as packages
+  (`core/coroutine`). It has the same concept → kind shape as any unit. It may be split by platform
+  (`core/api`, `core/bukkit`) and, in an app with Compose, into a design-system unit (`core/ui`).
 - `core` holds no use case and no repository, and depends on no feature unit. Nothing enters it before its
   second consumer.
 - A published library (AstraLibs) is a dependency, not the `core` of any project.
@@ -51,14 +53,17 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 
 | Inside a unit | may depend on |
 |---|---|
-| `model` | nothing of its level |
+| `model` | other `model` packages: of a higher level or of another concept of the unit |
 | `api` (contracts) | `model` |
 | `usecase` | `api`, `model`, `util` |
-| implementations (technology packages and units), `stub` | the contracts they implement, `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
+| implementations (technology packages and units), `stub` | `api` (the contract they implement and the contracts they call), `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
 | entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
 | `theme` (Compose) | `model` |
-| `util` | `api`, `model`; `theme` in a Compose unit |
+| `util` | `api`, `model`; `theme` in a Compose unit; `table`, `entity`, `database` in a unit that is wholly one technology |
 | `di` | everything |
+
+A row names kinds, not concepts: a kind may depend on the listed kinds of any concept and any higher level of
+its unit, with no cycle (`jail/model/JailInmate` on `PlayerId` in the unit's `model`).
 
 | Between units | may depend on |
 |---|---|
@@ -79,12 +84,14 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 No cycles anywhere. These two tables are the whole list.
 
 A checker knows the fixed kinds by name: `api`, `model`, `usecase`, `util`, `di`, `theme`, `stub`, `warmup`,
-`migration`, `error`, `table`, `entity`, `database`. A technology package is named after a library the unit
-depends on (read from its build file), or `file`, `memory`. In a unit that is wholly one technology, a concept
-package holds its implementations directly (`router/BukkitGuiRouter`). Any other package that holds files is an
-entry-point or UI kind (`expansion`). A unit's type is the convention plugin its build file applies (one per
-unit type, `arch-package.kt.md`); the checker's config maps each plugin to a row of the table above, and a unit
-without such a plugin is checked by hand.
+`migration`, `error`, `table`, `entity`, `database`, `composable` (the one kind whose sub-packages are kinds
+too: `screen`, `component`, `layout`, a project's own word) and, in the test tree, `fake`. A technology
+package is named after a library the unit depends on (read from its build file), or `file`, `memory`. In a
+unit that is wholly one technology, a concept package holds its implementations directly
+(`router/BukkitGuiRouter`). Any other package that holds files is an entry-point or UI kind (`expansion`). A
+unit's type is the convention plugin its build file applies (one per unit type, `arch-package.kt.md`); the
+checker's config maps each plugin to a row of the table above, and a unit without such a plugin is checked by
+hand.
 
 Every row of these tables, the package names and the naming of implementations are meant to be checked by a
 tool in the build; the platform and framework imports of `model`, `api` and `usecase` are the reviewer's call. The checker is not written yet; until
