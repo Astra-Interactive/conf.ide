@@ -31,9 +31,9 @@ Decide the tier while writing the declaration:
 
 | Declaration | Modifier |
 |---|---|
-| used by one file only, an extension in its `util` file included | `private` in that file |
+| used only inside the file that declares it | `private` in that file |
 | used by other files of the same unit, such as an implementation its DI module constructs | `internal` |
-| used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the classes the platform constructs in an entry-point unit | none (public) |
+| used by another unit: the contracts, models, model rules and use cases of an `api` unit, the `stub` and `memory` implementations another unit uses, a DI module another unit constructs, the classes the platform constructs in an entry-point unit | none (public) |
 
 Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
 only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class
@@ -115,12 +115,13 @@ explicitly; there is no scanning. The DI rule has the details.
   in `model/`: the view or the menu reads it, so it is returned to another class. It is never nested in the
   view model or state holder, and never a second declaration in that file.
 - An `enum` used only through one type is nested in it; otherwise it is a top-level family of its own.
-- Same file as the type: its companion object, nothing else. A file that declares a class holds no top-level
-  function: a helper is a private member of the class, or an extension in `util/<Subject>Ext.kt` of the level
-  that uses it, even when one file uses it (`KPlayer.toRatingPlayer()` of `RatingCommandExecutor`). Never a
-  named class inside a function body, never an `inner class`. An anonymous `object :` inside a function only
-  implements a type the project does not declare (a library's listener in a bridge, `no-callbacks.kt.md`). A
-  Compose composable file declares no class, so an extension only it uses is `private` in it (`compose.kt.md`).
+- Same file as the type: its companion object and, for a sealed type, its variants; nothing else. A file that
+  declares a class holds no top-level function: a helper is a private member of the class, or an extension in
+  `util/<Subject>Ext.kt` of the level that uses it, even when one file uses it (`KPlayer.toRatingPlayer()` of
+  `RatingCommandExecutor`). Never a named class inside a function body, never an `inner class`. An anonymous
+  `object :` inside a function only implements a type the project does not declare (a library's listener in a
+  bridge, `no-callbacks.kt.md`). A Compose composable file declares no class, so an extension only it uses is
+  `private` in it (`compose.kt.md`).
 - A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a
   rule over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme`
   object of shared values holds no function; Compose's two exceptions: the design-system theme object's
@@ -140,7 +141,7 @@ explicitly; there is no scanning. The DI rule has the details.
   technology package, usable by any unit's tests and by demos.
 - A fake that tests of other units need lives in the `testFixtures` source set of the owning unit at the same
   path (`java-test-fixtures` for JVM units, `android { testFixtures { enable = true } }` for Android units),
-  consumed with `testImplementation(testFixtures(projects.modules.jail))`. A Multiplatform unit has no
+  consumed with `testImplementation(testFixtures(projects.modules.jail.api))`. A Multiplatform unit has no
   `testFixtures`: its shared fakes go to a sibling unit `<feature>/fake`.
 - Three suites: in each sub-context's unit, model rules tested directly, use cases with fakes or in-memory
   implementations, technology packages against the real technology where it runs in a test (Exposed on an

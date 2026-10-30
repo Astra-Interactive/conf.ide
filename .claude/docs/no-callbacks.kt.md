@@ -102,22 +102,23 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
   `onValueChange: (String) -> Unit`) are state hoisting (the `compose-hoisting` skill): an event sent up,
   invoked synchronously by the UI when the user acts. They stay and are never replaced by a flow.
 - The output of a Decompose component to its parent is one constructor parameter per event, each a
-  `fun interface On<Event>Callback` nested in the class of the component whose output it is (beside the
-  component's factory, when the project builds components through one), and the parent decides the navigation. Not one `onOutput: (Output) -> Unit`
-  with a sealed `Output` and a `when` at the parent, and not a `Flow` of outputs of any kind (`SharedFlow`,
-  `Channel.receiveAsFlow()`), which loses the result while the parent is not yet collecting. A stream enters a
-  component only as the parent's input or as the component's own UI events.
+  `fun interface On<Event>Callback` nested in the type of the component the parent sees, its interface when it
+  has one, else its class (beside the component's factory, when the project builds components through one),
+  and the parent decides the navigation. Not one `onOutput: (Output) -> Unit` with a sealed `Output` and a
+  `when` at the parent, and not a `Flow` of outputs of any kind (`SharedFlow`, `Channel.receiveAsFlow()`),
+  which loses the result while the parent is not yet collecting. A stream enters a component only as the
+  parent's input or as the component's own UI events.
 
   ```kotlin
   // Bad
-  abstract class CheckoutComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
+  interface CheckoutComponent {
       fun interface Factory {
           operator fun invoke(componentContext: ComponentContext, onOutput: (CheckoutOutput) -> Unit): CheckoutComponent
       }
   }
 
   // Good
-  abstract class CheckoutComponent(componentContext: ComponentContext) : ComponentContext by componentContext {
+  interface CheckoutComponent {
       fun interface OnPaidCallback {
           operator fun invoke(order: OrderId)
       }

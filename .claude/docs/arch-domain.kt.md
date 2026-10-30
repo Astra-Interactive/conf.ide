@@ -32,8 +32,8 @@ How the domain rule is written in Kotlin.
   a contract of its sub-context.
 - A repository is an `interface` named `<Aggregate>Repository` in the `api` package of the concept it stores
   (`data.dao.rating.api.RatingRepository`); its functions are `suspend` where they do I/O; implementations are
-  `internal` classes in the technology unit or package, under the same concept
-  (`data.exposed.rating.ExposedRatingRepository`).
+  `internal` classes (public only for a `stub` or `memory` implementation another unit uses) in the technology
+  unit or package, under the same concept (`data.exposed.rating.ExposedRatingRepository`).
 - An aggregate factory with rules is a top-level function `create<Aggregate>(...): Result<Aggregate>` in the
   aggregate's `util`, never a `companion object` function.
 - A domain event is a `data class` in `model`, published through a publisher contract in `api` (a `Flow`); a

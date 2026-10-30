@@ -62,8 +62,8 @@ import and Validation apply to every context.
   implementation beside it (`data.exposed.rating.CacheRefreshingRatingRepository` beside
   `ExposedRatingRepository`). One that caches part of it gets its own contract in the same `api`
   (`RatedUsersCache`) and an implementation in the technology unit (`Cache4kRatedUsersCache`). A class it uses
-  has its own file beside it (`RefreshingCache`), and moves to `core` only once a second unit needs it
-  (`core/cache/cache4k/<Class>`).
+  has its own file beside it (`RefreshingCache`), and moves to `core` only once a unit of a second sub-context
+  needs it (`core/cache/cache4k/<Class>`).
 - A read that decides nothing is a query function on the repository returning a projection type declared in
   `model`; it does not load the aggregate. A use case is either a command that changes an aggregate or a query
   that only reads, never both.
@@ -72,10 +72,11 @@ import and Validation apply to every context.
 
 - A use case is named `<Verb><Object>UseCase` (`AddRatingUseCase`, `LowerKillerRatingUseCase`) and lives in
   the `usecase` package of its concept, with one public entry and no interface. In a plugin it lives in the
-  `api` unit of the sub-context that owns the operation; other sub-contexts depend on that unit. In an app,
-  when another unit calls it, its interface lives in `usecase` of the owner's `api` unit
-  and its `Default…` implementation in `usecase` of `impl`. It never
-  lives in `core`.
+  sub-context that owns the operation: in its `api` unit when the sub-context is split, in its one unit when
+  it is not; other sub-contexts depend on the `api` unit, so a use case another sub-context needs is a reason
+  to propose the split (`arch-package.md`, Units 2). In an app, when another unit calls it, its interface
+  lives in `usecase` of the owner's `api` unit and its `Default…` implementation in `usecase` of `impl`. It
+  never lives in `core`.
 - It exists only when the flow has more than one step: a contract call whose result a model rule judges
   before the next action, or two or more contracts combined. A single contract call with no branch is made
   from the entry point directly.
@@ -112,10 +113,10 @@ which lives in `service/`.
   aggregate's `util` returning a `Result`
   (`fun createJail(name: String, location: JailLocation): Result<Jail>`), never a companion `create`: the
   model is data.
-- The construction of dependencies belongs to `di/` and is not called a factory. A `Factory` class for a single
-  implementation is forbidden. The exception is an object that needs arguments known only when it is created
-  (a UI component's context and callbacks): its `fun interface Factory` is nested in the class it builds, and a
-  DI module implements it.
+- The construction of dependencies belongs to `di/` and is not called a factory. A `Factory` class for a
+  single implementation is forbidden. The exception is an object that needs arguments known only when it is
+  created (a UI component's context and callbacks): its `fun interface Factory` is nested in the type it
+  builds, its interface when it has one, and a DI module implements it.
 
 ### What the model may import
 

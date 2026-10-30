@@ -49,8 +49,8 @@ fun Order.validate(): Result<Order> {
 - A per-use-case sealed result (`CreateOrderResult`) lives in the same `model/`, with its failure variants
   nested next to the success ones.
 - Any other error type, or error hierarchy with its subclasses, is its own file in the `model/` of the level
-  that uses it, even one that never leaves one class (`…command.model.UsageCommandException`), never a private
-  class inside the file that returns or throws it.
+  that uses it, even one that never leaves one class, never a private class inside the file that returns or
+  throws it.
 - An old `exception/` package stays as it is; new error types of its concept still go to `model/`.
 
 ### Boundaries: converting exceptions

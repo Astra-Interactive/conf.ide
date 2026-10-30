@@ -15,7 +15,8 @@ Terms used below:
 - **concept**: a package named for a thing in the project's words (`rating`, `jail`, `player`);
 - **kind**: a package named for what its files are (`api`, `model`, `usecase`, `util`, `di`, `command`, `menu`);
 - **entry point**: a class the platform calls (a command, a listener, a menu, a route, a screen, a task);
-- **core**: the project's common unit for what is not worth a unit of its own.
+- **core**: the project's common unit for what is not worth a unit of its own;
+- **feature**: another word for a sub-context (`gui`, `payment`); a feature unit is any unit of one.
 
 ### Units
 
@@ -66,16 +67,18 @@ Terms used below:
 
 ### Concepts and kinds
 
-Every source path reads `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind
-for Compose's `composable` only (Concepts and kinds 1). A kind directly under the
-unit root holds what the whole unit shares: its DI module, a model or a helper several concepts use
-(`…command.model.UsageCommandException`).
+Every source path reads `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind for
+Compose's `composable` only (Concepts and kinds 1). A kind directly under the unit root holds what the whole
+unit shares: its DI module, a model or a helper several concepts use (`…command.model.UsageCommandException`).
+Two places hold files without a kind: the concept package of a unit that is wholly one technology (2), and the
+root package of the entry-point unit, which holds the classes the platform constructs beside its `di`.
 
 1. A package holds files or packages, never both: a concept holds packages, a kind holds files. A one-file
    kind package is normal. A kind package exists only when it has a file. Compose's `composable` may hold
    sub-packages (`screen`, `component`, `layout`, a project's own words) instead of files; the Kotlin Compose
-   rule says when. The one package that holds both is the concept package of a unit that is wholly one
-   technology (Implementation exception, 2).
+   rule says when. Two packages hold both: the concept package of a unit that is wholly one technology
+   (Implementation exception, 2) and the root package of the entry-point unit (the classes the platform
+   constructs beside `di`).
 
    ```
    …gui.api.rating.change.model.RatingPlayer         data it returns
@@ -91,7 +94,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    sits in kind packages (`table`, `entity`, `model`, `util`, `database`, `di`) at the level that uses it:
    inside the concept when only that concept uses it, under the unit root when several do. A technology
    package inside another unit (`jail/file`, `core/cache/cache4k`) holds only code built on that technology:
-   implementations of contracts and the classes they use, or generic code two units need.
+   implementations of contracts and the classes they use, or generic code that units of two sub-contexts need.
 
    ```
    …data.exposed.rating.ExposedRatingRepository
@@ -116,7 +119,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | `warmup` | a task the platform runs once at start to seed state (`RatingCacheWarmUp`), in the unit of the state it seeds |
    | `migration` | code that converts stored data or config from an old format, inside the concept it migrates (`core/settings/migration/ConfigSnakeCaseMigration.kt`) |
    | `error` | classes that turn a failure into the user's reply, in the unit of the mechanism that fails (`command/error/CommandExceptionHandler.kt`) |
-   | technology packages | an implementation of a contract, or code built on one library, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
+   | technology packages | implementations of a contract and the classes they use, or generic code that units of two sub-contexts need, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
    | `stub` | a stub or preview implementation of a contract that other units need |
    | `table`, `entity`, `database` | only in a unit that is wholly one technology: its tables, its row entities, its connection |
 
@@ -143,11 +146,12 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    `core/util`).
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
    implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
-   the unit it serves. Is it generic code that two units need? `core`, in the technology package of the library
-   it is built on (`core/cache/cache4k/<Class>.kt`), moved there once a second unit needs it; until then
-   it sits beside its only user. Only when every answer is no and the file holds
-   functions, a rule of the model included, is it `util`. `util` and `model` are never the place for a class no
-   kind fits: the agent asks the user and proposes a word.
+   the unit it serves. Is it generic code that units of two sub-contexts need? `core`, in the technology
+   package of the library it is built on (`core/cache/cache4k/<Class>.kt`), moved there once a unit of a
+   second sub-context needs it; until then it sits beside its only user, and the `api` and platform units of
+   one sub-context share it through the `api` unit. Only when every answer is no and the file holds functions,
+   a rule of the model included, is it `util`. `util` and `model` are never the place for a class no kind
+   fits: the agent asks the user and proposes a word.
 9. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
    singular, except an inherently plural concept (`news`); which concept is plural is the reviewer's call.
 10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
@@ -204,8 +208,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   or more classes, or is returned to another class, is top-level in `model`.
 - Every error family is its own file in `model`, a sealed error with all its subclasses or a single error
   class: an error a contract names in the `model` of the contract's level, any other in the `model` of the
-  level that uses it, even one used by one class (`modules/command`: `…command.model.UsageCommandException`).
-  There is no `exception` package.
+  level that uses it, even one used by one class. There is no `exception` package.
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
   the type's own file. A file that declares a class holds no top-level function; a Compose composable file
   declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is never an

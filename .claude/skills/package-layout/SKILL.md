@@ -35,8 +35,10 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 - A class the platform constructs (a plugin's main class, an Android `Application` or `Activity`) or
   `RootModule`: the entry-point unit.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
-  even though the platform starts it): that sub-context's unit; code other units call, and every plugin use case,
-  in its `api` unit; code only the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
+  even though the platform starts it): that sub-context's unit; code other units call, and every plugin use
+  case, in its `api` unit when the sub-context is split (a use case of an unsplit one stays in its one unit,
+  and another sub-context needing it is a reason to propose the split, `arch-package.md` Units 2); code only
+  the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
 - A config, translation or permission model, a function, a generic class or a scope used by several
   sub-contexts: `core`, in the concept → kind shape. A rule of a model that two units use is the exception:
   the `util` of the model's own unit.
@@ -44,12 +46,12 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 - A new sub-context: ask (step 1.3).
 
 **T2. Is this a use case, and where?**
-Only when the flow has more than one step: a contract call whose result a model rule judges before acting, or
-two or more contracts combined. Named `<Verb><Object>UseCase`, in the `usecase` package of its concept, in the
-`api` unit of the sub-context that owns the operation. In an app, a use case lives in `usecase` of the `impl` unit; when another unit
+Only when the flow has more than one step: a contract call whose result
+a model rule judges before acting, or two or more contracts combined. Named `<Verb><Object>UseCase`, in the
+`usecase` package of its concept, in the `api` unit of the sub-context that owns the operation, or in its one
+unit when it is not split. In an app, a use case lives in `usecase` of the `impl` unit; when another unit
 calls it, its interface sits in `usecase` of the owner's `api` unit and the `Default…` implementation stays in
-`impl`. Never in `core`. If the owner is
-unclear, ask.
+`impl`. Never in `core`. If the owner is unclear, ask.
 
 **T3. Which concept and which kind?**
 Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind for Compose's `composable` only
@@ -59,14 +61,16 @@ kind, asked in this order:
    implementation; in an app, when another unit calls it, the interface in that kind of the owner's `api`
    unit. Implements, wraps or narrows a contract (a cache included) → beside the other implementations, in
    storage when it caches storage.
-2. Data class, result, error, event, config → `model`, fields only. A rule over a type → an extension of
-   that type in `util` (`arch-domain.md`).
+2. Data class, result, error, event, config → `model`, as data (`arch-domain.md`: fields, nested types,
+   constants, an invariant check). A rule over a type → an extension of that type in `util`
+   (`arch-domain.md`).
 3. Operation of more than one step → `usecase`. Wiring → `di`.
 4. Run by the platform → the word of its mechanism, in the unit it serves: `command`, `event`, the UI words,
    `service` (timer), `warmup` (once at start), `migration` (format change), `error` (failure to reply).
-5. Built on one library → that library's technology package; generic and needed by two units → `core`.
+5. Generic code that units of two sub-contexts need → `core`, in the technology package of the library it is
+   built on (`core/cache/cache4k`); until then beside its only user.
 6. Functions (extensions, rules of the model, formatting) → `util`. Never a class.
-Nothing lies loose in a concept package outside a technology implementation unit.
+Nothing lies loose in a concept package outside a unit that is wholly one technology.
 
 **T4. Which word for a UI kind?**
 Compose: `composable`, `theme` (shared values of a level) and the state holder's word (`viewmodel` or a
@@ -206,26 +210,28 @@ line. A "no" is fixed by moving the new file, never an old one.
    they were?
 3. Was every new sub-context offered to the user as "own unit or package", and does every new unit have a
    one-sentence `README.md`?
-4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation (in an
-   app, in `impl`, with its interface in the owner's `api` unit when another unit calls it), and never in
-   `core`? Does `core` depend on no feature unit?
+4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation or
+   the one unit of an unsplit owner (in an app, in `impl`, with its interface in the owner's `api` unit when
+   another unit calls it), and never in `core`? Does `core` depend on no feature unit?
 5. Does any package hold both files and packages, other than the concept package of a unit that is wholly one
-   technology? Does every concept package hold only kind packages, except a technology implementation? Does
-   every kind package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
+   technology and the root of the entry-point unit? Does every concept package hold only kind packages, except
+   in a unit that is wholly one technology? Does every kind package hold only files, except a Compose
+   `composable` split into `screen`/`component`/`layout` or the project's own words?
 6. Are UI kinds named from the framework and the project, with `composable`/`theme` only under Compose,
    `viewmodel` only for a view model, and the project's own word kept?
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,
    `exception`, `dto`, `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names
    singular (the reviewer's call)?
-8. Does every contract sit in `api` of its concept, with its implementation named by technology or variant, no
-   `Impl`, no `I` prefix?
+8. Does every contract sit in `api` of its concept (a use case's interface in `usecase`, a state holder's in
+   its state-holder kind; in an app, one another unit calls in that kind of the owner's `api` unit), with its
+   implementation named by technology, variant or `Default<Interface>`, no `Impl`, no `I` prefix?
 9. Does every new interface pass one of the four triggers?
 10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
     units use, in the `util` of the model's own unit?
 11. Does every class with behaviour and every error type have its own file, and every extension sit in
-    `util/<Subject>Ext.kt` (or `private` in the one Compose composable file that uses it)? Does any `util` hold
-    a class or an `object`? Does any top-level function take a type as a parameter where an extension of that
-    type is the rule?
+    `util/<Subject>Ext.kt` (or `private` in the one Compose composable file that uses it)? Does any `util`
+    hold a class or an `object` declaration (an anonymous `object :` of a bridge is allowed)? Does any
+    top-level function take a type as a parameter where an extension of that type is the rule?
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
     handler in `error` of its mechanism, every format converter in `migration` of what it converts?
 13. Does `model` import no kind but other `model` packages, and no platform or ORM type (Compose types only in

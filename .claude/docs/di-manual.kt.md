@@ -2,16 +2,15 @@
 
 Manual constructor injection — no Koin, Dagger, or other DI frameworks.
 
-A DI module is a Kotlin `class` (e.g. `LinkModule`) that declares its services as properties, constructs
-their concrete instances, and receives other DI modules as constructor parameters. Use a class by default.
-Make a DI module an `interface` with a separate implementation only when it has to be extended or split into
-api/impl. "DI module" names this class only; a Gradle module is a build unit.
+A DI module is a Kotlin `class` (e.g. `LinkModule`) that declares its services as properties, constructs their
+concrete instances, and receives other DI modules as constructor parameters. Use a class by default. Make a DI
+module an `interface` with a separate implementation only on a trigger of the package-layout rule (Contracts
+and implementations). "DI module" names this class only; a Gradle module is a build unit.
 
 `RootModule` is the composition root: the one DI module per application that builds the root DI modules in
 dependency order, using `lazy {}` where construction must be deferred. A project that already names its
-composition root otherwise keeps that name, and the rules about `RootModule` apply to it. It lives in the
-`di` package of the unit that starts the application (`instances:<name>`, the plugin unit), next to the class
-that creates it.
+composition root otherwise keeps that name, and the rules about `RootModule` apply to it. It lives in the `di`
+package of the entry-point unit (`instances/<name>`), whose root holds the class that creates it.
 
 - DI modules form a tree that follows the unit dependencies. Each unit that constructs something has its
   own DI module in the `di/`

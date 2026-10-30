@@ -93,7 +93,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Keep each responsibility in its own class and each class in the kind package of its concept: contracts in `api/`, data in `model/`, operations in `usecase/`, extensions in `util/`, wiring in `di/`, implementations in the package of their technology. The package-layout rule and skill decide the packages and when a sub-context gets its own build unit.
+Keep each responsibility in its own class and each class in the kind package of its concept: contracts in `api/`, data in `model/`, operations in `usecase/`, extensions in `util/`, wiring in `di/`, implementations where the package-layout rule places them. The package-layout rule and skill decide the packages and when a sub-context gets its own build unit.
 
 Do not mix unrelated responsibilities in one class or function.
 
