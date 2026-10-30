@@ -4,13 +4,32 @@ When writing or modifying code, order declarations by dependency, not by call-si
 
 ### Layout of a file or scope
 
-1. `val` / `var` declarations, configuration, and shared state come first, before any function.
+1. `val` / `var` declarations, configuration, and shared state come first, before any function. A secondary
+   constructor follows them, before the functions.
 2. Functions follow, ordered so that a callee is declared above its caller:
    - if function `A` calls function `B`, `B` appears before `A`;
    - private helpers sit above the functions that use them;
    - lower-level utilities come before higher-level orchestration functions.
-3. Never append private helpers after the public functions that depend on them.
-4. Preserve this ordering when refactoring existing code.
+3. `init` blocks follow the last function; only nested types and the `companion object` come after them.
+   Every property sits above the functions (rule 1), so it is initialized before any `init` block runs.
+4. Never append private helpers after the public functions that depend on them.
+5. Preserve this ordering when refactoring existing code.
+
+```kotlin
+class PlanPaywallViewModel(
+    private val offerRepository: OfferRepository
+) : ViewModel() {
+    private val state = MutableStateFlow<PlanPaywallState>(PlanPaywallState.Loading)
+
+    private suspend fun loadOffer() {
+        state.value = offerRepository.loadOffer()
+    }
+
+    init {
+        viewModelScope.launch { loadOffer() }
+    }
+}
+```
 
 ### Exception: `companion object` is always last
 
