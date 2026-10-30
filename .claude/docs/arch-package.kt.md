@@ -84,17 +84,18 @@ internal class FileJailRepository(
   technology packages may import the platform; a `warmup` or `migration` in a platform-free unit reaches the
   server through AstraLibs' `PlatformServer`.
 - A use case is `<Verb><Object>UseCase` (`RatePlayerUseCase`) in the `usecase` package of its concept, with one
-  public `operator fun invoke` and no interface. A use case and a contract import no platform or framework
-  type; the server is reached through AstraLibs' abstractions (`server/player`, `server/location`,
-  `server/permission`) or the sub-context's own contract.
+  public `operator fun invoke` and no interface, except an app's use case another unit calls (package-layout
+  rule, Units 6). A use case and a contract import no platform or framework type; the server is reached
+  through AstraLibs' abstractions (`server/player`, `server/location`, `server/permission`) or the
+  sub-context's own contract.
 - A state holder of a menu or screen (`component` in AstraRating, `viewmodel` with Compose) holds no rule and calls
-  use cases and contracts; the shared design system is a `core` package.
+  use cases and contracts; the shared design system is the design-system unit (`core/ui`).
 
 ### DI modules
 
 Each unit that constructs something has its own DI module in the `di` package of the level it wires, and a
 resource with its own lifecycle has its own DI module in the unit that owns it. A unit of contracts and
-models only has none. DI modules form a tree, each exposes its own
+models only has none. DI modules form a tree; each that starts or stops something exposes its own
 `lifecycle: Lifecycle`, and the entry point's `RootModule` builds the roots and lists their `lifecycle`s
 explicitly; there is no scanning. The DI rule has the details.
 

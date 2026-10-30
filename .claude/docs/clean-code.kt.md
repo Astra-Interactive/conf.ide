@@ -9,7 +9,8 @@ Core requirements:
 ### 1. Write clean, readable code
 
 * Use meaningful names for variables, functions, classes, files, and modules.
-* Avoid vague names like `data`, `temp`, `foo`, `manager`, `handler`, unless the meaning is obvious.
+* Avoid vague names like `data`, `temp`, `foo`, `manager`, `handler`, unless the meaning is obvious (the
+  reviewer's call).
 * A function is named with a verb that says what happens; one that returns a value is never a bare noun
   (`cardSegments()`, `featureShortcuts()`, `titleStyle()` mislead) and never starts with `get`, except
   `getState()` where a project already uses it as the view model's state accessor. `operator fun invoke`,
@@ -39,12 +40,15 @@ Core requirements:
 
   Never `map` in a name (`toContent`, not `mapToContent`: `map` is the word of collections), never
   `make`, `do`, `handle` or `process`. A function with no arguments that only returns a stored value is a
-  `val`.
+  `val`. A checker enforces only the bans (a `get` prefix except `getState()`, `make`, `do`, `handle`,
+  `process`, `map`); whether another verb says what happens as plainly is the reviewer's call.
 * Keep functions small and focused.
 * Each function should do one thing.
-* Avoid deeply nested logic.
+* Avoid deeply nested logic. "Small" and "deeply nested" are the project's detekt `LongMethod` and
+  `NestedBlockDepth` thresholds (60 lines and 4 levels when the project sets none).
 * Prefer early returns and guard clauses. An `if` whose whole body is one `return` (a labelled one included)
-  is one line without braces when it fits the project's line limit: `if (!isVisible) return@LaunchedEffect`.
+  is one line without braces when it fits the project's detekt `MaxLineLength` (120 when none is set):
+  `if (!isVisible) return@LaunchedEffect`.
 * Avoid duplicated code.
 * Before writing a helper, look for one that exists in the project or in a library the project already
   depends on, and use it: an extension the project has over `stringResource(…)`, mikro's
@@ -183,7 +187,8 @@ Do not mix unrelated responsibilities in one class or function.
   ```
 
 * A call with three or more arguments puts each argument on its own line, whether or not it would fit; one or
-  two arguments stay on one line when they fit. The column limit decides nothing here. A trailing lambda
+  two arguments stay on one line when they fit the project's detekt `MaxLineLength` (120 when none is set).
+  The column limit decides nothing else here. A trailing lambda
   counts as an argument: `remember(icon, label) { … }` has three, so `icon` and `label` go on their own lines
   and the lambda follows the closing parenthesis.
 

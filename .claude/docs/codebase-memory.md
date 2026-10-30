@@ -14,8 +14,9 @@ The `mcp__codebase-memory-mcp__*` tools must be available before any code explor
    ```
 
    Then reload MCP servers in the current session (`/mcp`) or restart Claude Code.
-3. If the binary itself is not installed, stop and ask the user to install it. Do not fall back to
-   `ls`/`grep`/`find` for code exploration while the server is unavailable.
+3. If the tools are still unavailable after steps 1 and 2, or the binary itself is not installed, tell the
+   user at once what failed and what you tried, and stop. Do not fall back to `ls`/`grep`/`find` for code
+   exploration while the server is unavailable.
 
 ## Keep the index up-to-date
 

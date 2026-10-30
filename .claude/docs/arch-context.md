@@ -5,12 +5,14 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 
 ### The dependency graph
 
-- The units form an acyclic graph. An edge is one of three kinds: a call on a contract or a use case of an
-  `api` unit, a subscription to its events, or a use of `core` (its models, helpers and scopes). Nothing else
-  crosses: no implementation, no table, no platform type.
+- The units form an acyclic graph. An edge is one of five kinds: a call on a contract or a use case of an
+  `api` unit or of the storage contracts unit; a subscription to its events; a use of `core` (its models,
+  helpers and scopes); a technology unit implementing the storage contracts (`data/exposed` → `data/dao`); the
+  entry point building every unit's DI module. Nothing else crosses: no implementation is called across units,
+  no table, no platform type.
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
-  `RatePlayerUseCase`). Nothing depends on a feature's platform unit (`gui/bukkit`) or on the entry point. In an
-  app, only the entry point depends on an `impl` unit.
+  `RatePlayerUseCase`). Only the entry point depends on a feature's platform unit (`gui/bukkit`), and nothing
+  depends on the entry point. In an app, only the entry point depends on an `impl` unit.
 - A use case several sub-contexts need lives in the `api` unit of the sub-context that owns the operation. When
   no owner can be named, the agent asks the user.
 - Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and the
@@ -51,8 +53,8 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `model` | nothing of its level |
 | `api` (contracts) | `model` |
 | `usecase` | `api`, `model`, `util` |
-| implementations (technology packages and units), `stub` | the contracts they implement, `model` |
-| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; a `composable` sub-package also its siblings (`screen` → `component`, `layout`; nothing depends on `screen`) |
+| implementations (technology packages and units), `stub` | the contracts they implement, `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them) |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router) |
 | `theme` (Compose) | `model` |
 | `util` | `api`, `model`; `theme` in a Compose unit |
 | `di` | everything |
@@ -70,8 +72,14 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | `core` (`core/api`) | nothing of the project |
 | the platform unit of `core` (`core/bukkit`) | `core/api` |
 | `<feature>/fake` | the `api` it fakes |
+| a unit that serves or calls a context's routes | its row above, plus that context's `contract` unit |
 
 No cycles anywhere. These two tables are the whole list.
+
+A checker knows the fixed kinds by name: `api`, `model`, `usecase`, `util`, `di`, `theme`, `stub`, `warmup`,
+`migration`, `error`, `table`, `entity`, `database`. Any other package that holds files is a technology package
+when it holds an implementation of a contract (a class implementing an interface from an `api` package), and an
+entry-point or UI kind otherwise.
 
 Every row of these tables, the package names, the naming of implementations and the imports allowed in
 `model`, `api` and `usecase` are meant to be checked by a tool in the build. The checker is not written yet; until

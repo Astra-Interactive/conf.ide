@@ -94,8 +94,8 @@ over rule 2 here, so this is the one place where a callee is declared below its 
 class ReportBuilder(
     private val source: ReportSource
 ) {
-    private val columns: List<Column> = resolveColumns()
+    private val columns: List<Column> = filterVisibleColumns()
 
-    private fun resolveColumns(): List<Column> = source.schema.columns.filter(Column::visible)
+    private fun filterVisibleColumns(): List<Column> = source.schema.columns.filter(Column::visible)
 }
 ```

@@ -21,8 +21,8 @@ How the domain rule is written in Kotlin.
 
 - A typed identifier is a `@JvmInline value class` over the primitive (`value class PlayerId(val uuid: Uuid)`).
   A single-property value object is a value class too; one with an invariant checks it in `init` with
-  `require` when a violation is a programmer error, or is built by a factory function returning `Result` when
-  the input comes from a user.
+  `require` when a violation is a programmer error, or is built by `parse<Type>(raw)` returning `Result`, in
+  its `util`, when the input comes from a user.
 - A sealed hierarchy is one file in `model`: the per-use-case results (`sealed interface RenameResult`), the
   error families of the error-handling rule, the events of an aggregate.
 - A use case is `<Verb><Object>UseCase` in the `usecase` package of its concept, with `operator fun invoke`
@@ -35,8 +35,9 @@ How the domain rule is written in Kotlin.
   (`data.exposed.rating.ExposedRatingRepository`).
 - An aggregate factory with rules is a top-level function `create<Aggregate>(...): Result<Aggregate>` in the
   aggregate's `util`, never a `companion object` function.
-- A domain event is a `data class` in `model`, published through the platform bus or a publisher contract in
-  `api`; the Bukkit event type that carries it lives in the `event` kind of the platform unit.
+- A domain event is a `data class` in `model`, published through a publisher contract in `api` (a `Flow`); a
+  Bukkit event type that carries it, declared only for other plugins, lives in the `event` kind of the
+  platform unit.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
   are never imported in `model`, in a use case or in a contract. The one exception: in a UI unit, one whose
   build already depends on Compose, `model` may import `androidx.compose.*` and `org.jetbrains.compose.*`

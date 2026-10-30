@@ -1,6 +1,7 @@
 ## Kotlin Timestamp and Duration Rule
 
 When writing Kotlin code, do not represent dates, timestamps, or durations as raw primitive or text types.
+Which values are dates, timestamps or durations is the reviewer's call.
 
 Avoid using:
 

@@ -14,7 +14,8 @@ package created inside a unit).
   is no `composable/model`: the sub-packages `composable` may hold (below) are kinds of composables, never of
   models or helpers. In a UI unit, `model` may import
   `androidx.compose.*` and `org.jetbrains.compose.*`; the ban on ORM, platform and network imports in `model`
-  stays, and a UI type is never a copy of a domain type with the same fields.
+  stays, and a UI type is never a copy of a domain type with the same fields
+  (the reviewer's call).
 
   ```
   impl/model/PerkContent.kt                    data class PerkContent(val painter: Painter, val label: String)
@@ -24,8 +25,8 @@ package created inside a unit).
 
   The input of a composable is `<Thing>Content`; the state of a screen is `<Screen>State`.
 - `composable` is the one kind that may hold sub-packages, named from Compose's vocabulary and the project's
-  existing words, in the singular: `screen` (the screen-level composables: what `Render()` calls and the
-  screen content it delegates to), `component` (a reusable part with content: a button, a card, an app bar,
+  existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a parent composable calls,
+  and the screen content it delegates to), `component` (a reusable part with content: a button, a card, an app bar,
   an icon; a UI part, not the state-holder `component` of AstraRating), `layout` (a container that arranges
   or frames its children and has no content of its own: a scaffold, a grid, a fade frame), and a project's
   own words such as `sheet`, `dialog`, `appbar`; never `components`. `composable` holds either files only or
@@ -44,8 +45,9 @@ package created inside a unit).
   component, in that component's file (Material's shape: `ButtonDefaults` in `Button.kt`). An extension that
   only this file uses, a `@Composable` one or one returning a Compose type (`Modifier`, `Brush`,
   `TextStyle`) included, is `private` in this file; one that several files use is `util/<Subject>Ext.kt` of
-  the level, like any extension. There is no `composable/util`. The pure rules of a domain type stay in the
-  `util` of its `api` unit, where Compose is not on the classpath. A file of functions with no `@Composable`
+  the level, like any extension. There is no `composable/util`. A pure function over a domain type is placed by
+  the domain rule: the `util` of the level that uses it, the type's own unit once two units use it; never in a
+  composable file. A file of functions with no `@Composable`
   in it (`DrawScope.draw…` extensions, a brush builder) is a `util` file, never in `composable`, under the
   ordinary names: `checkout/util/DrawScopeExt.kt` for the drawing extensions of the payment card,
   `util/LinearGradient.kt` for `buildLinearGradient(angleDegrees, size, stops)`, with the angle convention
@@ -121,7 +123,7 @@ project's mikro has them; otherwise the project declares them once, in the `util
   string: `Modifier.size(28.dp)`, `padding(top = 180.dp)`, `tween(durationMillis = 400)`. Extract on a
   second use, when it must equal another value, when several values form one spec tuned together (the
   timings of one animation), or when the name adds meaning the call lacks (`CardDrop = 58.dp`, how far
-  the card sinks): private vals of the file when one file uses them, `theme` when several do. Equal
+  the card sinks; the reviewer's call): private vals of the file when one file uses them, `theme` when several do. Equal
   literals near each other are not one constant: the same `400` twice may be a coincidence.
 
   ```kotlin

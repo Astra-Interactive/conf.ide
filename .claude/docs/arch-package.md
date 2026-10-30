@@ -25,7 +25,8 @@ Terms used below:
      else. Nothing depends on it. An application may have several, one per platform or a debug instance;
    - **`core`**: the common unit for what is not worth a unit of its own: config, translation and permission
      models, shared helpers, shared coroutine scopes, small platform pieces. It holds no use case and no
-     repository, and depends on no feature unit. It may be split by platform (`core/api`, `core/bukkit`);
+     repository, and depends on no feature unit. It may be split by platform (`core/api`, `core/bukkit`) and, in an app
+     with Compose, into a design-system unit (`core/ui`);
    - a **`<context>/contract`** unit for the wire types a server and its client share;
    - a **tooling unit** with no product code: `build-logic`, an `xtask` crate, a `<feature>/fake` unit.
    A published library (AstraLibs) is a dependency of a project, not one of its units.
@@ -43,13 +44,17 @@ Terms used below:
    and their platform-free implementations. The platform unit holds everything that imports the platform, and
    platform-free code that only it uses (`RatingSlotKey`). There is no `impl` unit: in a plugin it would add
    modules and make nothing easier. A sub-context that is not split is one unit, platform imports included
-   (`modules/command`, `modules/event-bukkit`). Storage is a contracts unit plus one unit per technology (`data/dao`, `data/exposed`).
+   (`modules/command`, `modules/event-bukkit`). Storage that several sub-contexts use, or a technology heavy
+   enough for its own build (Exposed, Room), is a contracts unit plus one unit per technology (`data/dao`,
+   `data/exposed`). Storage of one sub-context in files or in memory is a technology package of that
+   sub-context (`jail/file`).
 5. **App** (Kotlin Multiplatform, Android): a feature others depend on is an `api` unit (contracts, the
    models in their signatures, the `util` rules of those models, stubs) plus an `impl` unit (the implementation and its use cases). Platform
    code is a source set of the unit, never a unit.
 6. A use case that several sub-contexts need lives in the `api` unit of the sub-context that owns the
-   operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. When
-   no owner can be named, the agent asks.
+   operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an
+   app, the owner's `api` unit holds the use case's interface and its `impl` unit the implementation; the
+   others call the interface. When no owner can be named, the agent asks.
 7. A unit's directory never holds another unit: a split sub-context's directory is a container with no build
    file and no sources (`gui/api`, `gui/bukkit`).
 8. Every unit carries a `README.md` of one sentence stating its responsibility. A sentence that does not fit is
@@ -71,17 +76,18 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    technology (Implementation exception, 2).
 
    ```
-   …gui.api.rating.api.RatingPlayersRepository     contract
    …gui.api.rating.model.RatedPlayer               data it returns
    …gui.api.rating.usecase.RatePlayerUseCase       operation others call
    …data.dao.rating.api.RatingRepository           storage contract, in the concept it stores
    ```
 
 2. **Implementation exception.** In a unit that is wholly one technology's implementation
-   (`data/exposed`), the concept package holds the implementations directly. Everything else of that
+   (`data/exposed`), the concept package holds the implementations directly, and beside them the classes only
+   they use (`RefreshingCache`). Everything else of that
    technology sits in kind packages (`table`, `entity`, `model`, `database`, `di`) at the level that uses it:
    inside the concept when only that concept uses it, under the unit root when several do. A technology
-   package inside another unit (`jail/file`) holds only implementations.
+   package inside another unit (`jail/file`, `core/cache/cache4k`) holds only code built on that technology:
+   implementations of contracts and the classes they use, or generic code two units need.
 
    ```
    …data.exposed.rating.ExposedRatingRepository
@@ -148,11 +154,14 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - An interface exists on four triggers and no other: another unit calls it; two or more implementations exist
   or one is known to come; an inner part declares what it needs from an outer one; a test must replace it with
   a fake, which is allowed only for a contract over I/O or the platform. Pure logic, entities and use cases get
-  no interface.
+  no interface, except an app's use case that another unit calls (Units 6). Whether one is known to come and
+  whether a test must replace it are the reviewer's call.
 - A contract sits in the `api` package of its concept. Its implementation sits in the technology's package or
   unit, under the same concept, and is named by its technology or variant (`ExposedRatingRepository`,
   `InMemoryJailRepository`, `CachedRatingRepository`). `Impl`, the `I` prefix and the `Interface` suffix are
-  forbidden. `database`, `network`, `local` and `remote` are not technology names.
+  forbidden. `database`, `network`, `local` and `remote` are not technology names. An implementation with no
+  technology and no variant, such as an app's use case behind its interface, is named `Default<Interface>`
+  (`DefaultRatePlayerUseCase`).
 - A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
   another implementation beside it (`CachedRatingRepository`). One that caches part of it gets its own
   contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
@@ -171,7 +180,9 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 
 - A file holds one type family: a sealed hierarchy with its variants, or a data class with the data classes
   nested in it. A class with behaviour always has its own file, even a private helper of one class
-  (`RefreshingCache` is not inside `CachedRatingRepository.kt`). A file is split only above about 400 lines.
+  (`RefreshingCache` is not inside `CachedRatingRepository.kt`). A class with behaviour is any class or object
+  with a function body of its own (not a data class's generated members, not an enum's entries). A file is
+  split only when it passes 400 lines.
 - A data class that is a property type of exactly one class is nested in it. A type that is a property of two
   or more classes, or is returned to another class, is top-level in `model`.
 - Every error family is its own file in `model`, a sealed error with all its subclasses or a single error

@@ -59,18 +59,18 @@ override fun Render(modifier: Modifier) {
 }
 ```
 
-### 3. Screen-level composable (`*ComposableScreen`)
+### 3. Screen-level composable (`*ScreenComposable`)
 
-When extracting layout from `Render()`, create a `*ComposableScreen` file/function. This composable:
+When extracting layout from `Render()`, create a `*ScreenComposable` file/function. This composable:
 - Owns pure-UI state that has no business meaning (password visibility, expansion toggles)
 - Contains the outer scaffold: `Column`, `AppBar`, `navigationBarsPadding`, `fillMaxSize`
 - Calls the inner content composable (which must itself be fully state-hoisted)
 
-**Naming:** `Auth<Feature>ComposableScreen` / `<Feature>ComposableScreen`
+**Naming:** `Auth<Feature>ScreenComposable` / `<Feature>ScreenComposable`
 
 ```kotlin
 @Composable
-fun AuthConfirmPasswordComposableScreen(
+fun AuthConfirmPasswordScreenComposable(
     confirmPasswordType: InternalConfirmPasswordType,
     screenState: ConfirmPasswordScreenState,
     fieldsState: PasswordFieldsState,
@@ -158,6 +158,6 @@ When asked to "add previews" to a directory or file:
 
 1. Read every `@Composable` file in scope.
 2. For each composable — check state-hoisting. If it has internal `var … mutableStateOf`, hoist the state as parameters; find the caller and pass the state down (or create a screen-level wrapper if none exists).
-3. If a `DecomposeComponent.Render()` contains layout: extract it into a new `*ComposableScreen` file, update `Render()` to only collect state and call it.
+3. If a `DecomposeComponent.Render()` contains layout: extract it into a new `*ScreenComposable` file, update `Render()` to only collect state and call it.
 4. Add previews at the bottom of each composable file covering all meaningful visual states.
 5. Apply focus/autofill preview guards where `LaunchedEffect { requestFocus() }` or `autofill {}` modifier is present.

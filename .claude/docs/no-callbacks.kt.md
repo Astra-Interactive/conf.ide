@@ -8,7 +8,8 @@ callbacks: a lambda that runs before the function returns (`Iterable.map { }`, `
 builder, a `Flow` operator, a `Modifier` factory or a lifecycle hook (`Lifecycle.Lambda`), the library's or
 the project's own, runs inside a job, a collection or a lifecycle the caller owns. Declaring a callback is
 adding an `on…: (T) -> Unit` parameter, a `…Listener` or `…Callback` type, or a field of that kind to the
-project's own API, outside the two cases under Handlers and outputs.
+project's own API, outside the two cases under Handlers and outputs. A class in the `event` kind that
+implements the platform's listener (`SitListener : Listener`) declares no callback.
 
 Project code declares no callback. A result that arrives later is the return value of a `suspend fun`; things
 that happen are a `Flow`. A callback exists only at the boundary with a library or platform that offers
@@ -71,7 +72,8 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
   producer needs the handler's synchronous result. The third is the platform event that a handler cancels or
   modifies: a `flowEvent` collector receives a Bukkit event after the server's dispatch has returned, and a
   suspending handler can change it only before its first suspension, so such a handler is a plain `Listener`
-  in the `event` kind.
+  in the `event` kind. Whether a trigger holds is the reviewer's call; the trigger named in the final message is
+  what the reviewer checks.
 - A one-off event from a view model to the UI (show a snackbar, navigate) is a `Channel` read as a flow, never
   a flag in the state that the UI has to clear, and never a `SharedFlow` (without a subscriber it drops the
   event whatever its buffer, with replay it repeats it). The view model sends a neutral event; the UI decides

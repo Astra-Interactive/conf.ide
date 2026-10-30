@@ -63,7 +63,7 @@ see library exceptions.
 import kotlin.Result.Companion.success
 
 fun fetchOrder(id: OrderId): Result<Order> {
-    return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
+    return runCatching { thirdPartyClient.fetchOrder(id.value).toOrder() }
         .fold(
             onSuccess = ::success,
             onFailure = { error ->
@@ -91,7 +91,7 @@ import ru.astrainteractive.klibs.mikro.core.coroutines.propagateCancellationExce
 import kotlin.Result.Companion.success
 
 suspend fun fetchOrder(id: OrderId): Result<Order> {
-    return runCatching { thirdPartyClient.fetchOrder(id.value).toDomain() }
+    return runCatching { thirdPartyClient.fetchOrder(id.value).toOrder() }
         .propagateCancellationException()
         .fold(
             onSuccess = ::success,

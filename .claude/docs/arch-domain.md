@@ -3,13 +3,15 @@
 This rule says what the types of a context are and where their rules live. The package-layout rule says
 where the files go; this rule decides what is in them. The building blocks (entity, value object, aggregate,
 use case, domain event, factory) apply only inside a context that has business rules; a CRUD context is
-model, storage and command, and none of them is forced on it. The sections Repository, What the model may
+model, storage and command, and none of them is forced on it; whether a context has business rules is the
+reviewer's call. The sections Repository, What the model may
 import and Validation apply to every context.
 
 ### Rules live in `util`
 
-- The model is data: a `data class` holds fields and, when it is a value object with an invariant, the check
-  of that invariant in its constructor; nothing else. A rule about one type is an extension of that type in
+- The model is data: a `data class` holds fields, the data classes and enums nested in it that only it uses, a
+  `companion object` of constants, and, for a value object with an invariant, the check of that invariant in
+  its constructor; never a function. A rule about one type is an extension of that type in
   `util/<Type>Ext.kt`, returning a copy or a decision and taking what it needs as parameters
   (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
   `fun Dictionary.canRead(user: User?)` in `dictionary/util/DictionaryExt.kt`). It is never a member of the
@@ -30,7 +32,8 @@ import and Validation apply to every context.
   `JailId`), never a bare string or number.
 - A **value object** is defined by its fields alone and has no identity. It exists only to guard an invariant
   or to carry a unit or meaning the primitive lacks (`Duration`, `Money`, `UniqueWorldKey`); its constructor or
-  factory guarantees the invariant. A wrapper that adds no check and no meaning is forbidden.
+  factory guarantees the invariant. A wrapper that adds no check and no meaning is forbidden;
+  whether it adds meaning is the reviewer's call.
 - **Typed identifiers** are value objects, and the one kind of model type a context may share with another.
   Across contexts a thing is referred to by its identifier; inside a context by reference.
 - A domain type carries no kind suffix: `Jail`, not `JailModel` or `JailEntity`. The technology representation
@@ -67,7 +70,8 @@ import and Validation apply to every context.
 
 - A use case is named `<Verb><Object>UseCase` (`RatePlayerUseCase`, `LowerKillerRatingUseCase`) and lives in
   the `usecase` package of its concept, with one public entry and no interface. In a plugin it lives in the
-  `api` unit of the sub-context that owns the operation; other sub-contexts depend on that unit. It never
+  `api` unit of the sub-context that owns the operation; other sub-contexts depend on that unit. In an app,
+  when another unit calls it, its interface lives in the owner's `api` unit and its implementation in `impl`. It never
   lives in `core`.
 - It exists only when the flow has more than one step: a contract call whose result a model rule judges
   before the next action, or two or more contracts combined. A single contract call with no branch is made
@@ -80,7 +84,9 @@ import and Validation apply to every context.
 ### Domain service
 
 There is no domain-service kind. A pure rule is a `util` function. A capability a technology provides
-(hashing, sending mail, a clock) is a contract in the `api` of its concept with an implementation in a technology package.
+(hashing, sending mail) is a contract in the `api` of its concept with an implementation in a technology package.
+When the standard library or a library the project already uses provides that contract with its implementations
+(`kotlin.time.Clock` with `Clock.System`), the project uses it and declares none of its own.
 The word `Service` appears in no type name, except for a component the platform runs on its own lifecycle,
 which lives in `service/`.
 
@@ -88,12 +94,14 @@ which lives in `service/`.
 
 - An event type is a model type in `model` with the aggregate it concerns, named in the past tense
   (`PlayerJailed`); a sealed family of events is named `<Subject>Event` and its variants in the past tense
-  (`TimerEvent.Started`). It is published through the platform's event bus or through a publisher contract in
-  `api`. A platform event type the project declares (a Bukkit `Event` subclass) keeps the platform's `Event`
-  suffix (`PlayerJoinedEvent`) and lives in the `event` kind of the platform unit. The suffix is meant to be
-  checked by a tool, the past tense by the reviewer.
-- Listeners sit in the `event` kind of the sub-context that reacts.
-- An event another unit listens to lives in the `api` unit of the publisher, with its contracts.
+  (`TimerEvent.Started`). The suffix is meant to be checked by a tool, the past tense by the reviewer.
+- An event another unit of the project listens to is such a model type in the publisher's `api` unit,
+  published through a publisher contract there (`val events: Flow<PlayerJailed>`); it depends on no platform.
+  A platform event type (a Bukkit `Event` subclass, `PlayerJailedEvent`) is declared only for other plugins:
+  it keeps the platform's `Event` suffix, wraps the model event in the `event` kind of the platform unit, and
+  no unit of the project listens to it.
+- Listeners sit in the `event` kind of the sub-context that reacts. A class there that listens to events is
+  named `<Subject>Listener` (`SitListener`); the `Event` suffix is kept for event types.
 
 ### Factory
 
@@ -110,13 +118,15 @@ which lives in `service/`.
 - The model may carry serialization annotations, because a format is not a framework. It never carries a
   platform or ORM base class, import or type: an Exposed row or a Bukkit `Location` stays in its technology
   package or unit, or behind a conversion in the model's own terms (`JailLocation` with
-  `toBukkitLocation()` on the platform side). The `model` of a UI unit, one whose build already depends on
+  `toBukkitLocation()` on the platform side). In the unit of a framework's entry point, `model` may hold that
+  framework's exception subclasses (the error-handling rule); no other framework type. The `model` of a UI unit, one whose build already depends on
   Compose, may carry Compose types (`Painter`, `Dp`, `Color`) when the type holds what the domain type lacks
   (a painter, a dimension), never as a copy of it; the Kotlin Compose rule gives the details.
 - One representation per thing: a model lives in the `model` of the level that owns it, and a higher level's
   `model` holds only what several lower levels share. A technology package keeps its own representation only
   when the technology dictates a shape (a table row, a wire format with its own field
-  names), and it maps at its own edge. A type with the same fields as the model "for separation" is forbidden.
+  names), and it maps at its own edge. A type with the same fields as the model "for separation" is forbidden
+  (the reviewer's call).
 
 ### Validation
 
