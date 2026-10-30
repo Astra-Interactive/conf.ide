@@ -90,8 +90,8 @@ which lives in `service/`.
   (`PlayerJailed`); a sealed family of events is named `<Subject>Event` and its variants in the past tense
   (`TimerEvent.Started`). It is published through the platform's event bus or through a publisher contract in
   `api`. A platform event type the project declares (a Bukkit `Event` subclass) keeps the platform's `Event`
-  suffix (`PlayerJoinedEvent`) and lives in the `event` kind of the platform unit. The suffix is checked by a
-  tool, the past tense by the reviewer.
+  suffix (`PlayerJoinedEvent`) and lives in the `event` kind of the platform unit. The suffix is meant to be
+  checked by a tool, the past tense by the reviewer.
 - Listeners sit in the `event` kind of the sub-context that reacts.
 - An event another unit listens to lives in the `api` unit of the publisher, with its contracts.
 

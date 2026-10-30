@@ -40,4 +40,4 @@ How the domain rule is written in Kotlin.
 - `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
   are never imported in `model`, in a use case or in a contract. The one exception: in a UI unit, one whose
   build already depends on Compose, `model` may import `androidx.compose.*` and `org.jetbrains.compose.*`
-  (`Painter`, `Dp`, `Color`), see `compose.kt.md`. The architecture test checks the imports.
+  (`Painter`, `Dp`, `Color`), see `compose.kt.md`. The imports are meant to be checked by the architecture test.

@@ -3,7 +3,7 @@
 When writing a test, make sure that:
 
 * Test domain logic without frameworks.
-* Test use cases with fakes of the contracts they call.
+* Test use cases with fakes or in-memory implementations of the contracts they call.
 * Test technology packages with integration tests where appropriate.
 * Avoid mocking value objects and simple data classes.
 * Prefer fakes over mocks for repositories and gateways when behavior matters.

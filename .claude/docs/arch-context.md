@@ -55,7 +55,7 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; a `composable` sub-package also its siblings (`screen` → `component`, `layout`; nothing depends on `screen`) |
 | `theme` (Compose) | `model` |
 | `util` | `api`, `model`; `theme` in a Compose unit |
-| `di` | everything; only `di`, of this unit or of a unit it may depend on |
+| `di` | everything |
 
 | Between units | may depend on |
 |---|---|
@@ -74,5 +74,5 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 No cycles anywhere. These two tables are the whole list.
 
 Every row of these tables, the package names, the naming of implementations and the imports allowed in
-`model`, `api` and `usecase` are meant to be checked by a tool in the build. The skill names the checker; until
+`model`, `api` and `usecase` are meant to be checked by a tool in the build. The checker is not written yet; until
 it exists, the skill's checklist is answered by hand.

@@ -32,7 +32,7 @@ Core requirements:
   | `save` / `send` / `notify` | a write, a dispatch | `notifyPurchaseFailed()` |
   | `is` / `has` / `can` / `should` | a `Boolean` predicate | `isSentenceOver(now)`, `canRead(user)` |
   | `to<Type>` | a conversion that copies; an extension | `Plan.toPlanContent()` |
-  | `as<Type>` | a view over the same object, no copy | `asStateFlow()` |
+  | `as<Type>` | a view over the same object, no copy; a Compose resource read as what it shows | `asStateFlow()`, `asPainter()` |
   | `remember<Thing>` | a `@Composable` that calls `remember` | `rememberAppearProgress(...)` |
   | `on<Event>` | a view-model handler of a user action | `onPurchase()` |
   | `update<Thing>` | a state transition | `updateContent { }` |

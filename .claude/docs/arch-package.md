@@ -97,9 +97,9 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | Kind | Holds |
    |---|---|
    | `api` | contracts of the concept: interfaces other files or units call |
-   | `model` | the level's own types: data classes, sealed results, errors (one file each), events, config models |
+   | `model` | the level's own types: data classes, sealed results, error families (one file each), events, config models |
    | `usecase` | operations named `<Verb><Object>UseCase` |
-   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` |
+   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` declaration (an anonymous `object :` of a bridge is allowed, `arch-package.kt.md`) |
    | `di` | the DI modules of the level (see the DI rule) |
    | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service` (run on a timer or its own lifecycle); for UI, see below |
    | `theme` | Compose only: the values (timings, spacing, tokens) several composables of the level share, as an `object` of values; in the design-system unit also the theme itself, its `CompositionLocal`s and the `@Composable` theme function (`compose.kt.md`) |
@@ -160,8 +160,8 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on the
   contracts they implement and `model`; use cases on contracts, `model` and `util`; entry points on use cases,
   contracts, `model` and `util`; nothing depends on an
-  entry point; `di` depends on everything, and only another `di` depends on it: a DI module takes DI modules
-  through its constructor, and the composition root builds them. A use case and a contract import no
+  entry point; `di` depends on everything, and only another `di` and the platform main class that creates the
+  composition root depend on it: a DI module takes DI modules through its constructor. A use case and a contract import no
   platform or framework type.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
@@ -210,7 +210,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 
 Every line of this rule that a tool can check is meant to be checked in the build: package names, the
 concept/kind shape, the naming of implementations, the imports allowed in `model`, `api` and `usecase`, the
-dependencies between units. The skill names the checker; until it exists, the skill's checklist is answered by
-hand and the final message says so.
+dependencies between units. The checker is not written yet; until it exists, the skill's checklist is answered
+by hand and the final message says so.
 
 **Load the `package-layout` skill before the first new file of a task.**

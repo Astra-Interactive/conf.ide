@@ -85,7 +85,7 @@ package created inside a unit).
 A composable reads a resource through `DrawableResource.asPainter()` and `StringResource.asComposableString(…)`,
 never through `painterResource(…)` or `stringResource(…)` directly. The extensions come from mikro when the
 project's mikro has them; otherwise the project declares them once, in the `util` of its design-system unit
-(`util/ComposeResourceExt.kt`).
+(`util/DrawableResourceExt.kt`, `util/StringResourceExt.kt`).
 
 ### Constants of a composable
 
