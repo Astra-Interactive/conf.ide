@@ -32,8 +32,8 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 ## 2. Decision tests
 
 **T1. Which unit?**
-- A class the platform starts (a plugin's main class, an Android `Application` or `Activity`) or `RootModule`:
-  the entry-point unit.
+- A class the platform constructs (a plugin's main class, an Android `Application` or `Activity`) or
+  `RootModule`: the entry-point unit.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
   even though the platform starts it): that sub-context's unit; code other units call, and every plugin use case,
   in its `api` unit; code only the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
@@ -69,11 +69,11 @@ kind, asked in this order:
 Nothing lies loose in a concept package outside a technology implementation unit.
 
 **T4. Which word for a UI kind?**
-Compose: `composable`, `viewmodel`, `theme` (shared values of a level); UI types in the level's `model`, shared
-Compose extensions in its `util`, a one-file one `private` in the composable file, no `composable/model` or
-`composable/util`; `composable` alone may split into `screen`, `component`, `layout` and the project's own words,
-files or sub-packages but never both (`compose.kt.md`). Anything else: derive from the framework's classes and
-the project's words.
+Compose: `composable`, `theme` (shared values of a level) and the state holder's word (`viewmodel` or a
+Decompose `component`); UI types in the level's `model`, shared Compose extensions in its `util`, a one-file
+one `private` in the composable file, no `composable/model` or `composable/util`; `composable` alone may split
+into `screen`, `component`, `layout` and the project's own words, files or sub-packages but never both
+(`compose.kt.md`). Anything else: derive from the framework's classes and the project's words.
 AstraLibs menus: the project's words (AstraRating: `gui`, `slot`, `context`, `component`, `model`). A router is a
 contract in `api` with its implementation beside the other implementations, not a UI kind.
 The project's existing word wins unless it is forbidden.

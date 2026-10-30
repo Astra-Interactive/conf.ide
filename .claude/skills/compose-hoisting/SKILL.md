@@ -17,7 +17,7 @@ Every `@Composable` function must accept only models and event handlers — no i
 ```kotlin
 // ✅ correct
 @Composable
-fun MyComposable(
+fun PasswordFieldComposable(
     value: String,
     isHidden: Boolean,
     onHiddenChange: (Boolean) -> Unit,
@@ -27,7 +27,7 @@ fun MyComposable(
 
 // ❌ wrong — owns business-relevant state
 @Composable
-fun MyComposable(...) {
+fun PasswordFieldComposable(...) {
     var isHidden by remember { mutableStateOf(true) }  // hoist this
 }
 ```
@@ -99,14 +99,15 @@ Add `@Preview` functions at the **bottom of the file** they preview. Rules:
 - Always wrap with the project's theme composable (`AppTheme { }`)
 - Always `private`
 - Cover: default/empty state, filled/enabled state, in-progress/loading state, error/invalid state
-- Name pattern: `<ComposableName><Scenario>Preview`
+- Name pattern: `<Composable><Scenario>Preview`, `<Composable>` being the composable's name without `Composable`
+  (`PasswordFieldComposable` → `PasswordFieldEmptyPreview`)
 
 ```kotlin
 @Preview
 @Composable
-private fun MyComposableEmptyPreview() {
+private fun PasswordFieldEmptyPreview() {
     AppTheme {
-        MyComposable(
+        PasswordFieldComposable(
             value = "",
             isHidden = true,
             onHiddenChange = {},
@@ -117,9 +118,9 @@ private fun MyComposableEmptyPreview() {
 
 @Preview
 @Composable
-private fun MyComposableFilledPreview() {
+private fun PasswordFieldFilledPreview() {
     AppTheme {
-        MyComposable(
+        PasswordFieldComposable(
             value = "Hello",
             isHidden = false,
             onHiddenChange = {},

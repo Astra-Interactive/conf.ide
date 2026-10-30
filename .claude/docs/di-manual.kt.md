@@ -10,8 +10,8 @@ api/impl. "DI module" names this class only; a Gradle module is a build unit.
 `RootModule` is the composition root: the one DI module per application that builds the root DI modules in
 dependency order, using `lazy {}` where construction must be deferred. A project that already names its
 composition root otherwise keeps that name, and the rules about `RootModule` apply to it. It lives in the
-`di` package of the unit that starts the application (`instances:<name>`, the plugin unit), next to the entry
-point that creates it.
+`di` package of the unit that starts the application (`instances:<name>`, the plugin unit), next to the class
+that creates it.
 
 - DI modules form a tree that follows the unit dependencies. Each unit that constructs something has its
   own DI module in the `di/`

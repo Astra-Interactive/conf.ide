@@ -9,16 +9,16 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
   unit or of the storage contracts unit; a subscription to its events; a use of `core` (its models, helpers
   and scopes); a use of a context's `contract` unit; a unit implementing a contract of a unit it may depend on
   (a technology unit the storage contracts, a platform unit its own `api`, a `<feature>/fake` the `api` it
-  fakes); the entry point building every unit's DI module. Nothing else crosses: no implementation is called
-  across units, no table, and no platform type into a platform-free unit (an `api` unit, `core/api`, the
-  storage contracts unit).
+  fakes); the entry-point unit building every unit's DI module. Nothing else crosses: no implementation is
+  called across units, no table, and no platform type into a platform-free unit (an `api` unit, `core/api`,
+  the storage contracts unit).
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
-  `AddRatingUseCase`). Only the entry point depends on a feature's platform unit (`gui/bukkit`), and nothing
-  depends on the entry point. In an app, only the entry point depends on an `impl` unit.
+  `AddRatingUseCase`). Only the entry-point unit depends on a feature's platform unit (`gui/bukkit`), and
+  nothing depends on the entry-point unit. In an app, only the entry-point unit depends on an `impl` unit.
 - A use case several sub-contexts need lives in the `api` unit of the sub-context that owns the operation. When
   no owner can be named, the agent asks the user.
-- Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and the
-  entry point depend on the technology.
+- Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and
+  the entry-point unit depend on the technology.
 - A sub-context publishes general events, shaped for no single consumer.
 
 ### What crosses
@@ -67,7 +67,7 @@ its unit, with no cycle (`jail/model/JailInmate` on `PlayerId` in the unit's `mo
 
 | Between units | may depend on |
 |---|---|
-| entry point | every unit |
+| entry-point unit | every unit |
 | a platform unit (`gui/bukkit`) | its own `api`, other `api` units, `core` and its platform unit (`core/bukkit`), the storage contracts unit |
 | an unsplit sub-context (`event-bukkit`) | `api` units, `core` and its platform unit, the storage contracts unit |
 | an `api` unit | other `api` units, the platform-free `core` (`core/api`), the storage contracts unit |

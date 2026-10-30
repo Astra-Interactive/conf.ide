@@ -108,9 +108,10 @@ which lives in `service/`.
 
 ### Factory
 
-- A factory exists only when creating an aggregate involves a rule, and then it is a top-level function in
-  the aggregate's `util` returning a `Result` (`fun createJail(name: String, location: JailLocation):
-  Result<Jail>`), never a companion `create`: the model is data.
+- A factory exists only when creating an aggregate involves a rule, and then it is a top-level function in the
+  aggregate's `util` returning a `Result`
+  (`fun createJail(name: String, location: JailLocation): Result<Jail>`), never a companion `create`: the
+  model is data.
 - The construction of dependencies belongs to `di/` and is not called a factory. A `Factory` class for a single
   implementation is forbidden. The exception is an object that needs arguments known only when it is created
   (a UI component's context and callbacks): its `fun interface Factory` is nested in the class it builds, and a

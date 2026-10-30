@@ -29,12 +29,12 @@ a unit path, which may keep its word, not a package created inside a unit).
 - `composable` is the one kind that may hold sub-packages, named from Compose's vocabulary and the project's
   existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a
   parent composable calls, and the screen content it delegates to), `component` (a reusable part with content:
-  a button, a card, an app bar, an icon; a UI part, not the state-holder `component` of AstraRating), `layout`
-  (a container that arranges or frames its children and has no content of its own: a scaffold, a grid, a fade
-  frame), and a project's own words such as `sheet`, `dialog`, `appbar`; never `components`. `composable`
-  holds either files only or sub-packages only, never both. When a new file would make it hold a second screen
-  or an eighth file, the agent proposes the split; moving the old files needs the approval the package-layout
-  rule asks for.
+  a button, a card, an app bar, an icon; a UI part, not the state-holder `component` of AstraRating or a
+  Decompose app), `layout` (a container that arranges or frames its children and has no content of its own: a
+  scaffold, a grid, a fade frame), and a project's own words such as `sheet`, `dialog`, `appbar`; never
+  `components`. `composable` holds either files only or sub-packages only, never both. When a new file would
+  make it hold a second screen or an eighth file, the agent proposes the split; moving the old files needs the
+  approval the package-layout rule asks for.
 
   ```
   impl/checkout/composable/screen/CheckoutScreenComposable.kt
@@ -85,8 +85,10 @@ a unit path, which may keep its word, not a package created inside a unit).
   ```
 
   Values of the whole application live only in the design-system unit, whose `theme` also holds the theme
-  itself: the `CompositionLocal`s and the `@Composable` theme function. Not `composable` (it holds
-  functions), not `model`, not `util`. A value one file uses stays private in that file.
+  itself: the `CompositionLocal`s and the `@Composable` theme function, the theme object alone in
+  `theme/AppTheme.kt`, the theme function with its `CompositionLocal`s in `theme/AppThemeComposable.kt`. Not
+  `composable` (it holds functions), not `model`, not `util`. A value one file uses stays private in that
+  file.
 
 ### Resources
 
@@ -152,11 +154,12 @@ design-system unit's `util` once a second UI unit needs them (`util/DrawableReso
 
 ### Previews
 
-Previews close the file (the `compose-hoisting` skill). Everything that only previews use, constants,
-fixtures (`PreviewItems`), helper composables, sits in that block, before the first function that uses it,
-never at the top of the file. Preview constants start with `PREVIEW_`, preview vals with `Preview`, and every
-function of the block carries `Preview` in its name (`<Composable><Scenario>Preview` for a `@Preview`, as the
-skill says; `OrderSummaryPreviewSheet` for a helper). This is an exception to rule 1 of the code-ordering rule.
+Previews close the file (the `compose-hoisting` skill). Everything that only previews use, constants, fixtures
+(`PreviewItems`), helper composables, sits in that block, before the first function that uses it, never at the
+top of the file. Preview constants start with `PREVIEW_`, preview vals with `Preview`, and every function of
+the block carries `Preview` in its name (`<Composable><Scenario>Preview` for a `@Preview`, `<Composable>`
+being the composable's name without `Composable`, as the skill says; `OrderSummaryPreviewSheet` for a helper).
+This is an exception to rule 1 of the code-ordering rule.
 
 ```kotlin
 @Composable

@@ -33,7 +33,7 @@ Decide the tier while writing the declaration:
 |---|---|
 | used by one file only, an extension in its `util` file included | `private` in that file |
 | used by other files of the same unit, such as an implementation its DI module constructs | `internal` |
-| used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the classes the platform starts in an entry-point unit | none (public) |
+| used by another unit: the contracts, models and use cases of an `api` unit, a DI module another unit constructs, the classes the platform constructs in an entry-point unit | none (public) |
 
 Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
 only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class
@@ -68,8 +68,8 @@ internal class FileJailRepository(
   imports the platform.
 - In an app, an `api` unit holds contracts, the models in their signatures, the `util` rules of those models and
   stubs (`<concept>/stub/`); the `impl` unit holds the rest. Only the entry-point unit depends on an `impl` unit.
-- Dependencies between units follow the second table of `arch-context.md`; nothing depends on the entry
-  point, and `core` depends on no feature unit.
+- Dependencies between units follow the second table of `arch-context.md`; nothing depends on the entry-point
+  unit, and `core` depends on no feature unit.
 - A `<context>/contract` unit holds only `@Serializable` types and route constants shared by a server unit and
   its client unit; neither side's `model` crosses the wire.
 - Every unit has a one-sentence `README.md`.
@@ -79,24 +79,26 @@ internal class FileJailRepository(
 - Entry points sit in kind packages named for the mechanism that invokes them, in the project's and the
   framework's words: `command`, `event`, `service` (an `IntervalService` task), `route` (a Ktor route), `job`.
   A task run once at start is `warmup`, a format converter `migration`, a failure handler `error`. UI kinds
-  come from the UI framework: `composable` and `viewmodel` only with Compose; for AstraLibs menus the
-  project's words (AstraRating: `gui`, `slot`, `context`, `component`). Entry-point kinds and
-  technology packages may import the platform; a `warmup` or `migration` in a platform-free unit reaches the
-  server through AstraLibs' `PlatformServer`.
+  come from the UI framework: `composable` only with Compose, and the state holder by its class: `viewmodel`
+  for an Android-style view model, `component` for a Decompose component; for AstraLibs menus the project's
+  words (AstraRating: `gui`, `slot`, `context`, `component`). Entry-point kinds and technology packages may
+  import the platform; a `warmup` or `migration` in a platform-free unit reaches the server through AstraLibs'
+  `PlatformServer`.
 - A use case is `<Verb><Object>UseCase` (`AddRatingUseCase`) in the `usecase` package of its concept, with one
   public `operator fun invoke` and no interface, except an app's use case another unit calls (package-layout
   rule, Units 6). A use case and a contract import no platform or framework type (a state holder's interface
   may import its UI framework, Decompose's `ComponentContext`); the server is reached through AstraLibs'
   abstractions (`server/player`, `server/location`, `server/permission`) or the sub-context's own contract.
-- A state holder of a menu or screen (`component` in AstraRating, `viewmodel` with Compose) holds no rule and calls
-  use cases and contracts; the shared design system is the design-system unit (`core/ui`).
+- A state holder of a menu or screen (`component` in AstraRating and in a Decompose app, `viewmodel` for a
+  view model) holds no rule and calls use cases and contracts; the shared design system is the design-system
+  unit (`core/ui`).
 
 ### DI modules
 
 Each unit that constructs something has its own DI module in the `di` package of the level it wires, and a
 resource with its own lifecycle has its own DI module in the unit that owns it. A unit of contracts and
 models only has none. DI modules form a tree; each that starts or stops something exposes its own
-`lifecycle: Lifecycle`, and the entry point's `RootModule` builds the roots and lists their `lifecycle`s
+`lifecycle: Lifecycle`, and the entry-point unit's `RootModule` builds the roots and lists their `lifecycle`s
 explicitly; there is no scanning. The DI rule has the details.
 
 ### What goes in one file
@@ -118,8 +120,8 @@ explicitly; there is no scanning. The DI rule has the details.
   Compose composable file declares no class, so an extension only it uses is `private` in it (`compose.kt.md`).
 - A file of top-level functions is named after what they do (`DurationFormat.kt`, `TransferLimit.kt` for a
   rule over several types), never `Utils.kt`; helpers are never grouped in an `object` (a Compose `theme`
-  object of shared values holds no function, the design-system theme object's `@Composable get()` of a
-  `CompositionLocal` aside; a design-system component's public `<Component>Defaults` is the one exception,
+  object of shared values holds no function; Compose's two exceptions: the design-system theme object's
+  `@Composable get()` of a `CompositionLocal`, and a design-system component's public `<Component>Defaults`,
   `compose.kt.md`).
 - Multiplatform platform files carry the source-set suffix (`Platform.jvm.kt`).
 

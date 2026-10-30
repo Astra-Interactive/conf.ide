@@ -21,9 +21,9 @@ Terms used below:
 
 1. A project has these kinds of unit:
    - **sub-context units** of a context (`modules/command`, `modules/gui/api`, `modules/data/exposed`);
-   - an **entry point** (`instances/bukkit`, `androidApp`): the classes the platform starts (a plugin's main
-     class; an Android `Application` and its `Activity`) and `RootModule`, nothing else. Nothing depends on
-     it. An application may have several, one per platform or a debug instance;
+   - an **entry-point unit** (`instances/bukkit`, `androidApp`): the classes the platform constructs (a
+     plugin's main class; an Android `Application` and its `Activity`) and `RootModule`, nothing else. Nothing
+     depends on it. An application may have several, one per platform or a debug instance;
    - **`core`**: the common unit for what is not worth a unit of its own: config, translation and permission
      models, shared helpers, shared coroutine scopes, small platform pieces. It holds no use case and no
      repository, and depends on no feature unit. It may be split by platform (`core/api`, `core/bukkit`) and, in an app
@@ -184,7 +184,7 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
   and `model`; use cases on contracts, `model` and `util`; entry points on use cases, contracts, `model` and
   `util`; nothing outside its unit depends on an entry point, and inside it UI kinds depend on each other as
   `arch-context.md` says; `di` depends on everything, and only another `di` and the classes the platform
-  starts in the entry-point unit depend on it: a DI module takes DI modules through its constructor. A use
+  constructs in the entry-point unit depend on it: a DI module takes DI modules through its constructor. A use
   case and a contract import no platform or framework type; a state holder's interface may import its UI
   framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
@@ -208,10 +208,10 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
   the type's own file. A file that declares a class holds no top-level function; a Compose composable file
   declares no class, so an extension only it uses is `private` in it (`compose.kt.md`). A function is never an
-  `object` used as a namespace (a `theme` object holds values, not functions, and the design-system unit's
-  theme object may read its `CompositionLocal`s through `@Composable get()`, Material's
-  `MaterialTheme.colorScheme`; the public `<Component>Defaults` of a design-system component is Compose's one
-  exception), and there is no `Helper`, `Util` or `Manager` class.
+  `object` used as a namespace (a `theme` object holds values, not functions; Compose's two exceptions: the
+  design-system theme object's `@Composable get()` of a `CompositionLocal`, Material's
+  `MaterialTheme.colorScheme`, and a design-system component's public `<Component>Defaults`), and there is no
+  `Helper`, `Util` or `Manager` class.
 - Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
   otherwise a route's types live with the route and a client's in its technology package.
 - A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the
