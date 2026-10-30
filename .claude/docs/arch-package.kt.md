@@ -80,10 +80,13 @@ internal class FileJailRepository(
   framework's words: `command`, `event`, `service` (an `IntervalService` task), `route` (a Ktor route), `job`.
   A task run once at start is `warmup`, a format converter `migration`, a failure handler `error`. UI kinds
   come from the UI framework: `composable` only with Compose, and the state holder by its class: `viewmodel`
-  for an Android-style view model, `component` for a Decompose component; for AstraLibs menus the project's
-  words (AstraRating: `gui`, `slot`, `context`, `component`). Entry-point kinds and technology packages may
-  import the platform; a `warmup` or `migration` in a platform-free unit reaches the server through AstraLibs'
-  `PlatformServer`.
+  for an Android-style view model, `component` for a Decompose component; when a component holds a view model,
+  each has its kind beside the other in the concept: `component` for the component (the state holder, with its
+  interface when another unit opens it), `viewmodel` for the view model it holds
+  (`offer/component/DefaultOfferComponent`, `offer/viewmodel/OfferViewModel`); for AstraLibs menus the
+  project's words (AstraRating: `gui`, `slot`, `context`, `component`). Entry-point kinds and technology
+  packages may import the platform; a `warmup` or `migration` in a platform-free unit reaches the server
+  through AstraLibs' `PlatformServer`.
 - A use case is `<Verb><Object>UseCase` (`AddRatingUseCase`) in the `usecase` package of its concept, with one
   public `operator fun invoke` and no interface, except an app's use case another unit calls (package-layout
   rule, Units 6). A use case and a contract import no platform or framework type (a state holder's interface

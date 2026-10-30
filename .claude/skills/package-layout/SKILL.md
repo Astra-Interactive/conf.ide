@@ -212,8 +212,8 @@ line. A "no" is fixed by moving the new file, never an old one.
 5. Does any package hold both files and packages, other than the concept package of a unit that is wholly one
    technology? Does every concept package hold only kind packages, except a technology implementation? Does
    every kind package hold only files, except a Compose `composable` split into `screen`/`component`/`layout`?
-6. Are UI kinds named from the framework and the project, with `composable`/`viewmodel`/`theme` only under
-   Compose and the project's own word kept?
+6. Are UI kinds named from the framework and the project, with `composable`/`theme` only under Compose,
+   `viewmodel` only for a view model, and the project's own word kept?
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,
    `exception`, `dto`, `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names
    singular (the reviewer's call)?

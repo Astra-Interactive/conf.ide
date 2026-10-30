@@ -120,15 +120,16 @@ unit root holds what the whole unit shares: its DI module, a model or a helper s
    | `stub` | a stub or preview implementation of a contract that other units need |
    | `table`, `entity`, `database` | only in a unit that is wholly one technology: its tables, its row entities, its connection |
 
-4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose, `viewmodel` an
-   Android style view model, and all three are used only there (`theme` holds the values several composables
-   of a level share; the Kotlin Compose rule says what else a Compose unit holds). For any other UI framework
-   the names come from the framework's own classes and from the words the project already uses. AstraRating
-   uses AstraLibs' `Menu` inside a `gui` sub-context, with its own words: `gui` (menus), `slot` (menu parts),
-   `context` (`SlotContext`), `component` (the holder of a menu's state), `model` (`RatingSlotKey`). A router, the class through which
-   the code opens a screen or a menu, is a contract like any other: its interface in `api` of the unit that owns
-   navigation (`gui/api/router/api/GuiRouter`), its implementation beside the other implementations in the
-   platform or `impl` unit (`gui/bukkit/router/BukkitGuiRouter`).
+4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose and are used only
+   there (`theme` holds the values several composables of a level share; the Kotlin Compose rule says what
+   else a Compose unit holds); `viewmodel` means an Android-style view model, with or without Compose. For any
+   other UI framework the names come from the framework's own classes and from the words the project already
+   uses. AstraRating uses AstraLibs' `Menu` inside a `gui` sub-context, with its own words: `gui` (menus),
+   `slot` (menu parts), `context` (`SlotContext`), `component` (the holder of a menu's state), `model`
+   (`RatingSlotKey`). A router, the class through which the code opens a screen or a menu, is a contract like
+   any other: its interface in `api` of the unit that owns navigation (`gui/api/router/api/GuiRouter`), its
+   implementation beside the other implementations in the platform or `impl` unit
+   (`gui/bukkit/router/BukkitGuiRouter`).
 5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
    state holder), new files of that kind use it, unless the word is forbidden below or plural (9).
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
