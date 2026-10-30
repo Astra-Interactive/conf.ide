@@ -220,5 +220,5 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
 
 In application code `Thread`, `Executor` and `Executors` (except `asCoroutineDispatcher()` in `core` to build
 a dispatcher), Android `Handler.post`, `CompletableFuture` as a return type, `Timer` and `TimerTask` are not
-used. `runBlocking` appears only in tests, in `main`, and where the platform demands a blocking callback,
-each such place in a technology package.
+used. `runBlocking` appears only in a `main` function and, inside a technology package, where the platform
+demands a blocking callback. A test runs coroutines in `runTest`, never in `runBlocking` (`testing.kt.md`).

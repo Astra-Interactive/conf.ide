@@ -20,6 +20,7 @@ When writing a test, make sure that:
 * Tests should cover as many scenarios and edge cases as possible without duplicating existing tests.
 * Focus on multithreading and race conditions corner cases.
 * For tests involving coroutines/reactivity, `cashapp/turbine` can be used, if `kotlinx.coroutines.test` is not enough. Otherwise tests can be flaky.
+* A coroutine test runs in `runTest` from `kotlinx.coroutines.test`, never in `runBlocking`: `runTest` skips `delay` and reports coroutines that leak from the test.
 
 Example:
 
