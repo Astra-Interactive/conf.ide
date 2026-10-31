@@ -3,27 +3,34 @@
 ### Tool priority
 
 1. `codebase-memory-mcp` — search for symbols, call chains, architecture overview.
-2. LSP tool (`kotlin-lsp`) — precise navigation: go-to-definition, references, hover/type info.
+2. `kotlin-lsp` through an available LSP client — precise navigation: go-to-definition, references,
+   hover/type info.
 
 Text search in code goes through codebase-memory's `search_code`; `grep`/`find`/`cat` are for non-code files
 only, and for reading a file before editing it (`codebase-memory.md`).
 
-### Kotlin project source files → `kotlin-lsp` via the LSP tool
+### Kotlin project source files → `kotlin-lsp`
 
-Use the built-in **LSP** tool (backed by `kotlin-lsp`) to navigate and inspect Kotlin source files that
-are part of this project. The server supports `--stdio` and `--socket` modes — the LSP tool handles
-the connection automatically, so never hardcode a socket address.
+Use `kotlin-lsp` when navigating Kotlin source needs precise types, overload resolution or references.
+Prefer a dedicated LSP tool when the current agent exposes one. A working server installation does not
+mean that every agent session exposes such a tool.
+
+When no dedicated tool is exposed, use an LSP client through the terminal to communicate with the installed
+`kotlin-lsp` over `--stdio`. This is an allowed way to use the same server, without asking the user for an
+exception to this rule. The client must initialize the project, open the relevant Kotlin file and complete
+the required LSP request; starting the executable or reading `--help` does not verify project navigation.
+Let a dedicated tool manage its own connection; never guess or hardcode a socket address.
 
 Dependency sources inside `.jar` files are covered by the `ksrc` rule, not by the LSP.
 
-### When the LSP is not available
+### When LSP navigation is not available
 
-There is no fallback. If the LSP tool is missing, `kotlin-lsp` is not installed, or the server fails to
-start for this project, first try to bring it back yourself: check that the `kotlin-lsp` binary is installed
-and on `PATH`, and restart the server if the tool allows it. If it is still unavailable, tell the user at once
-and stop before any task that needs code navigation. Do not substitute `grep`/`find`/`cat` for the missing
-LSP: text search cannot resolve types, overloads, or references, and the code you write on top of guesses
-will be wrong.
+First distinguish a missing dedicated tool, a missing server executable and a failed project connection.
+Check that `kotlin-lsp` is on `PATH`, try the available client, and inspect the initialization or request
+error. Restart the connection if the client allows it. Do not ask the user to reinstall or reconnect the
+server merely because the session has no dedicated LSP tool.
 
-Report exactly what failed (tool absent, server binary not found, server error) and what you tried, so the
-user can fix it.
+If no client can complete the required request, report exactly what failed and what you tried. Continue
+independent work supported by `codebase-memory-mcp` and verified source. Stop only the part that requires
+unavailable type, overload or reference information; do not guess it or treat text matches as semantic
+resolution. The text-search restrictions above still apply.
