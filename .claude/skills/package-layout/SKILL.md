@@ -59,8 +59,9 @@ Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the 
 kind, asked in this order:
 1. Contract → `api`; a use case's or a state holder's interface → `usecase` or the state-holder kind, with its
    implementation; in an app, when another unit calls it, the interface in that kind of the owner's `api`
-   unit. Implements, wraps or narrows a contract (a cache included) → beside the other implementations, in
-   storage when it caches storage.
+   unit. A Kotlin test fake → `fake`, following the test-sharing layout in `arch-package.kt.md`; a preview
+   stub → `stub`. Implements, wraps or narrows a contract (a cache included) → beside the other
+   implementations, in storage when it caches storage.
 2. Data class, result, error, event, config → `model`, as data (`arch-domain.md`: fields, nested types,
    constants, an invariant check). A rule over a type → an extension of that type in `util`
    (`arch-domain.md`).
@@ -88,22 +89,26 @@ inner part declares what it needs from an outer one; a test must replace a contr
 
 **T6. One file or several?**
 A sealed type with its variants, or a data class with its nested data classes, is
-one file. Every class with behaviour and every error family has its own file. Extensions go to
+one file. Every class with behaviour and every error family has its own file, regardless of length. The
+400-line threshold permits only further splitting that preserves these boundaries. Extensions go to
 `util/<Subject>Ext.kt`, except an extension of a type the project does not declare that only a Compose
 composable file uses, which is `private` there. There is no `Helper`, `Util` or `Manager` class.
 
 **T7. Which DI module?**
 The unit's own DI module in `di` of the level it wires, with its own `lifecycle` when it starts or stops
-something; a database or other resource
-with its own lifecycle gets its own DI module. Add the new module as a child of the module that owns its
-dependencies, or list it in `RootModule`. A `warmup` or `migration` is built and started by the DI module of
-the resource it prepares. A DI module that cannot reach the providing module takes the contract as a
+something; a database or other resource with its own lifecycle gets its own DI module. The module that
+directly constructs a child manages that child's lifecycle; a module received as a dependency is never
+started, reloaded or stopped by the receiver. `RootModule` follows the same rule. Dependency references
+may be shared without sharing lifecycle ownership. A `warmup` or `migration` is built and started by the DI
+module of the resource it prepares. A DI module that cannot reach the providing module takes the contract as a
 parameter. Never merge DI modules, never replace `Lifecycle` with functions, and leave existing wiring as it
 is, even where it breaks the DI rule.
 
 **T8. Where is it tested?**
 A model rule directly; a use case with fakes or an in-memory implementation; a technology implementation
-against the real technology in a test; the wired plugin in the entry-point unit.
+against the real technology in a test; the wired plugin in the entry-point unit. Shared KMP fakes are public
+in `<feature>/fake`'s `commonMain`, under `<concept>/fake`, and consumed only by test source sets. JVM shared
+fakes use `testFixtures`; ordinary same-unit fakes stay in the test tree.
 
 ## 3. When no kind fits
 
@@ -239,10 +244,13 @@ line. A "no" is fixed by moving the new file, never an old one.
 13. Does `model` import no kind but other `model` packages, and no platform or ORM type (Compose types only in
     a UI unit's `model`, a framework's exception subclasses only in the unit of that framework's entry point)?
     Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform dependency?
-14. Does every dependency between units follow the table in `arch-context.md`, with no cycle?
-15. Does every new unit that constructs something have its own DI module, with its own `lifecycle` when it
-    starts or stops something, in a tree, and did the existing DI wiring stay as it was?
-16. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`?
+14. Do production dependencies follow the table in `arch-context.md` without cycles, with the Kotlin
+    test-sharing exceptions confined to test dependencies and each compilation's graph acyclic?
+15. Does every new unit that assembles dependencies have its own DI module, with its own `lifecycle` when it
+    starts or stops something? Does it manage only DI modules it directly creates, never injected modules,
+    and did the existing DI wiring stay as it was?
+16. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`? Are
+    shared Kotlin fakes exported through `testFixtures` or a KMP fake unit's `commonMain`, consumed only by tests?
 17. Does the final message list the old files the rules would move, and where?
 
 The checker that runs items 5, 7, 8, 11 (a class in `util`) and 14 mechanically is not written yet; until it exists,

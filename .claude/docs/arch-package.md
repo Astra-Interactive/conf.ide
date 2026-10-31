@@ -121,6 +121,7 @@ root package of the entry-point unit, which holds the classes the platform const
    | `error` | classes that turn a failure into the user's reply, in the unit of the mechanism that fails (`command/error/CommandExceptionHandler.kt`) |
    | technology packages | implementations of a contract and the classes they use, or generic code that units of two sub-contexts need, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
    | `stub` | a stub or preview implementation of a contract that other units need |
+   | `fake` | Kotlin test implementations that script failures or record calls; in test sources or `testFixtures`, or in `commonMain` of a dedicated `<feature>/fake` unit; consumed only by test source sets |
    | `table`, `entity`, `database` | only in a unit that is wholly one technology: its tables, its row entities, its connection |
 
 4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose and are used only
@@ -177,8 +178,9 @@ root package of the entry-point unit, which holds the classes the platform const
   unit and `Default…` in `impl`, as a use case's (`payment/api/offer/component/OfferComponent`,
   `payment/impl/offer/component/DefaultOfferComponent`). A contract's implementation sits in the technology's
   package or unit, under the same concept, and is named by its technology or variant
-  (`ExposedRatingRepository`, `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). `Impl`, the `I`
-  prefix and the `Interface` suffix are forbidden. `database`, `network`, `local` and `remote` are not
+  (`ExposedRatingRepository`, `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). Kotlin test fakes
+  use the `fake` kind and the test-sharing layout in `arch-package.kt.md`; preview stubs use `stub`.
+  `Impl`, the `I` prefix and the `Interface` suffix are forbidden. `database`, `network`, `local` and `remote` are not
   technology names. An implementation with no technology and no variant, such as an app's use case or a state
   holder behind its interface, is named `Default<Interface>` (`DefaultAddRatingUseCase`).
 - A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
@@ -187,8 +189,10 @@ root package of the entry-point unit, which holds the classes the platform const
   `Cache4kRatedUsersCache`).
 - Dependency direction: the first table of `arch-context.md`. In short: implementations depend on contracts
   and `model`; use cases on contracts, `model` and `util`; entry points on use cases, contracts, `model` and
-  `util`; nothing outside its unit depends on an entry point, and inside it UI kinds depend on each other as
-  `arch-context.md` says; `di` depends on everything, and only another `di` and the classes the platform
+  `util`; an entry-point implementation is not exposed to other units. A state holder's public interface
+  in its owner's `api` unit is a contract other units may call, even though its kind is `component` or
+  `viewmodel`. Inside a unit UI kinds depend on each other as `arch-context.md` says; `di` depends on
+  everything, and only another `di` and the classes the platform
   constructs in the entry-point unit depend on it: a DI module takes DI modules through its constructor. A use
   case and a contract import no platform or framework type; a state holder's interface may import its UI
   framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
@@ -203,7 +207,9 @@ root package of the entry-point unit, which holds the classes the platform const
   (`RefreshingCache` is not inside `CacheRefreshingRatingRepository.kt`). A class with behaviour is any class
   or object with a function body of its own (not a data class's generated members, not an enum's entries); a
   design-system component's public `<Component>Defaults` object is the one that sits in its component's file
-  (`compose.kt.md`). A file is split only when it passes 400 lines.
+  (`compose.kt.md`). These mandatory file boundaries apply regardless of length. Further splitting of an
+  otherwise correctly organised file is allowed only above 400 lines and must preserve those boundaries:
+  a sealed family and required nested types stay together. Passing 400 lines does not itself require a split.
 - A data class that is a property type of exactly one class is nested in it. A type that is a property of two
   or more classes, or is returned to another class, is top-level in `model`.
 - Every error family is its own file in `model`, a sealed error with all its subclasses or a single error

@@ -8,16 +8,18 @@ callbacks: a lambda that runs before the function returns (`Iterable.map { }`, `
 builder, a `Flow` operator, a `Modifier` factory or a lifecycle hook (`Lifecycle.Lambda`), the library's or
 the project's own, runs inside a job, a collection or a lifecycle the caller owns. Declaring a callback is
 adding an `on…: (T) -> Unit` parameter, a `…Listener` or `…Callback` type, or a field of that kind to the
-project's own API, outside the two cases under Handlers and outputs. A class in the `event` kind that
-implements the platform's listener (`SitListener : Listener`) declares no callback. A checker flags every
-`on…` function parameter and every `…Listener` and `…Callback` type outside the two kept cases and the platform
-listener classes of `event`; the reviewer clears one that runs before the function returns.
+project's own API. The allowed exceptions are Compose handlers and Decompose outputs (Handlers and outputs),
+plus a listener interface that meets one of the three triggers under Things that happen. A class in the
+`event` kind that implements the platform's listener (`SitListener : Listener`) declares no callback. A checker
+flags every `on…` function parameter and every `…Listener` and `…Callback` type outside Compose handlers,
+Decompose outputs and the platform listener classes of `event`; the reviewer clears one that runs before
+the function returns or meets a documented listener trigger. A trigger must be named, as required below.
 
-Project code declares no callback. A result that arrives later is the return value of a `suspend fun`; things
-that happen are a `Flow`. A callback exists only at the boundary with a library or platform that offers
-nothing else, and is converted there once (The bridge). The two cases that look like callbacks and stay are
-named under Handlers and outputs. Existing listener interfaces and existing component outputs stay as they
-are, under the Existing code section of the package-layout rule.
+Outside those exceptions, project code declares no callback. A result that arrives later is the return
+value of a `suspend fun`; things that happen are a `Flow`. A library or platform callback is converted once
+at its boundary (The bridge); handlers that require synchronous platform dispatch keep the listener form
+described below. Existing listener interfaces and existing component outputs stay as they are, under the
+Existing code section of the package-layout rule.
 
 ### One result later: `suspend fun`
 
@@ -49,8 +51,8 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
   `Channel(Channel.BUFFERED).receiveAsFlow()` for events one consumer must not lose. Unsubscribing is
   cancelling the collecting job.
 - A listener interface of the project, registered with `addListener`/`removeListener` or `subscribe(listener)`,
-  is not written. The contract exposes a `Flow` of a sealed event type from `model`, and each subscriber
-  collects it in its own scope.
+  is not written unless one of the three listener triggers below holds. Otherwise the contract exposes a
+  `Flow` of a sealed event type from `model`, and each subscriber collects it in its own scope.
 
   ```kotlin
   // Bad
@@ -105,9 +107,11 @@ Failure follows the error-handling rule: `Result<T>`, a sealed result when the c
   `fun interface On<Event>Callback` nested in the type of the component the parent sees, its interface when it
   has one, else its class (beside the component's factory, when the project builds components through one),
   and the parent decides the navigation. Not one `onOutput: (Output) -> Unit` with a sealed `Output` and a
-  `when` at the parent, and not a `Flow` of outputs of any kind (`SharedFlow`, `Channel.receiveAsFlow()`),
-  which loses the result while the parent is not yet collecting. A stream enters a component only as the
-  parent's input or as the component's own UI events.
+  `when` at the parent, and not a `Flow` of outputs of any kind (`SharedFlow`, `Channel.receiveAsFlow()`).
+  The constructor callback makes the parent responsible for handling the output without a separate
+  collection job. This is the component-output contract, not a claim that every flow drops events without
+  a collector: the buffered channel used for view-model UI events can retain them. A stream enters a
+  component only as the parent's input or as the component's own UI events.
 
   ```kotlin
   // Bad

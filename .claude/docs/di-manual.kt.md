@@ -12,15 +12,19 @@ dependency order, using `lazy {}` where construction must be deferred. A project
 composition root otherwise keeps that name, and the rules about `RootModule` apply to it. It lives in the `di`
 package of the entry-point unit (`instances/<name>`), whose root holds the class that creates it.
 
-- DI modules form a tree that follows the unit dependencies. Each unit that constructs something has its
-  own DI module in the `di/`
+- References between DI modules form an acyclic graph that follows the unit dependencies; several modules
+  may receive the same dependency instance. Lifecycle ownership forms a tree: a module's children are only
+  the DI modules it directly creates. Each unit that assembles dependencies has its own DI module in the `di/`
   package of the level it wires (`…command.di.CommandsModule`, `…gui.api.di.GuiModule`). A
   resource with its own lifecycle, such as a database connection, has its own DI module in the unit that
   owns it (`…data.exposed.di.ExposedModule` exposing `databaseFlow`). Several DI modules in one unit are
   normal, and existing ones are never merged.
+- Declaring a constructible class or allocating its own state is not dependency assembly. Tests may
+  construct fakes directly; a unit of fake declarations alone needs no DI module.
 - A DI module that starts or stops something exposes `val lifecycle: Lifecycle` (AstraLibs
-  `Lifecycle.Lambda`), and a parent module or `RootModule` collects the `lifecycle`s of its children: its own
-  `lifecycle` calls theirs in order. A DI module never replaces this with its own
+  `Lifecycle.Lambda`), and collects the `lifecycle`s only of the DI modules it directly creates: its own
+  `lifecycle` calls theirs in order. It never starts, reloads or stops a DI module received as a dependency.
+  `RootModule` follows the same ownership rule. A DI module never replaces `Lifecycle` with its own
   `enable()`/`reload()`/`disable()` functions, and never moves a child's work into its own lambda.
 - `RootModule` only builds the root DI modules and lists their `lifecycle`s; it constructs no service itself.
 - A DI module is `internal` unless another build unit constructs it.

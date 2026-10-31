@@ -14,10 +14,12 @@ exception: a framework that takes a failure only as a thrown exception (a comman
 `CommandException`). There the exception extends the framework's type, lives in `model`, is thrown only
 inside that framework's entry point (`command`), and the handler that turns it into a reply lives in `error`.
 
-### Contract
+### Contract when `Result` is chosen
 
-A function that can fail returns `Result<T>`. Kotlin's `Result` has a single type parameter, so the
-failure is always a `Throwable`. Model domain errors as a sealed hierarchy of exception classes. They
+Choose the failure type from the table above: absence alone uses a nullable type, and outcomes the caller
+handles differently use a sealed result. This section applies when that choice is `Result<T>`.
+Kotlin's `Result` has a single type parameter, so the failure is always a `Throwable`.
+Model domain errors as a sealed hierarchy of exception classes. They
 are a payload for `Result.failure`; your own code never throws them.
 
 ```kotlin

@@ -13,7 +13,7 @@ When writing a test, make sure that:
 * These names break detekt's `FunctionNaming` rule on purpose. Suppress it once per test file with `@file:Suppress("FunctionNaming")` at the top of the file; never rename the tests to satisfy the linter and never disable the rule in the detekt config.
 * You are testing the expected business logic, not the actual one.
 * Prefer splitting code into testable functions/chunks if that doesn't affect the public API.
-* New code MUST be covered by tests at 100%. The coverage comes from behaviour tests as described here; the testing-no-useless rule does not lower this bar, it only forbids tests that exercise the language or a framework instead of project logic.
+* New code that implements project behaviour MUST have 100% line coverage and 100% branch coverage through meaningful behaviour tests. Generated code and trivial field storage are outside this denominator; `testing-no-useless.kt.md` describes the distinction. There is no blanket exclusion for `model`, `di` or UI packages: their own validation, transformations, lifecycle ordering and other project behaviour must be covered. Integration tests may cover wiring; a separate test file for every class is not required.
 * The aim of the tests is to validate the intended behavior/contract and reveal bugs, not to lock in incidental current behavior or implementation details.
 * If you're not sure what the business logic of the class is, ask the user.
 * Feel free to modify base classes to improve their testability, but ask the user first about all changes in base class.
@@ -86,8 +86,8 @@ internal class FakeUserRepository : UserRepository {
 ### Where tests live
 
 * `src/test/kotlin` mirrors `src/main/kotlin` package for package: `…data.exposed.rating.ExposedRatingRepository` is tested by `src/test/kotlin/…/data/exposed/rating/ExposedRatingRepositoryTest.kt`. In Kotlin Multiplatform, `commonTest` mirrors `commonMain`.
-* A fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/data/dao/rating/fake/FakeRatingRepository.kt` fakes `…data.dao.rating.api.RatingRepository`. A fake scripts failures or records calls; a double that only stores values in memory is an in-memory implementation and lives in production code in a `memory` technology package.
-* A fake that tests of other build units need lives in the `testFixtures` source set of the unit that owns the contract, at the same path, and is never copied into each consumer. The Kotlin package-layout rule gives the Gradle setup and the Kotlin Multiplatform alternative.
+* A same-unit fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/data/dao/rating/fake/FakeRatingRepository.kt` fakes `…data.dao.rating.api.RatingRepository`. A fake scripts failures or records calls; a double that only stores values in memory is an in-memory implementation and lives in production code in a `memory` technology package.
+* A fake that tests of other build units need lives in the `testFixtures` source set of the unit that owns the contract, at the same path, and is never copied into each consumer. In Kotlin Multiplatform, shared fakes instead live in `commonMain` of a sibling `<feature>/fake` unit, under `<unit root>/<concept>/fake/`. Shared fakes are public and consumed only by test source sets; ordinary same-unit fakes are `internal`. The Kotlin package-layout rule gives the Gradle setup.
 
 **Frameworks**: `kotlin.test`, `kotlinx.coroutines.test`
 
