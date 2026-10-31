@@ -1,28 +1,31 @@
-@.claude/docs/arch-package.md
-@.claude/docs/arch-package.kt.md
-@.claude/docs/arch-domain.md
-@.claude/docs/arch-domain.kt.md
-@.claude/docs/arch-context.md
-@.claude/docs/clean-code.kt.md
-@.claude/docs/code-ordering.kt.md
-@.claude/docs/codebase-memory.md
-@.claude/docs/compose.kt.md
-@.claude/docs/coroutines.kt.md
-@.claude/docs/data-class-default-values.kt.md
-@.claude/docs/di-manual-constructors.kt.md
-@.claude/docs/di-manual.kt.md
-@.claude/docs/error-handling.kt.md
-@.claude/docs/function-reference.kt.md
-@.claude/docs/git-commits.md
-@.claude/docs/imports.kt.md
-@.claude/docs/javadoc.kt.md
-@.claude/docs/kotlin-lsp.kt.md
-@.claude/docs/ksrc.kt.md
-@.claude/docs/no-callbacks.kt.md
-@.claude/docs/no-it.kt.md
-@.claude/docs/no-pair.kt.md
-@.claude/docs/notes.kt.md
-@.claude/docs/region.md
-@.claude/docs/testing.kt.md
-@.claude/docs/testing-no-useless.kt.md
-@.claude/docs/time-api.kt.md
+Read and follow all instruction documents listed below before working in this repository.
+All paths are relative to the repository root.
+
+- [.claude/docs/arch-package.md](.claude/docs/arch-package.md)
+- [.claude/docs/arch-package.kt.md](.claude/docs/arch-package.kt.md)
+- [.claude/docs/arch-domain.md](.claude/docs/arch-domain.md)
+- [.claude/docs/arch-domain.kt.md](.claude/docs/arch-domain.kt.md)
+- [.claude/docs/arch-context.md](.claude/docs/arch-context.md)
+- [.claude/docs/clean-code.kt.md](.claude/docs/clean-code.kt.md)
+- [.claude/docs/code-ordering.kt.md](.claude/docs/code-ordering.kt.md)
+- [.claude/docs/codebase-memory.md](.claude/docs/codebase-memory.md)
+- [.claude/docs/compose.kt.md](.claude/docs/compose.kt.md)
+- [.claude/docs/coroutines.kt.md](.claude/docs/coroutines.kt.md)
+- [.claude/docs/data-class-default-values.kt.md](.claude/docs/data-class-default-values.kt.md)
+- [.claude/docs/di-manual-constructors.kt.md](.claude/docs/di-manual-constructors.kt.md)
+- [.claude/docs/di-manual.kt.md](.claude/docs/di-manual.kt.md)
+- [.claude/docs/error-handling.kt.md](.claude/docs/error-handling.kt.md)
+- [.claude/docs/function-reference.kt.md](.claude/docs/function-reference.kt.md)
+- [.claude/docs/git-commits.md](.claude/docs/git-commits.md)
+- [.claude/docs/imports.kt.md](.claude/docs/imports.kt.md)
+- [.claude/docs/javadoc.kt.md](.claude/docs/javadoc.kt.md)
+- [.claude/docs/kotlin-lsp.kt.md](.claude/docs/kotlin-lsp.kt.md)
+- [.claude/docs/ksrc.kt.md](.claude/docs/ksrc.kt.md)
+- [.claude/docs/no-callbacks.kt.md](.claude/docs/no-callbacks.kt.md)
+- [.claude/docs/no-it.kt.md](.claude/docs/no-it.kt.md)
+- [.claude/docs/no-pair.kt.md](.claude/docs/no-pair.kt.md)
+- [.claude/docs/notes.kt.md](.claude/docs/notes.kt.md)
+- [.claude/docs/region.md](.claude/docs/region.md)
+- [.claude/docs/testing.kt.md](.claude/docs/testing.kt.md)
+- [.claude/docs/testing-no-useless.kt.md](.claude/docs/testing-no-useless.kt.md)
+- [.claude/docs/time-api.kt.md](.claude/docs/time-api.kt.md)
