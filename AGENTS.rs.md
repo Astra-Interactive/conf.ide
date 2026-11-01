@@ -1,24 +1,27 @@
-@.claude/docs/arch-package.md
-@.claude/docs/arch-package.rs.md
-@.claude/docs/arch-domain.md
-@.claude/docs/arch-domain.rs.md
-@.claude/docs/arch-context.md
-@.claude/docs/clean-code.rs.md
-@.claude/docs/closure-naming.rs.md
-@.claude/docs/code-ordering.rs.md
-@.claude/docs/codebase-memory.md
-@.claude/docs/dependency-sources.rs.md
-@.claude/docs/di-manual-constructors.rs.md
-@.claude/docs/di-manual.rs.md
-@.claude/docs/error-handling.rs.md
-@.claude/docs/git-commits.md
-@.claude/docs/imports.rs.md
-@.claude/docs/no-tuples.rs.md
-@.claude/docs/notes.rs.md
-@.claude/docs/region.md
-@.claude/docs/rust-lsp.rs.md
-@.claude/docs/rustdoc.rs.md
-@.claude/docs/struct-default-values.rs.md
-@.claude/docs/testing.rs.md
-@.claude/docs/testing-no-useless.rs.md
-@.claude/docs/time-api.rs.md
+Read and follow all instruction documents listed below before working in this repository.
+All paths are relative to the repository root.
+
+- [.claude/docs/arch-package.md](.claude/docs/arch-package.md)
+- [.claude/docs/arch-package.rs.md](.claude/docs/arch-package.rs.md)
+- [.claude/docs/arch-domain.md](.claude/docs/arch-domain.md)
+- [.claude/docs/arch-domain.rs.md](.claude/docs/arch-domain.rs.md)
+- [.claude/docs/arch-context.md](.claude/docs/arch-context.md)
+- [.claude/docs/clean-code.rs.md](.claude/docs/clean-code.rs.md)
+- [.claude/docs/closure-naming.rs.md](.claude/docs/closure-naming.rs.md)
+- [.claude/docs/code-ordering.rs.md](.claude/docs/code-ordering.rs.md)
+- [.claude/docs/codebase-memory.md](.claude/docs/codebase-memory.md)
+- [.claude/docs/dependency-sources.rs.md](.claude/docs/dependency-sources.rs.md)
+- [.claude/docs/di-manual-constructors.rs.md](.claude/docs/di-manual-constructors.rs.md)
+- [.claude/docs/di-manual.rs.md](.claude/docs/di-manual.rs.md)
+- [.claude/docs/error-handling.rs.md](.claude/docs/error-handling.rs.md)
+- [.claude/docs/git-commits.md](.claude/docs/git-commits.md)
+- [.claude/docs/imports.rs.md](.claude/docs/imports.rs.md)
+- [.claude/docs/no-tuples.rs.md](.claude/docs/no-tuples.rs.md)
+- [.claude/docs/notes.rs.md](.claude/docs/notes.rs.md)
+- [.claude/docs/region.md](.claude/docs/region.md)
+- [.claude/docs/rust-lsp.rs.md](.claude/docs/rust-lsp.rs.md)
+- [.claude/docs/rustdoc.rs.md](.claude/docs/rustdoc.rs.md)
+- [.claude/docs/struct-default-values.rs.md](.claude/docs/struct-default-values.rs.md)
+- [.claude/docs/testing.rs.md](.claude/docs/testing.rs.md)
+- [.claude/docs/testing-no-useless.rs.md](.claude/docs/testing-no-useless.rs.md)
+- [.claude/docs/time-api.rs.md](.claude/docs/time-api.rs.md)
