@@ -1,4 +1,8 @@
 .idea
 .kotlin
 .research
+research
+todo/**
+.claude/skills/sentry-issues-fix/
 .claude/agents
+**/.DS_Store
