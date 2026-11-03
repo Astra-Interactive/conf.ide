@@ -53,6 +53,9 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
   platform pieces as packages (`core/coroutine`). It has the same concept → kind shape as any unit. It may be
   split by platform (`core/api`, `core/bukkit`) and, in an app with Compose, into a design-system unit
   (`core/ui`).
+- A platform unit of `core` may keep implementations directly in concept packages, as described by the
+  package-layout implementation exception. This does not change the dependency tables below: `core/bukkit`
+  still depends only on `core/api`, and its explicit kind packages keep their import restrictions.
 - `core` holds no use case and no repository, and depends on no feature unit. Nothing enters it before its
   second consumer.
 - A published library (AstraLibs) is a dependency, not the `core` of any project.

@@ -96,6 +96,13 @@ root package of the entry-point unit, which holds the classes the platform const
    package inside another unit (`jail/file`, `core/cache/cache4k`) holds only code built on that technology:
    implementations of contracts and the classes they use, or generic code that units of two sub-contexts need.
 
+   The platform unit of `core` (`core/bukkit`, `CorePlatform`) has the same placement exception: its
+   implementations and their helpers may sit directly in a concept (`item/ItemStackSerializer`). Its root
+   still holds packages only; explicit `api`, `model`, `util` and `di` packages keep their usual rules.
+   This placement exception does not grant feature-unit dependencies or platform imports in contracts and
+   models. The `core` dependency restrictions in `arch-context.md` still apply. Assembly of a configured
+   serializer format that registers concrete implementations belongs to `di`, not `util`.
+
    ```
    …data.exposed.rating.ExposedRatingRepository
    …data.exposed.rating.CacheRefreshingRatingRepository
