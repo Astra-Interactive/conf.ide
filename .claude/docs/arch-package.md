@@ -184,11 +184,15 @@ root package of the entry-point unit, which holds the classes the platform const
 
 ### Contracts and implementations
 
-- An interface exists on four triggers and no other: another unit calls it; two or more implementations exist
-  or one is known to come; an inner part declares what it needs from an outer one; a test must replace it with
+- An operation contract interface exists on four triggers and no other: another unit calls it; two or more
+  implementations exist or one is known to come; an inner part declares what it needs from an outer one; a test must replace it with
   a fake, which is allowed only for a contract over I/O or the platform. Pure logic, entities and use cases get
   no interface, except an app's use case that another unit calls (Units 6). Whether one is known to come and
   whether a test must replace it are the reviewer's call.
+- A polymorphic serialization data shape may use an interface in `model` when it declares only read-only
+  data properties, with no functions, property implementations or behaviour. Its properties carry scalar or
+  model values. This is a data representation, not an operation contract; it does not permit model
+  dependencies on `api`.
 - A contract sits in the `api` package of its concept. Two kinds keep their interface with their
   implementation, named by what the class is: an app use case's interface sits in `usecase` (Units 6), and a
   state holder's interface in the project's state-holder kind (`component`, `viewmodel`), beside its

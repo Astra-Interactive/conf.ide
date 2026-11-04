@@ -65,7 +65,7 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 | Inside a unit | may depend on |
 |---|---|
 | `model` | other `model` packages: of a higher level or of another concept of the unit |
-| `api` (contracts) | `model` |
+| `api` (contracts) | `model`; runtime contract parameters of the nested `Factory` exception below |
 | `usecase` | `api`, `model`, `util` |
 | implementations (technology packages and units), `stub` | `api` (the contract they implement and the contracts they call), `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
 | `fake` (Kotlin test implementations) | `api` (the contract it replaces), `model`, `util` |
@@ -81,6 +81,11 @@ its unit, with no cycle between packages (`jail/model/JailInmate` on `PlayerId` 
 The `util` and `theme` rows allow references within the same kind; they do not grant that permission to
 every kind. A use case still never calls another use case. Only `di` and the platform-constructed root
 classes may depend on `di`; ordinary entry-point kinds do not gain that access.
+
+The runtime construction exception in `arch-domain.md`, Factory, permits a nested `fun interface Factory`
+in an `api` contract to reference another contract solely as a runtime parameter of its creation function.
+The factory returns the enclosing contract, and a DI module implements it. This exception adds no permission
+for ordinary contract operations, implementation types or cycles.
 
 | Between units | may depend on |
 |---|---|
