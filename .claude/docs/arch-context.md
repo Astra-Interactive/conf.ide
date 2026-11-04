@@ -20,8 +20,8 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
   `AddRatingUseCase`). Only the entry-point unit depends on a feature's platform unit (`gui/bukkit`), and
   nothing depends on the entry-point unit. In an app, only the entry-point unit depends on an `impl` unit.
-- A use case several sub-contexts need lives in the `api` unit of the sub-context that owns the operation. When
-  no owner can be named, the agent asks the user.
+- The owner and production consumers determine a use case's unit (`arch-package.md`, Units 4–6).
+  A dependency permitted by this table does not by itself justify putting code in an API unit.
 - Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and
   the entry-point unit depend on the technology.
 - A sub-context publishes general events, shaped for no single consumer.
@@ -116,5 +116,6 @@ convention plugin its build file applies (one per unit type, `arch-package.kt.md
 each plugin to a row of the table above, and a unit without such a plugin is checked by hand.
 
 Every row of these tables, the package names and the naming of implementations are meant to be checked by a
-tool in the build; the platform and framework imports of `model`, `api` and `usecase` are the reviewer's call. The checker is not written yet; until
-it exists, the skill's checklist is answered by hand.
+tool in the build; the platform and framework imports of `model`, `api` and `usecase` are the reviewer's call.
+Run the checks configured in the project and review any uncovered requirements with the skill's checklist.
+Dependency-direction checks do not establish whether a declaration needs to cross a unit boundary.

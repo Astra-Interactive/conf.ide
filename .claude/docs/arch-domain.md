@@ -72,9 +72,10 @@ import and Validation apply to every context.
 
 - A use case is named `<Verb><Object>UseCase` (`AddRatingUseCase`, `LowerKillerRatingUseCase`) and lives in
   the `usecase` package of its concept, with one public entry and no interface. In a plugin it lives in the
-  sub-context that owns the operation: in its `api` unit when the sub-context is split, in its one unit when
-  it is not; other sub-contexts depend on the `api` unit, so a use case another sub-context needs is a reason
-  to propose the split (`arch-package.md`, Units 2). In an app, when another unit calls it, its interface
+  sub-context that owns the operation, with placement determined by production consumers as specified in
+  `arch-package.md`, Units 4–6. Splitting a sub-context does not by itself put its use cases in `api`.
+  A use case another sub-context needs is a reason to propose the split (`arch-package.md`, Units 2).
+  In an app, when another unit calls it, its interface
   lives in `usecase` of the owner's `api` unit and its `Default…` implementation in `usecase` of `impl`. It
   never lives in `core`.
 - It exists only when the flow has more than one step: a contract call whose result a model rule judges

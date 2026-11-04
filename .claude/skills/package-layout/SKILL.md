@@ -26,6 +26,13 @@ checklist for proving it. Read the rules first; this file does not repeat them.
    not approval. Without approval, apply the rules to new files only and list the moves you would make in the
    final message.
 5. Answer every decision test of section 2 for the feature, one line each. The lines go into the final message.
+   Before adding or moving production declarations to an API unit, record a table:
+   declaration → production consumer units with concrete call/implementation/signature references →
+   dependencies required by shared API behaviour → placement decision.
+   Follow `arch-package.md`, Units 4–6; inspect the declaration's related contracts, models and errors too.
+   Tests and composition-root DI are recorded separately, not counted as evidence of shared behaviour.
+   If usage information is incomplete or the API has external consumers, record that limitation; never infer
+   an unnecessary API from missing references. A diagnostic candidate still requires this ownership review.
 6. Print the planned tree of new files with full paths, and the new units with their build files.
 7. Only then create files. Create a kind package the moment its first file exists, never before.
 
@@ -35,10 +42,9 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 - A class the platform constructs (a plugin's main class, an Android `Application` or `Activity`) or
   `RootModule`: the entry-point unit.
 - Something of an existing sub-context, judged by what the file does (warming the rating cache is storage,
-  even though the platform starts it): that sub-context's unit; code other units call, and every plugin use
-  case, in its `api` unit when the sub-context is split (a use case of an unsplit one stays in its one unit,
-  and another sub-context needing it is a reason to propose the split, `arch-package.md` Units 2); code only
-  the platform unit uses, platform-free or not, in the platform unit (`RatingSlotKey`).
+  even though the platform starts it): that sub-context's unit. Choose API versus implementation by the
+  production-consumer rule in `arch-package.md`, Units 4–6. Being platform-free or named `…UseCase` does not
+  justify an API unit. Another sub-context needing the operation is a reason to propose a split (Units 2).
 - A config, translation or permission model, a function, a generic class or a scope used by several
   sub-contexts: `core`, in the concept → kind shape. A rule of a model that two units use is the exception:
   the `util` of the model's own unit.
@@ -48,10 +54,9 @@ checklist for proving it. Read the rules first; this file does not repeat them.
 **T2. Is this a use case, and where?**
 Only when the flow has more than one step: a contract call whose result
 a model rule judges before acting, or two or more contracts combined. Named `<Verb><Object>UseCase`, in the
-`usecase` package of its concept, in the `api` unit of the sub-context that owns the operation, or in its one
-unit when it is not split. In an app, a use case lives in `usecase` of the `impl` unit; when another unit
-calls it, its interface sits in `usecase` of the owner's `api` unit and the `Default…` implementation stays in
-`impl`. Never in `core`. If the owner is unclear, ask.
+`usecase` package of its concept. Determine its unit and whether an interface is needed from
+`arch-package.md`, Units 4–6, using the consumer table from step 1.5. Never in `core`.
+If the owner is unclear, ask.
 
 **T3. Which concept and which kind?**
 Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind for Compose's `composable` only
@@ -175,6 +180,9 @@ seed → `data/exposed/rating/warmup/`; a config format change → `core/setting
 
 ### A plugin with several contexts (AspeKt, a new `jail` context)
 
+This shared-API example assumes another production unit also calls the jail operations. If only
+`jail/bukkit` uses them, they and their implementation-local dependencies belong there instead (Units 4–6).
+
 ```
 modules/jail/api                   …module.jail.api
   jail/usecase/{JailPlayerUseCase, FreeInmateUseCase}.kt
@@ -216,9 +224,10 @@ line. A "no" is fixed by moving the new file, never an old one.
    they were?
 3. Was every new sub-context offered to the user as "own unit or package", and does every new unit have a
    one-sentence `README.md`?
-4. Is every use case named `…UseCase`, in a `usecase` package, in the `api` unit that owns the operation or
-   the one unit of an unsplit owner (in an app, in `impl`, with its interface in the owner's `api` unit when
-   another unit calls it), and never in `core`? Does `core` depend on no feature unit?
+4. Is every use case named `…UseCase`, in a `usecase` package, placed by `arch-package.md`, Units 4–6,
+   and never in `core`? Does the consumer table justify each addition to an API unit, including related
+   contracts, models and errors, without using tests or DI construction alone as justification?
+   Does `core` depend on no feature unit?
 5. Does any package hold both files and packages, other than the concept package of a unit that is wholly one
    technology and the root of the entry-point unit? Does every concept package hold only kind packages, except
    in a unit that is wholly one technology? Does every kind package hold only files, except a Compose
@@ -253,5 +262,6 @@ line. A "no" is fixed by moving the new file, never an old one.
     shared Kotlin fakes exported through `testFixtures` or a KMP fake unit's `commonMain`, consumed only by tests?
 17. Does the final message list the old files the rules would move, and where?
 
-The checker that runs items 5, 7, 8, 11 (a class in `util`) and 14 mechanically is not written yet; until it exists,
-answer them by hand and say so in the final message.
+Run the project's configured checkers for mechanical requirements. Review uncovered checklist items by hand
+and state the limits in the final message. An API ownership diagnostic supplies evidence for the consumer
+table; its candidate count is neither a blocking rule nor proof of an unnecessary API.

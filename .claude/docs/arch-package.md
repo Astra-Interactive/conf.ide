@@ -44,7 +44,7 @@ Terms used below:
    (the agent asks, as in 2), it becomes an `api` unit and one unit per platform (`gui/api`, `gui/bukkit`,
    `gui/forge`). The `api` unit holds the platform-free code other units call: models, use cases, contracts
    and their platform-free implementations. The platform unit holds everything that imports the platform, and
-   platform-free code that only it uses (`RatingSlotKey`). There is no `impl` unit: in a plugin it would add
+   platform-free code that only it uses (a local use case or `RatingSlotKey`). There is no `impl` unit: in a plugin it would add
    modules and make nothing easier. A sub-context that is not split is one unit, platform imports included
    (`modules/command`, `modules/event-bukkit`). Storage that several sub-contexts use, or a technology heavy
    enough for its own build (Exposed, Room), is a contracts unit plus one unit per technology (`data/dao`,
@@ -53,11 +53,23 @@ Terms used below:
 5. **App** (Kotlin Multiplatform, Android): a feature others depend on is an `api` unit (contracts, the
    models in their signatures, the `util` rules of those models, stubs) plus an `impl` unit (the implementation and its use cases). Platform
    code is a source set of the unit, never a unit.
-6. A use case that several sub-contexts need lives in the `api` unit of the sub-context that owns the
+6. A use case that several production units need lives in the `api` unit of the sub-context that owns the
    operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an
    app, the `usecase` package of the owner's `api` unit holds the use case's interface and the `usecase` package
    of its `impl` unit the `Default…` implementation; the
    others call the interface. When no owner can be named, the agent asks.
+   Placement follows responsibility and production consumers, not the absence of platform imports.
+   A plugin use case used only by one platform unit stays in that unit's `usecase`; an app's implementation
+   stays in the feature's implementation unit, including its UI implementation.
+   An unsplit owner's use case stays in its unit.
+   Contracts, models, errors and functions used only by that implementation stay with it. The `api` package
+   of a concept is a place for contracts inside any unit; it does not require a separate `api` build unit.
+   Types exposed by a shared contract stay with that contract, including nested and generic signature types;
+   dependencies needed by shared API behaviour stay with that behaviour. Count actual calls, implementations
+   and signature dependencies, not just imports or declared Gradle dependencies. Tests, test fakes and
+   construction by the entry point's DI alone do not justify promoting production code to an API unit.
+   For published libraries, external consumers are part of the contract even when absent from this checkout.
+   A single observed consumer is a reason to review ownership, not sufficient evidence to move a type.
 7. A unit's directory never holds another unit: a split sub-context's directory is a container with no build
    file and no sources (`gui/api`, `gui/bukkit`).
 8. Every unit carries a `README.md` of one sentence stating its responsibility. A sentence that does not fit is
@@ -256,7 +268,8 @@ root package of the entry-point unit, which holds the classes the platform const
 Every line of this rule that a tool can check is meant to be checked in the build: package names, the
 concept/kind shape, the naming of implementations, the dependencies between units. A checker checks what a rule
 states as a fixed name, number or shape; everything else in these rules is the reviewer's call, the platform and
-framework imports of `model`, `api` and `usecase` included. The checker is not written yet; until it exists, the
-skill's checklist is answered by hand and the final message says so.
+framework imports of `model`, `api` and `usecase` included. Run the checks configured in the project and
+answer the remaining skill checklist by hand, stating any missing coverage. An advisory ownership report
+provides references for review; it neither proves a type unnecessary nor authorizes a move.
 
 **Load the `package-layout` skill before the first new file of a task.**
