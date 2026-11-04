@@ -190,10 +190,11 @@ root package of the entry-point unit, which holds the classes the platform const
   no interface, except an app's use case that another unit calls (Units 6). Whether one is known to come and
   whether a test must replace it are the reviewer's call.
 - A polymorphic serialization data shape may use an interface in `model` when it declares only read-only
-  data properties, with no functions, property implementations or behaviour. Its properties carry scalar or
+  data properties, with no functions, property implementations or behaviour. Inherited members satisfy the
+  same restrictions; a companion of constants is allowed. Its properties carry scalar or
   model values. This is a data representation, not an operation contract; it does not permit model
   dependencies on `api`.
-- A contract sits in the `api` package of its concept. Two kinds keep their interface with their
+- A domain contract sits in the `api` package of its concept. Two kinds keep their interface with their
   implementation, named by what the class is: an app use case's interface sits in `usecase` (Units 6), and a
   state holder's interface in the project's state-holder kind (`component`, `viewmodel`), beside its
   `Default…` implementation (`gui/api/rating/players/component/RatingPlayersComponent`, `players` an old
@@ -206,6 +207,17 @@ root package of the entry-point unit, which holds the classes the platform const
   `Impl`, the `I` prefix and the `Interface` suffix are forbidden. `database`, `network`, `local` and `remote` are not
   technology names. An implementation with no technology and no variant, such as an app's use case or a state
   holder behind its interface, is named `Default<Interface>` (`DefaultAddRatingUseCase`).
+- A framework registration interface stays in the package of its mechanism (`route`, `command`, or the
+  project's equivalent), including in mixed `core` when several units use it. It connects implementations
+  to the framework during setup; it is not a domain operation. Its instance members are abstract,
+  synchronous functions returning `Unit`, with framework context parameters and no domain data parameters,
+  state properties or default behaviour. For example, `core/route/RouteRegistry.register(Routing)` may
+  name Ktor's routing context. Only those signature types gain a platform-import exception; other imports
+  in the file and other declarations in `core` keep their restrictions. Explicit `api`, `model`, `usecase`
+  packages and platform-free API/contract units do not gain this exception. Domain code must not depend on
+  a registration interface; entry mechanisms, implementations and DI may use it. The interface's name is
+  not evidence of this role. A checker recognises the signature shape and known framework types;
+  registration responsibility and unresolved types still require review.
 - A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
   another implementation beside it (`CacheRefreshingRatingRepository`). One that caches part of it gets its own
   contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
@@ -217,7 +229,8 @@ root package of the entry-point unit, which holds the classes the platform const
   `viewmodel`. Inside a unit UI kinds depend on each other as `arch-context.md` says; `di` depends on
   everything, and only another `di` and the classes the platform
   constructs in the entry-point unit depend on it: a DI module takes DI modules through its constructor. A use
-  case and a contract import no platform or framework type; a state holder's interface may import its UI
+  case and a domain contract import no platform or framework type; a framework registration interface has
+  only the signature exception above. A state holder's interface may import its UI
   framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
 - No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
   than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or

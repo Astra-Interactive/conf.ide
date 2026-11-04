@@ -90,9 +90,12 @@ internal class FileJailRepository(
   through AstraLibs' `PlatformServer`.
 - A use case is `<Verb><Object>UseCase` (`AddRatingUseCase`) in the `usecase` package of its concept, with one
   public `operator fun invoke` and no interface, except an app's use case another unit calls (package-layout
-  rule, Units 6). A use case and a contract import no platform or framework type (a state holder's interface
+  rule, Units 6). A use case and a domain contract import no platform or framework type (a state holder's interface
   may import its UI framework, Decompose's `ComponentContext`); the server is reached through AstraLibs'
   abstractions (`server/player`, `server/location`, `server/permission`) or the sub-context's own contract.
+- Framework registration interfaces follow `arch-package.md`, Contracts and implementations:
+  `fun interface RouteRegistry { fun register(routing: Routing) }` may stay in `core/route`.
+  This does not permit Ktor types in domain contracts, models or use cases.
 - A state holder of a menu or screen (`component` in AstraRating and in a Decompose app, `viewmodel` for a
   view model) holds no rule and calls use cases and contracts; the shared design system is the design-system
   unit (`core/ui`).

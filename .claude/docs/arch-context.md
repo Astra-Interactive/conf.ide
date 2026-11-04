@@ -82,6 +82,11 @@ The `util` and `theme` rows allow references within the same kind; they do not g
 every kind. A use case still never calls another use case. Only `di` and the platform-constructed root
 classes may depend on `di`; ordinary entry-point kinds do not gain that access.
 
+Framework registration interfaces described in `arch-package.md` may be used by entry mechanisms,
+implementations and DI, including through a permitted dependency on mixed `core`. This allows a reference
+to the registration interface, not arbitrary dependencies between entry-point kinds. Domain models,
+contracts and use cases may not depend on these interfaces. Unit dependency permissions remain unchanged.
+
 The runtime construction exception in `arch-domain.md`, Factory, permits a nested `fun interface Factory`
 in an `api` contract to reference another contract solely as a runtime parameter of its creation function.
 The factory returns the enclosing contract, and a DI module implements it. This exception adds no permission

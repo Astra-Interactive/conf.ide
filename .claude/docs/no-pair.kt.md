@@ -6,6 +6,10 @@ parameter, a return value or a type argument (`List<Pair<…>>`), written or inf
 
 Use a small named `data class` instead, with meaningful property names.
 
+The restriction concerns Kotlin's actual `Pair` and `Triple` types. An unrelated type named `Pair`,
+or an overloaded `to` DSL function returning `Unit`, is not a tuple. Resolve symbols and types before
+reporting; an unresolved call alone is not evidence of a tuple.
+
 Example:
 
 ```kotlin

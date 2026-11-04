@@ -237,9 +237,11 @@ line. A "no" is fixed by moving the new file, never an old one.
 7. Does any package created inside a unit carry a forbidden name (`domain`, `impl`, `internal`, `repository`,
    `exception`, `dto`, `dao`, `common`, `presentation`, `port`, `adapter`, …)? Are all package names
    singular (the reviewer's call)?
-8. Does every contract sit in `api` of its concept (a use case's interface in `usecase`, a state holder's in
+8. Does every domain contract sit in `api` of its concept (a use case's interface in `usecase`, a state holder's in
    its state-holder kind; in an app, one another unit calls in that kind of the owner's `api` unit), with its
    implementation named by technology, variant or `Default<Interface>`, no `Impl`, no `I` prefix?
+   Does a framework registration interface stay beside its mechanism under the signature and dependency
+   restrictions of `arch-package.md`, with no domain consumers?
 9. Does every new interface pass one of the four triggers?
 10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
     units use, in the `util` of the model's own unit?
