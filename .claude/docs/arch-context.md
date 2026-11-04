@@ -9,7 +9,7 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
   unit or of the storage contracts unit (its contracts, models, model rules in `util`, use cases, and its `stub` and `memory`
   implementations); a subscription to its events; a use of `core` (its models, helpers and scopes); a use of a
   context's `contract` unit; a unit implementing a contract of a unit it may depend on (a technology unit the
-  storage contracts, a platform unit its own `api`, a `<feature>/fake` the `api` it fakes); a DI module taking
+  storage contracts or its own `api`, a platform unit its own `api`, a `<feature>/fake` the `api` it fakes); a DI module taking
   the DI module of a unit it may depend on; the entry-point unit building the product units' DI modules.
   A state holder's public interface in an `api` unit is a contract, even in `component` or `viewmodel`.
   Kotlin test source sets may also use exported fake implementations (`arch-package.kt.md`, Tests).
@@ -89,7 +89,7 @@ classes may depend on `di`; ordinary entry-point kinds do not gain that access.
 | an unsplit sub-context (`event-bukkit`) | `api` units, `core` and its platform unit, the storage contracts unit |
 | an `api` unit | other `api` units, the platform-free `core` (`core/api`), the storage contracts unit |
 | an `impl` unit (app) | its own `api`, other `api` units, `core` |
-| a storage technology unit (`data/exposed`) | the storage contracts unit, `core` |
+| a technology unit (`data/exposed`, `discord-ai/ktor`) | its own `api` unit (both Gradle paths have the same immediate parent), the storage contracts unit, platform-free `core` |
 | the storage contracts unit (`data/dao`) | `core` |
 | `contract` | nothing of the project |
 | `core` (`core/api`) | nothing of the project |
@@ -98,6 +98,10 @@ classes may depend on `di`; ordinary entry-point kinds do not gain that access.
 | `<feature>/fake` | the `api` it fakes |
 | a unit that serves or calls a context's routes | its row above, plus that context's `contract` unit |
 | a Kotlin test source set | its unit's row above, plus shared fakes from `<feature>/fake` or `testFixtures`; these additions are test-only dependencies |
+
+A technology unit's own `api` allowance does not permit dependencies on another sub-context's `api`,
+including a nested unit with a different immediate parent. The resolved unit roles determine this allowance,
+including when convention plugins override roles or the API unit has a name other than `api`.
 
 No cycles between production units or between packages. Test-only dependencies do not become production
 edges; each compilation's dependency graph must remain acyclic. Only test source sets consume a
