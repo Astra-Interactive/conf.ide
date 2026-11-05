@@ -211,9 +211,9 @@ private fun OrderSummaryCenterPreview() { ... }
 ### Branches
 
 A `when` branch in a composable is one line: the call of one function. A branch that needs a layout
-(`Column` with a `Spacer`) or a call with three or more arguments, which cannot stay on one line, becomes
-its own `@Composable`, so the `when` reads as a dispatch table; braces `-> { }` only around several
-statements that cannot be extracted.
+(`Column` with a `Spacer`) becomes its own `@Composable`, so the `when` reads as a dispatch table. A call
+with three or more arguments, which the argument rule wraps, stays the branch's only statement inside braces
+`-> { }`; otherwise braces only around several statements that cannot be extracted.
 
 ```kotlin
 // Bad
@@ -221,7 +221,19 @@ CheckoutStage.SUCCESS -> Column {
     Spacer(Modifier.height(CheckoutMotion.CardDrop + SuccessTopSpacing))
     PaymentSuccessContentComposable(modifier = Modifier.weight(1f), onStart = onStart)
 }
+is TunerState.Listening -> ListeningLayoutComposable(
+    frequency = state.frequency,
+    detectedNote = state.detectedNote,
+    onStopListening = onStop
+)
 
 // Good
 CheckoutStage.SUCCESS -> CheckoutSuccessStageComposable(onStart = onStart)
+is TunerState.Listening -> {
+    ListeningLayoutComposable(
+        frequency = state.frequency,
+        detectedNote = state.detectedNote,
+        onStopListening = onStop
+    )
+}
 ```

@@ -20,7 +20,10 @@ import and Validation apply to every context.
   decision (`fun isWithinLimit(transfer: Transfer, limit: AccountLimit): Boolean` in `TransferLimit.kt`).
 - The `util` is that of the level that uses the rule, whichever unit the type comes from
   (`fun AstraRatingConfig.isRatingMessageLengthAllowed(message: String)` in `gui/api`, over a `core` model).
-  A rule two units use moves to the `util` of the model's own unit, so that it exists once.
+  A rule two units use moves to the `util` of the model's own unit only when all of its types and dependencies
+  are allowed there and the move creates no dependency cycle. Otherwise, keep the operation with the owner of
+  its meaning, or extract a rule over types allowed in the model's unit and convert the consumer-specific
+  inputs at the edge. Do not add a unit solely to avoid this decision.
 - A class that only reads and writes a model's fields is the anaemic smell (a `Helper`, a `Manager`): refuse
   it, and write the rule as an extension.
 - A use case integrates and never operates: it loads, calls the rules and saves. A rule operates and never

@@ -162,7 +162,8 @@ root package of the entry-point unit, which holds the classes the platform const
 7. **`model` and `util` live at every level.** A model or a function lives in the `model` or `util` of the
    level that uses it, even as one file (`integration/papi/placeholder/model/PapiConfig.kt`). A higher level's
    `model` or `util` holds only what several lower levels share; a rule of a model that two units use lives in
-   the `util` of the model's own unit. `core` has the same concept → kind shape (`core/settings/model`,
+   the `util` of the model's own unit when its dependencies are allowed there and create no cycle. Otherwise,
+   follow the alternatives in `arch-domain.md`, Rules live in `util`. `core` has the same concept → kind shape (`core/settings/model`,
    `core/util`).
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
    implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
