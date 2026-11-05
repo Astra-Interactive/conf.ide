@@ -10,6 +10,7 @@ IDE and LLM configurations
 - [mattpocock](https://github.com/mattpocock) for [code-review](https://github.com/mattpocock/skills/blob/main/skills/engineering/code-review/SKILL.md)
 - [mattpocock](https://github.com/mattpocock) for [retro](https://github.com/mattpocock/skills/blob/main/skills/engineering/retro/SKILL.md)
 - [Programistich](https://github.com/Programistich) for [figma-pixel-verify](.claude/skills/figma-pixel-verify) (previously for iOS)
+- [davila7](https://github.com/davila7) for [search-specialist](.claude/agents/search-specialist.md), [debugger](.claude/agents/debugger.md) and [test-triage](.claude/agents/test-triage.md), adapted from [claude-code-templates](https://github.com/davila7/claude-code-templates)
 
 # IntelliJ Plugins
 
