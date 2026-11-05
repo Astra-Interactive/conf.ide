@@ -1,13 +1,17 @@
 ## Subagents
 
-The user's budget allows two subagents at a time and no nesting. This document says when to spawn one
-and which one.
+The harness caps how many subagents run at once and how deep they nest. This document says how to find
+the cap, when to spawn a subagent, and which one.
 
 ### Budget
 
-* At most two subagents run at once; a subagent spawns none. These are the harness limits
-  (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS=2`, spawn depth 1); an orchestrator plans for them instead of
-  queueing ten.
+* Read the cap before planning parallel work; do not assume it.
+  - Claude Code: `printenv CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`
+    (set in `~/.claude/settings.json` under `env`). A spawn depth of 1 means a subagent spawns none.
+  - Codex: `max_concurrent_threads_per_session` under `[agents]` in `~/.codex/config.toml`.
+  - Any other harness, or a value that is not set: ask the user once, and until then plan for two.
+* Plan the work in waves of that size. A task list longer than the cap is queued by you, not by
+  spawning everything and letting the harness refuse; a refused spawn is a planning error, not a retry.
 * A subagent is spawned when the work is independent of the main thread, or when its output is large
   and only a summary is needed (a Gradle run, a log, a web search). It is not spawned for a lookup
   that is three tool calls.
