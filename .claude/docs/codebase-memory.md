@@ -43,4 +43,5 @@ Always prefer `codebase-memory-mcp` tools over plain `ls`/`grep`/`find` for code
 
 File reads and shell search (`rg`, `grep`, `find`) are acceptable only for non-code files (configs, docs,
 resources) and for reading a file before editing it. A read-only agent's shell guard
-(`.claude/hooks/readonly-guard.sh`) allows less: such an agent reads non-code files with its file-read tool.
+(`.claude/hooks/readonly-guard.sh`) allows shell search only in its `docs` and `gradle` modes; in the others
+the agent reads non-code files with its file-read tool.

@@ -35,8 +35,9 @@ READONLY_COMMANDS = (
 )
 READONLY_MODES = {
     "research": "",
-    "gradle": "; ./gradlew, rg and grep",
+    "gradle": "; ./gradlew, rg (without --pre) and grep",
     "docker": "; docker compose config|ps, docker ps|logs|inspect, docker network ls|inspect",
+    "docs": "; rg (without --pre), grep, and find without -exec, -execdir, -ok, -okdir, -delete, -fprint or -fls",
 }
 
 TOOL_NAMES = {

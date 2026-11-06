@@ -1,6 +1,7 @@
 #!/bin/bash
 # PreToolUse guard for read-only agents: lets Bash run inspection commands only.
-# Usage in agent frontmatter: readonly-guard.sh [research|gradle|docker]
+# Usage in agent frontmatter: readonly-guard.sh [research|gradle|docker|docs]
+# docs is research plus rg, grep and find for searching documents; find may not run, write or delete.
 # Exit 2 blocks the call and sends stderr to the agent. Written for bash 3.2.
 # The allowlist is repeated as text in .codex/generate-agents.py; change both together.
 
@@ -32,7 +33,18 @@ for part in $(printf '%s' "$COMMAND" | sed -E 's/\|\||&&|;|\|/\n/g'); do
         head|head\ *|tail|tail\ *|wc|wc\ *|sort|sort\ *|uniq|uniq\ *|cut\ *|jq|jq\ *|tr\ *|awk\ *|sed\ -n*|sed\ -E\ *) ;;
         ls\ *|ls|pwd|which\ *|echo\ *|date*|true) ;;
         ./gradlew*|gradle\ *) [ "$MODE" = gradle ] || block "$part" ;;
-        rg\ *|grep\ *) [ "$MODE" = gradle ] || block "$part" ;;
+        rg\ *|grep\ *)
+            case "$part" in
+                rg\ *--pre*) block "$part" ;;
+            esac
+            [ "$MODE" = gradle ] || [ "$MODE" = docs ] || block "$part"
+            ;;
+        find\ *)
+            case "$part" in
+                *-exec*|*-ok*|*-delete*|*-fprint*|*-fls*) block "$part" ;;
+            esac
+            [ "$MODE" = docs ] || block "$part"
+            ;;
         docker\ compose\ config*|docker\ compose\ ps*|docker\ ps*|docker\ logs*|docker\ inspect*|docker\ network\ ls*|docker\ network\ inspect*) [ "$MODE" = docker ] || block "$part" ;;
         *) block "$part" ;;
     esac
