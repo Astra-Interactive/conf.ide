@@ -18,6 +18,9 @@ committing agents commit by this rule themselves.
 * Do not commit when the user said not to, or when the build or the tests the change touches fail.
 * Never stage a file that had uncommitted changes before the task: the user's edits would go in
   with yours. When the change cannot be committed without such a file, commit nothing.
+* When the task's files stay uncommitted for one of these reasons, write the reason into the
+  `no-commit` marker before the final message, or the Stop hook keeps the turn open:
+  `echo "<reason>" > "$("$(git rev-parse --show-toplevel)/.claude/hooks/scratch.sh")/no-commit"`.
 * The final message lists the task's commits, `<hash> <title>` one per line, and every file left
   uncommitted with the reason.
 

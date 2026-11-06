@@ -1,6 +1,55 @@
 {
   "description": "conf.ide hooks for Codex. The scripts are the ones Claude Code runs from .claude/hooks.",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/generate.sh\"",
+            "timeout": 15,
+            "statusMessage": "Generating rules and agents"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/dirty-baseline.sh\"",
+            "timeout": 5,
+            "statusMessage": "Recording dirty files"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/turn-reset.sh\"",
+            "timeout": 5,
+            "statusMessage": "Starting the turn"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/no-commit-marker.sh\"",
+            "timeout": 5,
+            "statusMessage": "Reading commit instructions"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/git-guard.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking git command"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "^apply_patch$",
@@ -10,6 +59,44 @@
             "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/comment-guard.sh\"",
             "timeout": 5,
             "statusMessage": "Counting comment lines"
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "^(pr-creator|debugger|detekt-rule-author|linter-rollout|ansible-ops|paper-plugin-config)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/pr-creator-window.sh\"",
+            "timeout": 5,
+            "statusMessage": "Opening the commit window"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "^(pr-creator|debugger|detekt-rule-author|linter-rollout|ansible-ops|paper-plugin-config)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/pr-creator-window.sh\"",
+            "timeout": 5,
+            "statusMessage": "Closing the commit window"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/stop-guard.sh\"",
+            "timeout": 15,
+            "statusMessage": "Checking for uncommitted task files"
           }
         ]
       }
