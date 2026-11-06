@@ -40,10 +40,14 @@ the cap, when to spawn a subagent, and which one.
 | A Minecraft crash log | `minecraft-crash-analyst` | sonnet |
 | A perps position against the playbook | `perps-risk-reviewer` | sonnet |
 
+Committing agents: `pr-creator`, `debugger`, `detekt-rule-author`, `linter-rollout`, `ansible-ops`,
+`paper-plugin-config`. Pushing agents: `pr-creator`, `linter-rollout`. These lists are what the
+`git-guard.sh` hook allows; change the two together.
+
 ### Codex
 
 * `.codex/agents/*.toml` is generated from `.claude/agents/*.md` by `.codex/generate-agents.py`
-  and is not in git. Edit the markdown and rerun the script; never edit a `.toml` by hand.
+  and is not in git. The `generate.sh` hook runs it at session start; never edit a `.toml` by hand.
 * Codex gives a subagent no tool list, no hooks and no sandbox of its own, so the read-only guards
   are text in `developer_instructions` there. The agent is bound by them exactly as by the hook.
 * The hooks in `.codex/hooks.json` run the scripts in `.claude/hooks`. Codex skips a new or changed
@@ -51,8 +55,9 @@ the cap, when to spawn a subagent, and which one.
 
 ### What every subagent must hear
 
-* Read `AGENTS.md` and the documents it links before the first tool call. The reviewers in this list
-  check against them; an implementer that skipped them fails the review.
+* Read `AGENTS.md` and the documents it links before the first tool call; the code rules load with
+  every code file you read or edit. The reviewers in this list check against them; an implementer
+  that skipped them fails the review.
 * Navigation goes through `codebase-memory-mcp`, the LSP and `ksrc`. `grep`, `cat` and `find` over
   code are not navigation.
 * Return the result in the output format the agent defines. No preamble, no method, no next steps.

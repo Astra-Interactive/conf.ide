@@ -15,7 +15,8 @@ feature branch), and whether the project's own version bump is wanted (default: 
 Steps:
 
 1. `git status --short --branch`; the tree must be clean before you start. Read `AGENTS.md` and the
-   documents it links: the fixes are made by them, not by the linter's message alone.
+   documents it links; the code rules load with the files you touch, and the fixes are made by them,
+   not by the linter's message alone.
 2. Bump the linter in `gradle/libs.versions.toml` (or where the plugin version lives). Commit:
    `[CHORE] Bump rules-architecture to X.Y.Z`.
 3. Run every scoped check the project defines: `./gradlew architectureLint detekt` and the per-module

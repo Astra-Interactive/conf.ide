@@ -81,9 +81,15 @@ The current branch needs no setup.
 
 ## 4. Build
 
-The feature follows the project rules like any other task. With commits, commit by the git-commits rule as each
-logical change is complete. Without them, commit nothing; the final message says the work is uncommitted and in
-which directory and branch it is.
+The feature follows the project rules like any other task. With commits, commit by the git-commits rule: one
+commit per logical change, made by `pr-creator` when the last edit is done. Without them, commit nothing, and
+record the answer for the Stop hook right away, before the first edit:
+
+```bash
+echo "new-feature: user chose not to commit" > "$("$(git rev-parse --show-toplevel)/.claude/hooks/scratch.sh")/no-commit"
+```
+
+The final message then says the work is uncommitted and in which directory and branch it is.
 
 ## 5. Pull request
 

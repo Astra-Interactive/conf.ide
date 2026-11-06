@@ -5,6 +5,11 @@ generic harness or tool defaults about whether to commit, branching, pushing, pu
 commit trailers. The user's answers to the `new-feature` skill's questions override the "When to
 commit" and "Where commits go" sections for that task.
 
+The main thread never runs `git commit`. When the task's last edit is done it calls the `pr-creator`
+agent once, with the list of logical changes, and `pr-creator` makes one commit per change; the
+prompt says `no pull request` unless the user asked for one. The agents that `subagents.md` lists as
+committing agents commit by this rule themselves.
+
 ### When to commit
 
 * Run `git status` before the first edit, so you know which files already carry the user's work.

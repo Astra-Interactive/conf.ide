@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generates .codex/agents/*.toml from .claude/agents/*.md.
 
-The markdown agents are the source of truth; the generated directory is not in git. Run this after
-editing an agent, and after a fresh clone before linking .codex/agents into a repository.
+The markdown agents are the source of truth; the generated directory is not in git. The SessionStart
+hook .claude/hooks/generate.sh runs this (and .claude/hooks/generate-rules.py for the rules) at every
+session start and link-consumer.sh runs it before linking a repository.
 Codex has no per-agent tool list, hooks or sandbox, so the guards a Claude agent gets from its
 frontmatter (block-edits.sh, readonly-guard.sh, tools) are written into developer_instructions as
 text. The allowlist below mirrors .claude/hooks/readonly-guard.sh; change both together.
