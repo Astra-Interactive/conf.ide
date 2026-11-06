@@ -98,7 +98,8 @@ A composable reads a resource through `DrawableResource.asPainter()` and `String
 never through `painterResource(…)` or `stringResource(…)` directly. The extensions come from mikro when the
 project's mikro has them; otherwise the project declares them once, in the `util` of the one UI unit that uses them, moved to the
 design-system unit's `util` once a second UI unit needs them (`util/DrawableResourceExt.kt`,
-`util/StringResourceExt.kt`).
+`util/StringResourceExt.kt`). The string key itself, its file and its placeholders follow the
+`string-resources` skill (`.claude/skills/string-resources/SKILL.md`).
 
 ### Constants of a composable
 
@@ -196,7 +197,7 @@ private fun OrderSummaryCenterPreview() { ... }
   @Composable
   private fun rememberShortcuts(): ImmutableList<ShortcutContent> {
       val timerIcon = Res.drawable.ic_timer.asPainter()
-      val timerLabel = Res.string.shortcut_timer.asComposableString()
+      val timerLabel = Res.string.shortcut_timer_label.asComposableString()
       return remember(
           timerIcon,
           timerLabel
