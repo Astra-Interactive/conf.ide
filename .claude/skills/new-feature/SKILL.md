@@ -1,6 +1,6 @@
 ---
 name: new-feature
-description: Set up a new feature in a git repository. Use it before the first edit whenever the user asks to add, build or implement a feature, or types /new-feature. Asks where to work (current branch, new branch or worktree), which branch to start from, whether to commit and whether to open a pull request; sets up the branch or worktree and hands the pull request to the pull-request skill.
+description: Set up a new feature in a git repository. Use it before the first edit whenever the user asks to add, build or implement a feature, or types /new-feature. Asks where to work (current branch, new branch or worktree), which branch to start from, whether to commit and whether to open a pull request; sets up the branch or worktree and hands the commits and the pull request to the pr-creator agent.
 version: 1.0.0
 ---
 
@@ -112,5 +112,6 @@ user asks), ask the user each time whether to merge the base in or rebase onto i
 
 ## 5. Pull request
 
-When the user said yes, load the `pull-request` skill after the last commit. Its base is the branch the feature
-started from; the default branch when the work stayed on the current branch.
+When the user said yes, the one `pr-creator` call that makes the commits (step 4) also opens the pull request,
+by the `pull-request` skill; only a pushing agent may push. Its base is the branch the feature started from;
+the default branch when the work stayed on the current branch.

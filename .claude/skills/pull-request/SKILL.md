@@ -36,15 +36,16 @@ Read the whole change before writing, not only the last commit: `git log --oneli
 ## 2. Push
 
 Push the feature branch and nothing else: `git push -u origin <branch>`. Never push the base branch, never
-`--force`.
+`--force`. Only a pushing agent pushes (the list in `subagents.md`, enforced by the `git-guard.sh` hook); in the
+main thread, the whole skill, commits included, is one call to the `pr-creator` agent.
 
 When the push is blocked (a hook, a permission denial, an authentication error), the block is the user's to lift:
 stop at the first refusal and leave the hooks, the permissions and the git state as they are. A way around it is
 a workaround (the no-workarounds rule): no retry loop, no git plumbing, no permission escalation, no hook edit.
-Ask the user to choose:
+The user chooses (a subagent returns the refusal and the command, and the main thread asks):
 
 - they push the branch themselves: give the exact command, `git push -u origin <branch>` with the name filled in;
-- they allow the push: then run that command once.
+- they lift the block: then the pushing agent runs that command once.
 
 Go on to step 3 once the branch is on the remote: `git ls-remote origin refs/heads/<branch>` prints the hash
 `git rev-parse <branch>` prints.
