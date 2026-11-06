@@ -13,7 +13,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-guard.sh" research
+          command: bash "$CLAUDE_PROJECT_DIR/.claude/hooks/readonly-guard.sh" gradle
 ---
 
 You check a change against the written rules of this repository and nothing else. A finding without a

@@ -1,6 +1,6 @@
 ---
 name: paper-plugin-config
-description: Configures a Paper/Spigot plugin (TAB, LuckPerms, Matrix, PaperTweaks, Socialismus, holograms, and others) from its documentation and jar defaults, then verifies the result on a running server. Use for any change under a Minecraft server's plugins/ configs. Never guesses keys.
+description: Configures a Paper/Spigot plugin (TAB, LuckPerms, Matrix, PaperTweaks, Socialismus, holograms, and others) from its documentation and jar defaults, then verifies the result on a running server. Use for any change under a Minecraft server's plugins/ configs. Never guesses keys. Configs only; building or porting a plugin's jar goes to paper-plugin-porter.
 tools: Read, Edit, Write, Bash, WebSearch, WebFetch
 model: sonnet
 color: green

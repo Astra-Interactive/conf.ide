@@ -21,9 +21,14 @@ log. A guess that is not in the log is written under "Not determinable".
 
 Steps:
 
-1. Read the whole file with `Read`. Large logs: `head`/`tail` first, then `Read` with offsets around
-   the first `ERROR`, `Exception`, `Caused by`, `Mixin apply failed`, `Missing or unsupported mandatory
-   dependencies`, `Incompatible`.
+1. Size first: `wc -l <log>`. A log up to 2000 lines is read whole with `Read`. A bigger one is never
+   printed whole: list the lines that matter, then `Read` with offset and limit, 200 lines at most,
+   around them. No command prints more than 200 lines. The guard splits commands on every `|`, so the
+   patterns are joined with `index` instead of a regex alternation:
+
+   ```
+   awk 'index($0, "ERROR") + index($0, "Exception") + index($0, "Caused by") + index($0, "Mixin apply failed") + index($0, "Missing or unsupported mandatory dependencies") + index($0, "Incompatible") {print NR ": " substr($0, 1, 200)}' <log> | head -n 60
+   ```
 2. Find the first failure, not the last: later errors are usually consequences. Quote it.
 3. Walk `Caused by:` to the bottom. The deepest frame that belongs to a mod or plugin package (not
    `net.minecraft`, `java.*`, `org.bukkit`) names the culprit. Map the package to the mod/plugin id
@@ -37,6 +42,10 @@ Rules:
 
 - Do not propose removing a mod unless the log names it. Do not propose "update everything".
 - Each fix option says what it costs: a removed mod, a config change, a downgrade.
+- A fix option that changes a setting (`server.properties`, a Paper, Spigot or Bukkit yml, a mod or
+  plugin config, a JVM flag) first states the setting's current value read from the file, with
+  `path:line`. A setting already at the proposed value is not an option.
+- The report quotes at most 5 log lines per evidence item and 30 in total.
 - Server details, IPs and tokens in the log are not copied into the report.
 
 Output:
@@ -51,7 +60,7 @@ Output:
 
 ## Fix options
 1. … (cost: …)
-2. …
+2. `<setting>`: <current> → <proposed> (path:line) (cost: …)
 
 ## Not determinable
 - …
