@@ -13,17 +13,22 @@ case where pushing is allowed: the git-commits rule forbids pushing otherwise.
 
 ```bash
 git status --short --branch
-git symbolic-ref --short refs/remotes/origin/HEAD   # the default branch, e.g. origin/main
+git symbolic-ref --short refs/remotes/origin/HEAD   # the default branch: origin/main, origin/master or another
 gh pr view --json number,url,baseRefName 2>/dev/null
 ```
 
 - The base is the branch the work started from, when it is known (the new-feature skill's answer); otherwise the
-  default branch.
+  default branch. Its name differs between repositories, so it is read, never assumed: from the command above,
+  from `git remote show origin` when `origin/HEAD` is not set, from the user when neither names it. When the user
+  names a base that `git ls-remote --exit-code --heads origin <name>` does not find, say so and ask again.
 - A pull request needs its own branch. When the work is on the base branch, stop and ask the user where to move it;
   never move commits off a branch yourself.
 - The task's uncommitted changes are committed first, by the git-commits rule; files that carried the user's work
   before the task stay out.
 - When the branch already has a pull request, update that one (step 4) instead of opening a second.
+- When the branch has to be brought up to date with the base (it conflicts with the base, or the user asks), ask
+  the user each time whether to merge the base in or rebase onto it, and do what they pick. A rebased branch that
+  is already on the remote needs a force push, which the user runs: `git push --force-with-lease origin <branch>`.
 
 Read the whole change before writing, not only the last commit: `git log --oneline <base>..HEAD` and
 `git diff <base>...HEAD`.
@@ -32,6 +37,17 @@ Read the whole change before writing, not only the last commit: `git log --oneli
 
 Push the feature branch and nothing else: `git push -u origin <branch>`. Never push the base branch, never
 `--force`.
+
+When the push is blocked (a hook, a permission denial, an authentication error), the block is the user's to lift:
+stop at the first refusal and leave the hooks, the permissions and the git state as they are. A way around it is
+a workaround (the no-workarounds rule): no retry loop, no git plumbing, no permission escalation, no hook edit.
+Ask the user to choose:
+
+- they push the branch themselves: give the exact command, `git push -u origin <branch>` with the name filled in;
+- they allow the push: then run that command once.
+
+Go on to step 3 once the branch is on the remote: `git ls-remote origin refs/heads/<branch>` prints the hash
+`git rev-parse <branch>` prints.
 
 ## 3. Open
 

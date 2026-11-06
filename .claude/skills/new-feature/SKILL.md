@@ -17,13 +17,15 @@ Read the state before asking, so the options name real branches:
 
 ```bash
 git status --short --branch
-git symbolic-ref --short refs/remotes/origin/HEAD   # the default branch, e.g. origin/main
+git symbolic-ref --short refs/remotes/origin/HEAD   # the default branch: origin/main, origin/master or another
 git branch --all --format='%(refname:short)'        # the prefix convention: feat/, fix/
 git worktree list
 ```
 
-When `origin/HEAD` is not set, `git remote show origin` names the HEAD branch. Uncommitted files are the user's
-work: they decide which answer to the first question is recommended.
+When `origin/HEAD` is not set, `git remote show origin` names the HEAD branch; when neither names it, ask the
+user. The default branch differs between repositories, so `<default>` below is always the name read here or the
+user's answer. Uncommitted files are the user's work: they decide which answer to the first question is
+recommended.
 
 ## 2. Ask
 
@@ -49,6 +51,9 @@ The recommended option goes first, marked "(Recommended)":
 - A pull request needs commits and a branch other than the default one. When the answers ask for a pull request
   without commits, or from the current branch while it is the default branch, name the conflict and ask that
   question again.
+- A base the user names is checked before the setup: `git ls-remote --exit-code --heads origin <name>` for a
+  remote branch, `git rev-parse --verify --quiet <name>` for a local one. When neither finds it, say so and ask
+  the Base question again.
 
 ## 3. Set up
 
@@ -74,6 +79,17 @@ from the worktree. When `git check-ignore -q .claude/worktrees/<name>` fails, ad
 `git rev-parse --git-path info/exclude` prints: it is local to the clone, unlike `.gitignore`, so the main tree
 stops listing the worktree as untracked. The worktree stays after the task; the user removes it.
 
+A worktree holds only tracked files, so a git-ignored file that the build reads and an IDE writes on its own
+(Android's `local.properties`) is missing there. Find such files among the ignored files of the main checkout, the
+first path `git worktree list` prints; build output and caches stay behind:
+
+```bash
+git -C <main checkout> ls-files --others --ignored --exclude-standard --directory
+```
+
+Copy each one to the same path in the worktree and name the copied paths in your next message, never their
+contents. When the build needs such a file and the main checkout has none, tell the user which one is missing.
+
 `--no-track` keeps the base from becoming the branch's upstream; the branch gets its own at the first push. A local
 base (`<current branch>`) skips the fetch and takes the place of `origin/<default>` in the command.
 
@@ -90,6 +106,9 @@ echo "new-feature: user chose not to commit" > "$("$(git rev-parse --show-toplev
 ```
 
 The final message then says the work is uncommitted and in which directory and branch it is.
+
+When the branch has to be brought up to date with its base (the base moved and the work conflicts with it, or the
+user asks), ask the user each time whether to merge the base in or rebase onto it, and do what they pick.
 
 ## 5. Pull request
 

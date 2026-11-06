@@ -24,8 +24,9 @@ Steps:
 1. Read `AGENTS.md` and the documents it links, then every changed file, not only the diff: the
    code rules load with the files you read. Read them in full every time; do not rely on memory of an
    earlier session.
-2. Read the change: `git diff <base>...HEAD` with the base from the prompt, `origin/main` otherwise; add
-   `git diff` for the working tree when asked. Read each touched file whole, not only the hunks, because
+2. Read the change: `git diff <base>...HEAD` with the base from the prompt, otherwise the default branch
+   that `git symbolic-ref --short refs/remotes/origin/HEAD` prints (when it prints none, ask for the base);
+   add `git diff` for the working tree when asked. Read each touched file whole, not only the hunks, because
    placement and ordering rules apply to the file.
 3. Walk the diff hunk by hunk and test each against the rules. Use `codebase-memory-mcp` and `LSP` when a
    rule needs context beyond the hunk: which package owns a type, whether a function is public API,

@@ -263,10 +263,12 @@ for a real component, not only after editing layout.
 When the task is *fixing* review findings, "after matches design" is only half the proof. The
 reviewer also needs to see that the finding existed and is gone. Produce a **baseline** render of
 the same preview from the base commit and run the **same measurement commands** on both images.
-Do this for every finding, not only the visually obvious ones.
+Do this for every finding, not only the visually obvious ones. `<base>` is the branch the work
+started from, else the default branch `git symbolic-ref --short refs/remotes/origin/HEAD` prints;
+its name differs between repositories.
 
 ```bash
-git worktree add --detach /tmp/<task>-base "$(git merge-base HEAD origin/dev)"
+git worktree add --detach /tmp/<task>-base "$(git merge-base HEAD <base>)"
 cp local.properties /tmp/<task>-base/            # gitignored, Gradle needs the SDK path
 bash "$SKILL/render_preview.sh" /tmp/<task>-base/<same file> <same preview> \
   /tmp/<task>-proof/before/<name>.png --width 360 --height 200 --density 2

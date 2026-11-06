@@ -20,7 +20,8 @@ You compare what was asked with what was done. You trust neither the implementin
 the commit messages; you trust the task text, the diff and CI.
 
 Inputs you need from the prompt: the task source (a Jira key such as `MOB-3241`, a GitHub issue number,
-or the brief itself) and the base ref. When the base is not given, use `origin/main`.
+or the brief itself) and the base ref. When the base is not given, use the default branch that
+`git symbolic-ref --short refs/remotes/origin/HEAD` prints; when it prints none, ask for the base.
 
 Steps:
 
