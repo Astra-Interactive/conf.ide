@@ -131,6 +131,27 @@ Do not mix unrelated responsibilities in one class or function.
   internal fun Modifier.cardCanvas(): Modifier = canvasAnchoredToCard(CARD_TOP_IN_CARD_ART)
   ```
 
+* A property initializer starts on the line of its `=`, whatever follows: `=` never ends a line here
+  either. A declaration that fits the project's detekt `MaxLineLength` (120 when none is set) is one line.
+  One that does not fit is shortened first (a call that changes nothing, like `asStateFlow()` on a
+  `StateFlow`; a name that repeats the class), then wrapped inside the initializer: arguments by the
+  argument rule, a chain one call per line with the receiver kept on the line of `=`, a long receiver
+  named as its own `val`.
+
+  ```kotlin
+  // Bad
+  override val model: StateFlow<TagsSelectorState> =
+      tagsSelectorFeature.state.asStateFlow()
+
+  // Good
+  override val model: StateFlow<TagsSelectorState> = tagsSelectorFeature.state.asStateFlow()
+
+  // Good, when the one-line form does not fit
+  override val model: StateFlow<TagsSelectorState> = tagsSelectorFeature
+      .state
+      .asStateFlow()
+  ```
+
 * A lambda whose whole body is one `if` without `else` around two or more statements is a guard with a
   labelled return, in `pointerInput`, `LaunchedEffect`, `launch`, `forEach` alike. An `if` around one
   statement stays as it is: the guard would only add lines.
