@@ -27,22 +27,36 @@ the cap, when to spawn a subagent, and which one.
 | Where something is | `lookup` | sonnet |
 | Run tests, detekt, lint, assemble | `gradle-check` | haiku |
 | Explain red tests or red CI | `test-triage` | sonnet |
+| A defined coding task | `implementer` | inherit |
 | Find and fix a bug | `debugger` | inherit |
 | Does the change match the task | `task-vs-diff-verifier` | sonnet |
 | Does the change follow AGENTS.md | `agents-md-reviewer` | sonnet |
+| Is the change correct: bugs, races, lifecycle, callers | `code-reviewer` | opus |
+| Attack a design, plan or rule before it is built | `design-critic` | opus |
+| Does a change to docs, skills, agents or AGENTS.md contradict the rest | `docs-consistency-reviewer` | opus |
 | Commit and open the pull request | `pr-creator` | sonnet |
 | Facts from the web, with sources | `search-specialist` | sonnet |
+| Audit old Claude, Codex or Kimi sessions | `session-auditor` | sonnet |
+| Record-by-record extraction from notes | `claim-extractor` | sonnet |
 | A detekt or Konsist rule | `detekt-rule-author` | opus |
 | A linter version into one consumer repository | `linter-rollout` | sonnet |
 | Ansible playbooks and hosts | `ansible-ops` | sonnet |
 | Is the docker stack exposed | `docker-infra-reviewer` | sonnet |
 | A Paper plugin config | `paper-plugin-config` | sonnet |
+| Build or port a third-party Paper plugin to a new server version | `paper-plugin-porter` | sonnet |
 | A Minecraft crash log | `minecraft-crash-analyst` | sonnet |
 | A perps position against the playbook | `perps-risk-reviewer` | sonnet |
+| A pre-registered strategy backtest | `trading-backtester` | opus |
+
+Coding work that no agent above specialises in (a bug's root cause goes to `debugger`, a rollout to
+`linter-rollout`) goes to `implementer`, not to a general-purpose agent. Before a pull request,
+`task-vs-diff-verifier`, `agents-md-reviewer` and `code-reviewer` review the change, and their findings
+are fixed before the pull request is opened.
 
 Committing agents: `pr-creator`, `debugger`, `detekt-rule-author`, `linter-rollout`, `ansible-ops`,
 `paper-plugin-config`. Pushing agents: `pr-creator`, `linter-rollout`. These lists are what the
-`git-guard.sh` hook allows; change the two together.
+`git-guard.sh` hook allows and what the SubagentStart/SubagentStop matchers in `.codex/hooks.json` name;
+change the three together.
 
 ### Codex
 

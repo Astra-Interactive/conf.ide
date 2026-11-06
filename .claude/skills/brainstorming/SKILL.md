@@ -134,13 +134,14 @@ them; your calls (marked); what's left to the builder. Apply YAGNI: cut
 anything nobody asked for.
 
 **Where it goes:** in a software repo, `docs/plans/YYYY-MM-DD-<topic>-design.md`
-(next to the plans `writing-plans` writes), unless the project already has a
+unless the project already has a
 convention for design docs: use theirs. Commit it only if they want it
 committed. Outside a repo, ask. The user's preference overrides all of this.
 
-**Builder check (projects only):** before handing the doc over, have a fresh
-reader review it using [references/builder-check.md](references/builder-check.md).
-Tell the user a reviewer reads it first and you may come back once with a few
+**Builder check (projects only):** before handing the doc over, have the
+`design-critic` agent review it: a fresh reader checks whether a builder could
+plan from it alone and whether its claims about the code are true. Tell the
+user a reviewer reads it first and you may come back once with a few
 questions.
 
 <HARD-GATE>
