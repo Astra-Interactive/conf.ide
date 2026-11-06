@@ -1,7 +1,7 @@
 ---
 name: pull-request
 description: Open a pull request and write its title and description. Use it whenever a pull request is to be opened, updated or described — the user asks for a PR, the new-feature skill's answers ask for one, or a PR description needs rewriting. Checks the branch, pushes only the feature branch, writes the title as `[kind] [ref] Summary` and the description by the fixed template (Overview, Related Issue, Motivation and Context, Technical changes, How to test, Changelog), and creates or edits the PR with gh.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Pull request
@@ -73,9 +73,10 @@ does, never what changed since the last version of it.
 
 The description is `.github/pull_request_template.md` filled in. The template is the single source of the
 headings and of what each section holds; this rule only adds the examples. Six sections, in this order, under
-exactly these headings: a heading is never renamed, reordered, merged or dropped. Related Issue and Motivation and
-Context may stay empty; the other four always hold text. Every `<!--- hint -->` is replaced by the section's text
-or deleted; none is left in the description. GitHub renders every newline as a line break, so the text is not
+exactly these headings: a heading is never renamed, reordered, merged or dropped. Every section holds text; a
+section with nothing to say holds its one-line placeholder (`No related issue.`, `Covered by Overview.`,
+`Nothing a user notices.`), never a bare heading. Every `<!--- hint -->` is replaced by the section's text or the
+placeholder; none is left in the description. GitHub renders every newline as a line break, so the text is not
 wrapped at 72 or 80 columns.
 
 ```markdown
@@ -88,9 +89,11 @@ wrapped at 72 or 80 columns.
 
 ## Related Issue
 <!--- Links to the GitHub issues or Jira tasks this pull request belongs to, one per line. `Closes #42` closes the issue on merge. -->
+<!--- `No related issue.` when there is none. -->
 
 ## Motivation and Context
-<!--- Why the change is needed and what problem it solves, when Overview does not already say it. May stay empty. -->
+<!--- Why the change is needed and what problem it solves, when Overview does not already say it. -->
+<!--- `Covered by Overview.` when Overview already says it. -->
 
 ## Technical changes
 <!--- What changed in the code, for the reviewer: the approach, new or changed units, contracts and wiring, a migration or a renamed key. -->
@@ -121,12 +124,13 @@ line is added only when it applies:
 ### Related Issue
 
 Links to the GitHub issues or Jira tasks this pull request belongs to, one per line: `Closes #42` closes the issue
-on merge; a Jira task is its URL (`https://flipper.atlassian.net/browse/MOB-3270`). Empty when there is none.
+on merge; a Jira task is its URL (`https://flipper.atlassian.net/browse/MOB-3270`). `No related issue.` when
+there is none.
 
 ### Motivation and Context
 
 Why the change is needed and what problem it solves, when Overview does not already say it: the bug a user hit,
-the design decision, the experiment behind a flag. May stay empty.
+the design decision, the experiment behind a flag. `Covered by Overview.` when Overview already says it.
 
 ### Technical changes
 

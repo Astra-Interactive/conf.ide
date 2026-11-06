@@ -7,9 +7,11 @@
 
 ## Related Issue
 <!--- Links to the GitHub issues or Jira tasks this pull request belongs to, one per line. `Closes #42` closes the issue on merge. -->
+<!--- `No related issue.` when there is none. -->
 
 ## Motivation and Context
-<!--- Why the change is needed and what problem it solves, when Overview does not already say it. May stay empty. -->
+<!--- Why the change is needed and what problem it solves, when Overview does not already say it. -->
+<!--- `Covered by Overview.` when Overview already says it. -->
 
 ## Technical changes
 <!--- What changed in the code, for the reviewer: the approach, new or changed units, contracts and wiring, a migration or a renamed key. -->
