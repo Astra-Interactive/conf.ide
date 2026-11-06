@@ -8,7 +8,7 @@ Always give lambda parameters explicit, meaningful names.
 
 ```kotlin
 loadRequest().let {
-    println("$it")
+    logger.info("Loaded $it")
 }
 ```
 
@@ -16,7 +16,7 @@ loadRequest().let {
 
 ```kotlin
 loadRequest().let { request ->
-    println("$request")
+    logger.info("Loaded $request")
 }
 ```
 

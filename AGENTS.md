@@ -53,6 +53,7 @@ reading them here first. A new document goes into one of these lists and keeps i
 - [.claude/docs/no-callbacks.kt.md](.claude/docs/no-callbacks.kt.md)
 - [.claude/docs/no-it.kt.md](.claude/docs/no-it.kt.md)
 - [.claude/docs/no-pair.kt.md](.claude/docs/no-pair.kt.md)
+- [.claude/docs/no-print.kt.md](.claude/docs/no-print.kt.md)
 - [.claude/docs/notes.kt.md](.claude/docs/notes.kt.md)
 - [.claude/docs/testing.kt.md](.claude/docs/testing.kt.md)
 - [.claude/docs/testing-no-useless.kt.md](.claude/docs/testing-no-useless.kt.md)
