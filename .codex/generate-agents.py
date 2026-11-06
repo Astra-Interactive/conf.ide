@@ -46,8 +46,6 @@ TOOL_NAMES = {
     "MultiEdit": "apply_patch",
     "Bash": "shell",
     "LSP": "the lsp MCP server",
-    "Grep": "grep",
-    "Glob": "glob",
     "WebSearch": "web search",
     "WebFetch": "web fetch",
 }

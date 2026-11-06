@@ -41,4 +41,6 @@ Always prefer `codebase-memory-mcp` tools over plain `ls`/`grep`/`find` for code
 - `get_architecture` — project structure overview.
 - `search_code` — graph-augmented text search across the codebase.
 
-`Grep`/`Glob`/`Read` are acceptable only for non-code files (configs, docs, resources) and for reading a file before editing it.
+File reads and shell search (`rg`, `grep`, `find`) are acceptable only for non-code files (configs, docs,
+resources) and for reading a file before editing it. A read-only agent's shell guard
+(`.claude/hooks/readonly-guard.sh`) allows less: such an agent reads non-code files with its file-read tool.

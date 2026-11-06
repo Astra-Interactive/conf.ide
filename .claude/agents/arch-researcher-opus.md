@@ -1,7 +1,7 @@
 ---
 name: arch-researcher-opus
 description: Researches how to lay out source code inside modules and packages so a human can read the tree. One of two independent researchers; use for the package-layout research and the debate rounds that follow it.
-tools: WebSearch, WebFetch, Read, Grep, Glob, Bash, Write
+tools: WebSearch, WebFetch, Read, Bash, Write
 model: claude-opus-5-5
 effort: xhigh
 omitClaudeMd: true

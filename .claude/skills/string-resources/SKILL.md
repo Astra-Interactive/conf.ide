@@ -78,7 +78,7 @@ common_action_ok         Ok
 common_error_unknown     Unknown error
 ```
 
-Grep for the English text before adding a string. If it is already in `common_`, use it.
+Search for the English text with `rg` before adding a string. If it is already in `common_`, use it.
 
 Same English is not the same translation. "Name" as a form-field caption and "Name" as the device's name
 are different words in German and Russian. Merge freely for `_action` and `_error`: a Cancel button is a
@@ -120,8 +120,8 @@ Russian has three forms, Arabic has six, and the one-vs-many check silently prod
 
 ## Procedure
 
-1. Grep the English text across every `strings.xml`. An existing key, in `common_` or in the feature,
-   wins over a new one; see the merge caveat above before reusing a `_label` or `_title`.
+1. Search the English text across every `strings.xml` with `rg`. An existing key, in `common_` or in the
+   feature, wins over a new one; see the merge caveat above before reusing a `_label` or `_title`.
 2. Build the key by the rule and check it against the suffix table and the banned prefixes.
 3. Add it to the base locale file of the unit that owns the feature:
    Android `src/main/res/values/strings.xml`, Compose Multiplatform

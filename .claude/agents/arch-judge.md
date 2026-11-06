@@ -1,7 +1,7 @@
 ---
 name: arch-judge
 description: Makes the final decision on the package-layout rules after the researchers' debate. Reads the reports, the debate transcript and the user's constraints, and returns one coherent set of rules with the reasoning behind each choice.
-tools: WebSearch, WebFetch, Read, Grep, Glob, Bash, Write
+tools: WebSearch, WebFetch, Read, Bash, Write
 model: claude-opus-5-5
 effort: xhigh
 omitClaudeMd: true

@@ -1,7 +1,7 @@
 ---
 name: arch-moderator
 description: Moderates the debate between the two package-layout researchers. Reads both reports, finds the real disagreements and weak claims, and writes the questions each researcher must answer in the next round.
-tools: WebSearch, WebFetch, Read, Grep, Glob, Bash, Write
+tools: WebSearch, WebFetch, Read, Bash, Write
 model: claude-opus-5-5
 effort: xhigh
 omitClaudeMd: true
