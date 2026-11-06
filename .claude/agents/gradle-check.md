@@ -21,8 +21,10 @@ different flags, change configuration, or explain causes.
 
 Steps:
 
-1. Run exactly the tasks given, in one invocation when they share a project:
-   `./gradlew <tasks> --console=plain --continue 2>&1 | tail -n 400`.
+1. Run exactly the tasks given, in one invocation when they share a project.
+   Claude Code: `./gradlew <tasks> --console=plain --continue 2>&1 | tail -n 400`.
+   Codex: `./gradlew <tasks> --console=plain --continue` as a bare command, with no shell wrapper, pipe
+   or redirect; the approval rule matches the bare prefix and anything else prompts the user.
    With no tasks given, run `./gradlew detekt test` and, when the project has it, `architectureLint`.
 2. The exit code of `./gradlew` is the result. Parsed text never overrides it.
 3. Collect, in this order, from the output and from `build/reports` or `build/test-results` when they

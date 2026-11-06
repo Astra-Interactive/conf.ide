@@ -40,6 +40,15 @@ the cap, when to spawn a subagent, and which one.
 | A Minecraft crash log | `minecraft-crash-analyst` | sonnet |
 | A perps position against the playbook | `perps-risk-reviewer` | sonnet |
 
+### Codex
+
+* `.codex/agents/*.toml` is generated from `.claude/agents/*.md` by `.codex/generate-agents.py`
+  and is not in git. Edit the markdown and rerun the script; never edit a `.toml` by hand.
+* Codex gives a subagent no tool list, no hooks and no sandbox of its own, so the read-only guards
+  are text in `developer_instructions` there. The agent is bound by them exactly as by the hook.
+* The hooks in `.codex/hooks.json` run the scripts in `.claude/hooks`. Codex skips a new or changed
+  hook until it is trusted in `/hooks`.
+
 ### What every subagent must hear
 
 * Read `AGENTS.md` and the documents it links before the first tool call. The reviewers in this list

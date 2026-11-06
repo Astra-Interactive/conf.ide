@@ -2,6 +2,7 @@
 # PreToolUse guard for read-only agents: lets Bash run inspection commands only.
 # Usage in agent frontmatter: readonly-guard.sh [research|gradle|docker]
 # Exit 2 blocks the call and sends stderr to the agent. Written for bash 3.2.
+# The allowlist is repeated as text in .codex/generate-agents.py; change both together.
 
 MODE="${1:-research}"
 INPUT=$(cat)
