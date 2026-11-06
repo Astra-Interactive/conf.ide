@@ -3,7 +3,7 @@ name: research-only
 description: Answers a question about the code without changing anything. Use for "find out why", "how does X work", "where is Y decided", root-cause analysis before a fix, and any prompt that is a question rather than a task. Cannot write, edit, or run state-changing commands.
 tools: Read, LSP, Bash, WebSearch, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__query_graph, mcp__codebase-memory-mcp__get_architecture, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__list_projects, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository, mcp__codebase-memory-mcp__check_index_coverage
 model: opus
-color: blue
+color: cyan
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

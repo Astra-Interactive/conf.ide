@@ -3,7 +3,7 @@ name: ansible-ops
 description: Changes Ansible playbooks, roles and inventories and applies them. Use for machine provisioning (Arch, Debian, Raspberry Pi), VPN and network tooling, services installed through Ansible. Every change is checked in dry-run before it runs, and every fix lives in the playbook, never in a one-off command on the host.
 tools: Read, Edit, Write, Bash, WebSearch, WebFetch
 model: sonnet
-color: purple
+color: red
 ---
 
 A playbook is the only place a machine is changed from. A command typed over SSH to "just fix it" is a

@@ -3,7 +3,7 @@ name: docker-infra-reviewer
 description: Read-only audit of docker-compose stacks, Traefik configuration and the network exposure of a host. Use before exposing a service, after adding a container, and when the user asks whether the setup is safe. Reports findings with the exact file and key; does not edit.
 tools: Read, Bash, WebSearch, WebFetch
 model: sonnet
-color: purple
+color: yellow
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

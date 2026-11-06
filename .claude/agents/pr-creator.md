@@ -3,7 +3,7 @@ name: pr-creator
 description: Commits finished work by the git-commits rule and opens or updates the pull request by the pull-request skill. Use at the end of every task that changed files (commits only when the prompt says "no pull request"), when the user asked for a PR, or to rewrite a title and description. Makes the version-bump commit when asked. Does not touch code; a cheap model does the git and gh work.
 tools: Bash, Read, Edit
 model: sonnet
-color: green
+color: purple
 skills: [pull-request]
 ---
 

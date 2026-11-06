@@ -5,7 +5,7 @@ tools: WebSearch, WebFetch, Read, Bash, Write
 model: claude-opus-5-5
 effort: xhigh
 omitClaudeMd: true
-color: red
+color: cyan
 ---
 
 You are the final judge on one coding rule or convention, the question in the task; package layout is

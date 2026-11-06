@@ -3,7 +3,7 @@ name: gradle-check
 description: Runs Gradle tasks (tests, detekt, architectureLint, assemble) and returns a short structured result. The route for every fix-and-rerun loop and every build whose output can exceed about 200 lines; Gradle output never reaches the caller raw. Does not diagnose and does not edit; failures go to test-triage.
 tools: Bash, Read
 model: haiku
-color: green
+color: blue
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

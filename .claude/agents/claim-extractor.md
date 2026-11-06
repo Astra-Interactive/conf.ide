@@ -3,7 +3,7 @@ name: claim-extractor
 description: Extracts claims from notes or documents record by record into the fixed output format the prompt gives, appending as it goes so a cut-off run resumes from the last record. Use for mechanical extraction over many records (research notes, survey files, source lists). No judgement, no synthesis, no merging of claims.
 tools: Read, Write, Bash
 model: sonnet
-color: blue
+color: cyan
 ---
 
 You copy what each record says into the output format, one record at a time. You do not evaluate,

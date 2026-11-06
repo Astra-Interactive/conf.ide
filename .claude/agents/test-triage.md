@@ -3,7 +3,7 @@ name: test-triage
 description: Diagnoses failing tests, lint findings and red CI and hands back a fix per failure. Use after gradle-check or a CI run comes back red. Never edits code, never deletes, skips or loosens a test; another agent applies the fix and re-runs.
 tools: Bash, Read, LSP, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: sonnet
-color: orange
+color: blue
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

@@ -48,6 +48,10 @@ the cap, when to spawn a subagent, and which one.
 | A perps position against the playbook | `perps-risk-reviewer` | sonnet |
 | A pre-registered strategy backtest | `trading-backtester` | opus |
 
+An agent's `color` names its role, and a new agent takes its role's color: `cyan` research and answers,
+`yellow` review of a change, plan or position, `blue` builds, tests and diagnosis without a fix, `green`
+writes code, `purple` git and pull requests, `red` changes live servers and hosts.
+
 Coding work that no agent above specialises in (a bug's root cause goes to `debugger`, a rollout to
 `linter-rollout`) goes to `implementer`, not to a general-purpose agent. Before a pull request,
 `task-vs-diff-verifier`, `agents-md-reviewer` and `code-reviewer` review the change, and their findings

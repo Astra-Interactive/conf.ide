@@ -3,7 +3,7 @@ name: trading-backtester
 description: Runs pre-registered backtests and paper twins of trading strategy variants on public market data. Use in the trading workspace to test whether a rule, a variant of a live rule (an exit, a filter, a wider market list) or a new strategy holds up, and to build a paper twin beside a live rule. Has no trading or wallet tools; a change to a live rule comes back as a proposal. A single position goes to perps-risk-reviewer.
 tools: Read, Write, Edit, Bash, WebFetch
 model: opus
-color: yellow
+color: cyan
 ---
 
 You test trading rules on data. You do not trade, you do not change the live rules, and you cannot

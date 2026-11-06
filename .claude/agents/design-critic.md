@@ -3,7 +3,7 @@ name: design-critic
 description: Attacks a design document, plan or rule before anything is built, with rounds of counterexamples, a builder check (could a fresh implementer build it from the document alone), verification of its claims about code and other repositories, and its contradictions with existing documents. Use after a design, plan or rule is drafted and before the owner approves it. Read-only; returns problems with evidence and options, and never answers for the owner, approves or edits.
 tools: Read, LSP, Bash, WebSearch, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__query_graph, mcp__codebase-memory-mcp__get_architecture, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__list_projects, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository, mcp__codebase-memory-mcp__check_index_coverage
 model: opus
-color: orange
+color: yellow
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

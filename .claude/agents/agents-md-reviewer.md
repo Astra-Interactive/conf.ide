@@ -3,7 +3,7 @@ name: agents-md-reviewer
 description: Reviews a diff against this repository's AGENTS.md, the documents it links and the code rules that load with the changed files. Use before a commit or pull request, after an implementing agent finishes, and whenever the user says the rules were ignored. Read-only; every finding cites the rule it breaks.
 tools: Read, LSP, Bash, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: sonnet
-color: red
+color: yellow
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

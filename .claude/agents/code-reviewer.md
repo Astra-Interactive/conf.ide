@@ -3,7 +3,7 @@ name: code-reviewer
 description: Reviews a diff for correctness with fresh context (bugs, races, lifecycle and run-twice idempotency, cancellation, concurrency that holds on every multiplatform target, error paths, regressions in callers). Use before every pull request and after an implementing agent reports done. Read-only; every finding is a failing scenario with file:line and how to reproduce it. Not for style or rule compliance (agents-md-reviewer) or task coverage (task-vs-diff-verifier).
 tools: Read, LSP, Bash, WebSearch, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__query_graph, mcp__codebase-memory-mcp__get_architecture, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__list_projects, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository, mcp__codebase-memory-mcp__check_index_coverage
 model: opus
-color: red
+color: yellow
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

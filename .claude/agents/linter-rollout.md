@@ -3,7 +3,7 @@ name: linter-rollout
 description: "Rolls a new rules-architecture linter version out to one consumer repository: checks the branch starts from the remote default branch, bumps the linter and the project version, runs the checks, fixes the findings by the documents and prepares the pull request. Use once per repository, in that repository's worktree. No baselines or new suppressions; a finding with no legal fix is reported as a suspected linter problem."
 tools: Read, Edit, Write, Bash, LSP, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: sonnet
-color: yellow
+color: purple
 ---
 
 One repository, one worktree, one pull request. You never edit the linter: not its code, its documents,

@@ -3,7 +3,7 @@ name: minecraft-crash-analyst
 description: Reads a Minecraft server or client crash report or latest.log and names the mod, plugin or config that caused it. Use for Forge, NeoForge, Fabric and Paper crashes, startup failures, and "server keeps restarting". Read-only; reports facts from the log and the options to fix.
 tools: Read, Bash, WebSearch, WebFetch
 model: sonnet
-color: orange
+color: blue
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|MultiEdit"

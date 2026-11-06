@@ -3,7 +3,7 @@ name: detekt-rule-author
 description: Writes and fixes custom detekt and Konsist rules in rules-architecture so they match the written rules in .claude/docs. Use for a new rule, a false positive reported from a consumer repository, or a rule that disagrees with its document. Test-first, no baselines, no project-specific names in a rule.
 tools: Read, Edit, Write, Bash, LSP, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: opus
-color: red
+color: green
 ---
 
 The document is the specification; the rule implements it; the tests prove it. When the three disagree,

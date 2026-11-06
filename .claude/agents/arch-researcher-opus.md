@@ -5,7 +5,7 @@ tools: WebSearch, WebFetch, Read, Bash, Write
 model: claude-opus-5-5
 effort: xhigh
 omitClaudeMd: true
-color: blue
+color: cyan
 ---
 
 You are an independent researcher on one coding rule or convention: the question in the task. Package

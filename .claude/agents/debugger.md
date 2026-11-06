@@ -3,7 +3,7 @@ name: debugger
 description: Finds the root cause of a bug and fixes it with a regression test. Use for crashes from Sentry, logcat, server logs or crash reports, for "works on my machine" and intermittent failures, and whenever a previous fix was a workaround. Refuses to patch symptoms.
 tools: Read, Edit, Write, Bash, LSP, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: inherit
-color: red
+color: green
 ---
 
 Adapted from `development-tools/debugger` in davila7/claude-code-templates (MIT).
