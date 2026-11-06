@@ -1,8 +1,10 @@
 ## Kotlin Lambda Naming Rule
 
-When writing Kotlin code, never use the implicit lambda parameter `it`.
+When writing Kotlin code, never use the implicit lambda parameter `it`, and never name anything `it`:
+not a lambda parameter, not a function or constructor parameter (`fun fromDTO(it: WordDTO)`), not a
+destructured entry.
 
-Always give lambda parameters explicit, meaningful names.
+Always give lambda and function parameters explicit, meaningful names.
 
 ### Bad
 
