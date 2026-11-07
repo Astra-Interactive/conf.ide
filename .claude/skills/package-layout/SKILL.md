@@ -64,9 +64,9 @@ Path: `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the 
 kind, asked in this order:
 1. Contract → `api`; a use case's or a state holder's interface → `usecase` or the state-holder kind, with its
    implementation; in an app, when another unit calls it, the interface in that kind of the owner's `api`
-   unit. A Kotlin test fake → `fake`, following the test-sharing layout in `arch-package.kt.md`; a preview
-   stub → `stub`. Implements, wraps or narrows a contract (a cache included) → beside the other
-   implementations, in storage when it caches storage.
+   unit. A test fake → `fake`, following the test-sharing layout of the language companion
+   (`arch-package.kt.md`, `arch-package.rs.md`); a preview stub → `stub`. Implements, wraps or narrows a
+   contract (a cache included) → beside the other implementations, in storage when it caches storage.
 2. Data class, result, error, event, config → `model`, as data (`arch-domain.md`: fields, nested types,
    constants, an invariant check). A rule over a type → an extension of that type in `util`
    (`arch-domain.md`).
@@ -113,7 +113,9 @@ is, even where it breaks the DI rule.
 A model rule directly; a use case with fakes or an in-memory implementation; a technology implementation
 against the real technology in a test; the wired plugin in the entry-point unit. Shared KMP fakes are public
 in `<feature>/fake`'s `commonMain`, under `<concept>/fake`, and consumed only by test source sets. JVM shared
-fakes use `testFixtures`; ordinary same-unit fakes stay in the test tree.
+fakes use `testFixtures`; ordinary same-unit fakes stay in the test tree. Rust: same-crate fakes in
+`test/<concept>/fake/`; shared fakes in the owning crate's `fixture/` tree behind its `fake` feature, enabled
+only in other crates' `[dev-dependencies]`.
 
 ## 3. When no kind fits
 
@@ -208,11 +210,20 @@ components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckSubscr
                                offer/di/PaymentModule.kt; androidMain at the same paths
 ```
 
-### A Rust crate
+### A Rust workspace
 
-Rust follows `arch-package.rs.md` and `arch-domain.rs.md`: a context block holds its use cases and kind
-blocks. Of this skill, the procedure of section 1, T5, T6, T8 and the checklist items that do not name
-Kotlin or Gradle apply; T1–T4 and T7 do not.
+Rust follows the same procedure, decision tests and checklist; `arch-package.rs.md` translates them: a unit is
+a crate under `modules/` (an entry point under `instances/`, tooling in `xtask`), a package is a module block
+of the root file, a source set is code under a target `cfg`, shared test fakes are the `fixture/` tree of the
+crate that owns the trait behind its `fake` feature, and procedural macros are a `proc-macro` crate.
+
+```
+modules/billing/api       shop-billing-api: src/invoice/{api,model,usecase,util,file,di}/…, test/invoice/…,
+                          fixture/invoice/fake/fake_invoice_repository.rs ([features] fake = [])
+modules/billing/command   shop-billing-command: [dev-dependencies] shop-billing-api with features = ["fake"]
+instances/cli             shop-cli: src/main.rs (runtime, RootModule), src/di/root_module.rs
+xtask                     cargo xtask <task>
+```
 
 ## 5. Before the final message
 
@@ -246,8 +257,8 @@ line. A "no" is fixed by moving the new file, never an old one.
 10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
     units use, in the `util` of the model's own unit?
 11. Does every class with behaviour and every error type have its own file, and every extension sit in
-    `util/<Subject>Ext.kt` (or, for a type the project does not declare, `private` in the one Compose
-    composable file that uses it)? Does any `util` hold a class or an `object` declaration (an anonymous
+    `util/<Subject>Ext.kt` (Rust: `util/<type>_ext.rs`), or, for a type the project does not declare, `private`
+    in the one Compose composable file that uses it? Does any `util` hold a class or an `object` declaration (an anonymous
     `object :` of a bridge is allowed)? Does any top-level function take a type as a parameter where an
     extension of that type is the rule?
 12. Does every cache sit in storage, every start-up seed in `warmup` of the unit it seeds, every failure
@@ -255,13 +266,15 @@ line. A "no" is fixed by moving the new file, never an old one.
 13. Does `model` import no kind but other `model` packages, and no platform or ORM type (Compose types only in
     a UI unit's `model`, a framework's exception subclasses only in the unit of that framework's entry point)?
     Do `api` and `usecase` import no platform type? Does a plugin's `api` unit declare no platform dependency?
-14. Do production dependencies follow the table in `arch-context.md` without cycles, with the Kotlin
-    test-sharing exceptions confined to test dependencies and each compilation's graph acyclic?
+14. Do production dependencies follow the table in `arch-context.md` without cycles, with the test-sharing
+    exceptions (Kotlin `testFixtures` and fake units, the Rust `fake` feature) confined to test dependencies
+    and each compilation's graph acyclic?
 15. Does every new unit that assembles dependencies have its own DI module, with its own `lifecycle` when it
     starts or stops something? Does it manage only DI modules it directly creates, never injected modules,
     and did the existing DI wiring stay as it was?
 16. Are tests mirrored package for package, fakes in `fake/`, in-memory implementations in `memory`? Are
-    shared Kotlin fakes exported through `testFixtures` or a KMP fake unit's `commonMain`, consumed only by tests?
+    shared fakes exported through Kotlin `testFixtures`, a KMP fake unit's `commonMain`, or a Rust crate's
+    `fixture/` tree behind its `fake` feature enabled only in `[dev-dependencies]`, and consumed only by tests?
 17. Does the final message list the old files the rules would move, and where?
 
 Run the project's configured checkers for mechanical requirements. Review uncovered checklist items by hand

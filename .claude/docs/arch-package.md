@@ -26,11 +26,11 @@ Terms used below:
      plugin's main class; an Android `Application` and its `Activity`) and `RootModule`, nothing else. Nothing
      depends on it. An application may have several, one per platform or a debug instance;
    - **`core`**: the common unit for what is not worth a unit of its own: config, translation and permission
-     models, shared helpers, shared coroutine scopes, small platform pieces. It holds no use case and no
-     repository, and depends on no feature unit. It may be split by platform (`core/api`, `core/bukkit`) and, in an app
-     with Compose, into a design-system unit (`core/ui`);
+     models, shared helpers, shared coroutine scopes (Rust: a `TaskScope`, `async.rs.md`), small platform
+     pieces. It holds no use case and no repository, and depends on no feature unit. It may be split by
+     platform (`core/api`, `core/bukkit`) and, in an app with Compose, into a design-system unit (`core/ui`);
    - a **`<context>/contract`** unit for the wire types a server and its client share;
-   - a **tooling unit** with no product code: `build-logic`, an `xtask` crate, a `<feature>/fake` unit.
+   - a **tooling unit** with no product code: `build-logic`, an `xtask` crate, a Kotlin `<feature>/fake` unit.
    A published library (AstraLibs) is a dependency of a project, not one of its units.
 2. A context is cut into sub-context units. The author decides the cut; the sub-context kinds in Terms are
    examples, not a closed list. An agent proposes the cut and asks the user (see the skill); without an
@@ -38,21 +38,23 @@ Terms used below:
    a merge the user asks for goes through the approval of Existing code.
 3. Paths: in a project with one context, `modules/<sub-context>` (AstraRating: `modules/command`,
    `modules/gui`, `modules/data`); with several contexts, `modules/<context>`, and
-   `modules/<context>/<sub-context>` once the author cuts it. A unit's root package follows the unit path in
-   the project's existing convention (the Kotlin companion gives the mechanics).
-4. **Plugin** (separate Gradle JVM builds per platform): when the author splits a sub-context by platform
-   (the agent asks, as in 2), it becomes an `api` unit and one unit per platform (`gui/api`, `gui/bukkit`,
-   `gui/forge`). The `api` unit holds the platform-free code other units call: models, use cases, contracts
-   and their platform-free implementations. The platform unit holds everything that imports the platform, and
+   `modules/<context>/<sub-context>` once the author cuts it. A unit's root package (in Rust, its crate name)
+   follows the unit path in the project's existing convention (the language companions give the mechanics).
+4. **Plugin** (a separate build per platform: Gradle JVM builds, or Rust crates per host framework): when
+   the author splits a sub-context by platform (the agent asks, as in 2), it becomes an `api` unit and one
+   unit per platform (`gui/api`, `gui/bukkit`, `gui/forge`). The `api` unit holds the platform-free code
+   other units call: models, use cases, contracts and their platform-free implementations. The platform unit
+   holds everything that imports the platform, and
    platform-free code that only it uses (a local use case or `RatingSlotKey`). There is no `impl` unit: in a plugin it would add
    modules and make nothing easier. A sub-context that is not split is one unit, platform imports included
    (`modules/command`, `modules/event-bukkit`). Storage that several sub-contexts use, or a technology heavy
    enough for its own build (Exposed, Room), is a contracts unit plus one unit per technology (`data/dao`,
    `data/exposed`). Storage of one sub-context in files or in memory is a technology package of that
    sub-context (`jail/file`).
-5. **App** (Kotlin Multiplatform, Android): a feature others depend on is an `api` unit (contracts, the
-   models in their signatures, the `util` rules of those models, stubs) plus an `impl` unit (the implementation and its use cases). Platform
-   code is a source set of the unit, never a unit.
+5. **App** (Kotlin Multiplatform, Android, and every Rust project that is not a plugin): a feature others
+   depend on is an `api` unit (contracts, the models in their signatures, the `util` rules of those models,
+   stubs) plus an `impl` unit (the implementation and its use cases). Platform code is a source set of the
+   unit (in Rust, code under a target `cfg`), never a unit.
 6. A use case that several production units need lives in the `api` unit of the sub-context that owns the
    operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an
    app, the `usecase` package of the owner's `api` unit holds the use case's interface and the `usecase` package
@@ -131,16 +133,16 @@ root package of the entry-point unit, which holds the classes the platform const
    | `api` | contracts of the concept: interfaces other files or units call |
    | `model` | the level's own types: data classes, sealed results, error families (one file each), events, config models |
    | `usecase` | operations named `<Verb><Object>UseCase` |
-   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` declaration (an anonymous `object :` of a bridge is allowed, `arch-package.kt.md`) |
+   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` declaration (an anonymous `object :` of a bridge is allowed, `arch-package.kt.md`; in Rust an extension is a method of an `impl <Type>` block in `util/<type>_ext.rs`, or of a `<Type>Ext` trait when another crate declares the type, `arch-package.rs.md`) |
    | `di` | the DI modules of the level (see the DI rule) |
    | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service` (run on a timer or its own lifecycle); for UI, see below |
    | `theme` | Compose only: the values (timings, spacing, tokens) several composables of the level share, as an `object` of values; in the design-system unit also the theme itself, its `CompositionLocal`s and the `@Composable` theme function (`compose.kt.md`) |
    | `warmup` | a task the platform runs once at start to seed state (`RatingCacheWarmUp`), in the unit of the state it seeds |
    | `migration` | code that converts stored data or config from an old format, inside the concept it migrates (`core/settings/migration/ConfigSnakeCaseMigration.kt`) |
    | `error` | classes that turn a failure into the user's reply, in the unit of the mechanism that fails (`command/error/CommandExceptionHandler.kt`) |
-   | technology packages | implementations of a contract and the classes they use, or generic code that units of two sub-contexts need, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` |
+   | technology packages | implementations of a contract and the classes they use, or generic code that units of two sub-contexts need, named by the library it uses (`exposed`, `krate`, `ktor`, `room`, `cache4k`) or by `file`, `memory` (Rust also `system`, `arch-package.rs.md`) |
    | `stub` | a stub or preview implementation of a contract that other units need |
-   | `fake` | Kotlin test implementations that script failures or record calls; in test sources or `testFixtures`, or in `commonMain` of a dedicated `<feature>/fake` unit; consumed only by test source sets |
+   | `fake` | test implementations that script failures or record calls; in test sources or `testFixtures` (in Rust, the crate's `test/` tree, or its `fixture/` tree behind the `fake` feature), or in `commonMain` of a dedicated Kotlin `<feature>/fake` unit; consumed only by tests |
    | `table`, `entity`, `database` | only in a unit that is wholly one technology: its tables, its row entities, its connection |
 
 4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose and are used only
@@ -203,8 +205,9 @@ root package of the entry-point unit, which holds the classes the platform const
   unit and `Default…` in `impl`, as a use case's (`payment/api/offer/component/OfferComponent`,
   `payment/impl/offer/component/DefaultOfferComponent`). A contract's implementation sits in the technology's
   package or unit, under the same concept, and is named by its technology or variant
-  (`ExposedRatingRepository`, `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). Kotlin test fakes
-  use the `fake` kind and the test-sharing layout in `arch-package.kt.md`; preview stubs use `stub`.
+  (`ExposedRatingRepository`, `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). Test fakes use
+  the `fake` kind and the test-sharing layout of the language companion (`arch-package.kt.md`,
+  `arch-package.rs.md`); preview stubs use `stub`.
   `Impl`, the `I` prefix and the `Interface` suffix are forbidden. `database`, `network`, `local` and `remote` are not
   technology names. An implementation with no technology and no variant, such as an app's use case or a state
   holder behind its interface, is named `Default<Interface>` (`DefaultAddRatingUseCase`).

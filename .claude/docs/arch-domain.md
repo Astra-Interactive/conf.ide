@@ -11,11 +11,14 @@ import and Validation apply to every context.
 
 - The model is data: a `data class` holds fields, the data classes and enums nested in it that only it uses, a
   `companion object` of constants, and, for a value object with an invariant, the check of that invariant in
-  its constructor; never a function. A rule about one type is an extension of that type in
-  `util/<Type>Ext.kt`, returning a copy or a decision and taking what it needs as parameters
-  (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
+  its constructor; never a function (Rust adds the constructor and an accessor per private field, having no
+  read-only field; `arch-domain.rs.md`). A rule about one type is an extension of that type in
+  `util/<Type>Ext.kt` (in Rust, a method of an `impl <Type>` block in `util/<type>_ext.rs`, or of a
+  `<Type>Ext` trait when another crate declares the type), returning a copy or a decision and taking what it
+  needs as parameters (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
   `fun Dictionary.canRead(user: User?)` in `dictionary/util/DictionaryExt.kt`). It is never a member of the
-  type, and never a top-level function that takes the type as a parameter.
+  type (in Rust, never in the type's own file), and never a top-level function that takes the type as a
+  parameter.
 - A rule spanning several types is a top-level function in the same `util`, in a file named after the
   decision (`fun isWithinLimit(transfer: Transfer, limit: AccountLimit): Boolean` in `TransferLimit.kt`).
 - The `util` is that of the level that uses the rule, whichever unit the type comes from
@@ -104,7 +107,8 @@ which lives in `service/`.
   (`PlayerJailed`); a sealed family of events is named `<Subject>Event` and its variants in the past tense
   (`TimerEvent.Started`). Which types are events, and the past tense, are the reviewer's call.
 - An event another unit of the project listens to is such a model type in the publisher's `api` unit,
-  published through a publisher contract there (`val events: Flow<PlayerJailed>`); it depends on no platform.
+  published through a publisher contract there (`val events: Flow<PlayerJailed>`; Rust: a `BoxStream`,
+  `arch-domain.rs.md`); it depends on no platform.
   A platform event type (a Bukkit `Event` subclass, `PlayerJailedEvent`) is declared only for other plugins:
   it keeps the platform's `Event` suffix, wraps the model event in the `event` kind of the platform unit, and
   no unit of the project listens to it.
@@ -115,12 +119,13 @@ which lives in `service/`.
 
 - A factory exists only when creating an aggregate involves a rule, and then it is a top-level function in the
   aggregate's `util` returning a `Result`
-  (`fun createJail(name: String, location: JailLocation): Result<Jail>`), never a companion `create`: the
-  model is data.
+  (`fun createJail(name: String, location: JailLocation): Result<Jail>`), never a companion `create` (in
+  Rust, never an associated function of the model type): the model is data.
 - The construction of dependencies belongs to `di/` and is not called a factory. A `Factory` class for a
   single implementation is forbidden. The exception is an object that needs arguments known only when it is
   created (a UI component's context and callbacks): its `fun interface Factory` is nested in the type it
-  builds, its interface when it has one, and a DI module implements it.
+  builds, its interface when it has one (Rust cannot nest a trait: a trait `<Type>Factory` in that type's
+  file), and a DI module implements it.
 
 ### What the model may import
 

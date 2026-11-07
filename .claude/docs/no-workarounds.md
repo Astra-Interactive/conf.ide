@@ -8,11 +8,12 @@ explanation is a workaround, and it is reverted when it is found.
 Each of these has been written into this codebase by an agent and taken out again:
 
 * a `delay`, `sleep`, poll, retry loop or timeout added to hide a race or an ordering problem;
-* catching a broad exception type, swallowing a cancellation, wrapping the symptom in `runCatching`
-  or `unwrap_or_default` so that the error does not surface;
+* catching a broad exception type, swallowing a cancellation or a task's `JoinError`, wrapping the symptom
+  in `runCatching` or `unwrap_or_default` so that the error does not surface;
 * a suppression annotation, a lint baseline, a disabled rule, a lint error turned into a warning;
-* a keep-alive, a lock in multiplatform code, a blocking call inside suspending code, a reflection
-  call, a hard-coded value where the real value could not be found;
+* a keep-alive, a lock in multiplatform code, a blocking call inside suspending or `async` code (a Rust lock
+  whose guard no `.await` crosses is not one: `async.rs.md`, Shared state and locks), a reflection call, a
+  hard-coded value where the real value could not be found;
 * turning off a build feature (isolated projects, the configuration cache, a test) because it failed;
 * a cast or a null check that silences the compiler where the type was wrong;
 * a fix in the consumer of a library for a bug that is in the library.
