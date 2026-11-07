@@ -9,16 +9,19 @@ When writing or modifying code, order declarations by dependency, not by call-si
    below).
 2. Then the file's type: its definition, its inherent `impl` block, then its trait `impl` blocks, then the data
    types only it uses, each with its own `impl` blocks. Inside an `impl` block the constructors come first:
-   `new`, `with_…`, `from_…`, every associated function without `self` that returns `Self`. In a trait `impl`,
-   the associated types and constants the trait requires come first.
+   `new`, `with_…`, `from_…`, every associated function without a `self` receiver that returns `Self`,
+   `Result<Self, _>` or `Option<Self>` (std's `File::open`), the type's own name counting as `Self`. In a trait
+   `impl`, the associated types and constants the trait requires come first.
 3. Functions follow, ordered so that a callee is declared above its caller:
    - if function `a` calls function `b`, `b` appears before `a`;
    - private helpers sit above the functions that use them;
    - lower-level utilities come before higher-level orchestration functions.
 
    This order holds inside one `impl` block and among the free functions of a file that declares no type.
-   Between `impl` blocks rule 2 wins: an inherent method may call a trait method declared below it, because each
-   method lives in exactly one block and calls between blocks go both ways.
+   A constructor is never a caller here: it stays first by rule 2 and may call a helper declared below it, as
+   `TaskScope::new` calls `drain` (`async.rs.md`, Tasks), the way a Kotlin secondary constructor precedes the
+   functions whatever it calls. Between `impl` blocks rule 2 wins: an inherent method may call a trait method
+   declared below it, because each method lives in exactly one block and calls between blocks go both ways.
 4. Never append private helpers after the public functions that depend on them.
 5. Preserve this ordering when refactoring existing code.
 

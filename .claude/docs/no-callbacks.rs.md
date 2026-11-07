@@ -268,13 +268,14 @@ outcome, `Option` when absence is the only failure.
 
 ### Threads
 
-- In application code `std::thread::spawn` and `std::thread::Builder` start only blocking work that runs until
-  shutdown, in a technology module, and the owner joins the thread when it stops. Kotlin uses no `Thread`; Rust
-  keeps this one form because tokio sends such work to an ordinary thread: `spawn_blocking` "is intended for
+- In application code `std::thread::spawn` and `std::thread::Builder::spawn` start only blocking work that runs
+  until shutdown, in a technology module, and the owner joins the thread when it stops. Kotlin uses no `Thread`;
+  Rust keeps this one form because tokio sends such work to an ordinary thread: `spawn_blocking` "is intended for
   non-async operations that eventually finish on their own", its task cannot be aborted, and for work that runs
   indefinitely tokio says to "prefer a dedicated thread created with `thread::spawn`" (tokio 1.54,
-  `spawn_blocking`). `clippy.toml` lists both under `disallowed-methods`, so the function that starts the thread
-  carries `#[expect(clippy::disallowed_methods, reason = "<the work that runs until shutdown>")]`.
+  `spawn_blocking`). `clippy.toml` lists the paths `std::thread::spawn` and `std::thread::Builder::spawn` under
+  `disallowed-methods`, so the function that starts the thread carries
+  `#[expect(clippy::disallowed_methods, reason = "<the work that runs until shutdown>")]`.
 - Blocking work that ends (a file read, a blocking client call, a heavy computation) runs in
   `tokio::task::spawn_blocking` and is awaited. Many CPU-bound computations go to `rayon` when the project already
   depends on it: tokio's documentation of `spawn_blocking` names "specialized CPU-bound executors, such as rayon"

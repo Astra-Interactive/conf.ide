@@ -76,3 +76,11 @@ already at the boundary. A call that takes a `Duration` (`tokio::time::sleep(del
   An elapsed time comes from `std::time::Instant::now()`. No other clock read is called: not `SystemTime::now()`
   elsewhere, not `chrono::Utc::now()`, not `jiff::Timestamp::now()`. A struct takes the `Clock` through its
   constructor, and the DI module passes `SystemClock` (`di-manual-constructors.rs.md`).
+- `clippy.toml` lists the clock reads under `disallowed-methods`: `std::time::SystemTime::now` and
+  `std::time::SystemTime::elapsed`, which reads the wall clock too (`UNIX_EPOCH.elapsed()`), and the time crates'
+  `chrono::Utc::now`, `chrono::Local::now`, `jiff::Timestamp::now`, `jiff::Zoned::now`,
+  `time::OffsetDateTime::now_utc`, `time::OffsetDateTime::now_local` and `time::UtcDateTime::now`, each of these
+  seven time-crate entries with `allow-invalid = true`. Such an entry reports a call wherever its crate is a dependency and is silent
+  elsewhere. Without `allow-invalid`, an entry whose function the build lacks (`chrono` without its `now` feature
+  has no `Utc::now`) prints a configuration warning in every crate that depends on that build, and `-D warnings`
+  does not turn it into an error.

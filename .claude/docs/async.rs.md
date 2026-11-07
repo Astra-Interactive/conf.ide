@@ -24,8 +24,17 @@ a Kotlin contract names `StateFlow`.
   subscribed, and then it stores nothing, so the next subscriber reads the old state.
 
   ```rust
-  state.send_modify(|current| *current = CheckoutState { is_busy: false, ..current.clone() }); // depends on it
-  state.send_replace(CheckoutState { order_id, stage: CheckoutStage::Finished, is_busy: false }); // does not
+  state.send_modify(|current| {
+      *current = CheckoutState {
+          is_busy: false,
+          ..current.clone()
+      }
+  }); // depends on it
+  state.send_replace(CheckoutState {
+      order_id,
+      stage: CheckoutStage::Finished,
+      is_busy: false,
+  }); // does not
   state.send(CheckoutState { order_id, stage: CheckoutStage::Finished, is_busy: false }) // never
   ```
 
@@ -212,11 +221,14 @@ keeps that order and those semantics. Only `std`'s locks differ: they poison.
    critical section `std` poisons the lock, and every later `lock()` returns `Err`. Kotlin's lock has no such state.
    - `std::sync::nonpoison` is unstable: E0658 on 1.93 and 1.99, issue #134645. Once it is stable on the
      project's toolchain, it replaces `parking_lot`.
-   - `clippy.toml` lists both `std` types under `disallowed-types`, with this rule as the reason.
-   - `PoisonError` is never written.
-   - Two reviewed exceptions: a library API that demands a `std` lock takes
-     `#[expect(clippy::disallowed_types, reason = "…")]`; a crate that may take no dependency (a minimal published
-     library) uses the `std` lock with `unwrap_or_else(PoisonError::into_inner)` under rule 4.
+   - `clippy.toml` lists `std::sync::Mutex`, `std::sync::RwLock` and `std::sync::PoisonError` under
+     `disallowed-types`, with this rule as the reason.
+   - `PoisonError` is never written outside the second exception below.
+   - Two reviewed exceptions: a library API that demands a `std` lock; a crate that may take no dependency (a
+     minimal published library), which uses the `std` lock with `unwrap_or_else(PoisonError::into_inner)` under
+     rule 4. Both carry `#[expect(clippy::disallowed_types, reason = "…")]` on every item that names the lock or
+     `PoisonError`, its `use` declaration included: clippy reports the `use`, the field type, the constructor call
+     and `PoisonError::into_inner` each where it is written.
 4. A critical section computes first and writes once. It reads what it needs and builds the new value with a pure
    rule (`util`, as Kotlin's `update` lambda). Then it stores the value in one statement, the last one in the
    guard's scope: `*cache = next;`, or one `insert` or `remove` on the guarded collection. A panic before that

@@ -104,10 +104,14 @@ under a target `#[cfg]`. Where Rust needs a form of its own, the reason stands n
   directly under `src/`, because Cargo builds every `src/bin/*.rs` as a binary; `std`, `core` and `alloc`, which
   hide the standard crates from the `use` lines of the parent block (E0432); a Rust keyword. `api` is both a
   crate name (`shop-billing-api`) and a kind module; `impl` is only part of a crate name, in apps.
-- A technology module is named after the crate it uses, or `file`, `memory`, as in `arch-package.md`. As `file`
-  and `memory` name implementations built on the standard library's files and memory, `system` names one built on
-  its access to the operating system, such as the system clock (`time-api.rs.md`). Kotlin needs no such word,
-  since its standard library ships `Clock.System`; the module is not named `std` (above).
+- A technology module is named after a crate the crate depends on, or `file`, `memory`, as in `arch-package.md`.
+  The name is the dependency's full name with `-` as `_` (`aws_sdk_s3`) or its first word (`aws`), unless that
+  first word is generic: `alloc`, `async`, `common`, `core`, `derive`, `lib`, `macros`, `rt`, `runtime`, `rust`,
+  `std`, `sync`, `sys`, `util`, `utils` (`async-trait` gives only `async_trait`), as Kotlin's checker takes a
+  library's first word, generic words aside. As `file` and `memory` name implementations built on the standard
+  library's files and memory, `system` names one built on its access to the operating system, such as the system
+  clock (`time-api.rs.md`). Kotlin needs no such word, since its standard library ships `Clock.System`; the module
+  is not named `std` (above).
 - `composable`, `theme` and `viewmodel` are Compose and Android words and are not used in Rust; a Rust UI crate
   takes its kind words from its UI framework and the project (`arch-package.md`, Concepts and kinds 4).
 
@@ -155,7 +159,9 @@ pub(crate) struct FileInvoiceRepository {
 ### Units and Cargo
 
 - The root `Cargo.toml` is a virtual manifest: `[workspace]` and no `[package]`, and the root holds no `src/`. A
-  project of one crate is a workspace of one member.
+  project of one crate is a workspace of one member. The root `[workspace]` sets `resolver = "3"`: a virtual
+  manifest otherwise gets resolver 1, and only Rust-version-aware resolution keeps a dependency's dependencies
+  within the project's toolchain.
 - `members` lists each crate's path (`"modules/billing/api"`), as `settings.gradle.kts` includes each unit. A
   glob is not used: `modules/*` also matches the container `modules/billing`, and Cargo stops with
   `failed to load manifest for workspace member`.
@@ -169,10 +175,12 @@ pub(crate) struct FileInvoiceRepository {
   keeps a crate from hiding a standard crate: a dependency named `core` makes `core::fmt` unresolvable (E0433).
 - A crate is a library (`src/lib.rs`) or one binary (`src/main.rs`), never both, and `src/bin/` is not used.
   Several binaries are several entry-point crates.
-- The project declares its product kind once, `[workspace.metadata.rules-rust] product-kind = "platform-plugin"`
+- The project declares its product kind once, `[workspace.metadata.klibs-rules] product-kind = "platform-plugin"`
   when it is built once per host framework (a plugin loaded by several hosts), `"app"` otherwise; every crate
-  inherits it.
-- A crate declares its role in `[package.metadata.rules-rust] role`, the counterpart of the convention plugin of
+  inherits it. Beside it, `platform-words` lists the project's host frameworks (`platform-words = ["bukkit",
+  "velocity"]`), the words of its platform crates: Rust has no fixed set of hosts, and a Gradle unit needs no such
+  list, since its convention plugin names its type.
+- A crate declares its role in `[package.metadata.klibs-rules] role`, the counterpart of the convention plugin of
   a Gradle unit. Without it, the role comes from the first matching row:
 
   | Role | The crate | Detected when not declared |
@@ -181,7 +189,7 @@ pub(crate) struct FileInvoiceRepository {
   | `proc-macro` | the procedural macros of a sub-context | `[lib] proc-macro = true` |
   | `entry-point` | the items the platform calls and `RootModule` | under `instances/`, or no `lib` target |
   | `core-ui` | the design system | `modules/core/ui` and below |
-  | `core-platform` | shared platform code | `modules/core/<platform word>` |
+  | `core-platform` | shared platform code | `modules/core/<word>`, the word listed in `platform-words` |
   | `core-api` | shared platform-free code | other crates under `modules/core` |
   | `core` | an unsplit core of an app, with no project dependencies | never |
   | `contract` | wire types a server and its client share | path ends with `contract` |
@@ -189,9 +197,13 @@ pub(crate) struct FileInvoiceRepository {
   | `api` | platform-free code other crates call | path ends with `api` |
   | `impl` | an app's implementation of a feature | path ends with `impl` |
   | `impl-ui` | an app's UI of a feature | never |
-  | `technology` | one technology's implementation (`data/sqlx`) | path ends with the name or first word of a crate it depends on |
-  | `platform` | a feature's platform implementation | path ends with the word of a platform crate |
+  | `platform` | a feature's platform implementation | path ends with a word listed in `platform-words` |
+  | `technology` | one technology's implementation (`data/sqlx`) | path ends with a technology module's name for a crate it depends on (Modules and directories) |
   | `context` | an unsplit sub-context | anything else |
+
+  `platform` comes before `technology`: a platform crate is named after the host framework it depends on, so its
+  path matches that dependency too. While `platform-words` is empty, no crate is detected as `platform` or
+  `core-platform`, and such a crate declares its role.
 
   `tooling` and `proc-macro` are Rust's own: Cargo has no included build, so `xtask` is a workspace member, and a
   procedural macro compiles only as the root of a crate of its own (Reference, Procedural macros). A
@@ -222,7 +234,9 @@ pub(crate) struct FileInvoiceRepository {
   `maven-publish`.
 - Build automation (code generation, release steps, the architecture check) is a subcommand of the `xtask`
   crate, run as `cargo xtask <task>` through `[alias] xtask = "run --package xtask --"` in
-  `.cargo/config.toml`, never a shell script. It holds no product code, and nothing depends on it.
+  `.cargo/config.toml`, never a shell script. It holds no product code, depends on no crate of the project, and
+  nothing depends on it, as Kotlin's `build-logic` is an included build that no unit depends on and that depends on
+  no unit.
 - Every crate has a one-sentence `README.md`; Cargo takes it as the package readme.
 - These apply to new crates; existing paths and names stay.
 
@@ -275,6 +289,10 @@ rule has the rest.
 - Never an item (`struct`, `enum`, `union`, `trait`, `impl`, `mod`) inside a function body. Functions are never
   grouped as associated functions of a type with no field and no trait `impl`.
 - A platform file carries its `cfg` suffix (`clipboard_linux.rs`).
+- A file whose first line is a comment containing `@generated` is a tool's output (prost-build writes
+  `// This file is @generated by prost-build.`): the rules of this section, `code-ordering.rs.md`,
+  `imports.rs.md` and `region.md` do not apply to its contents, as Kotlin's checker skips the generated sources
+  under `build/`. The `mod` line that declares it follows Modules and directories.
 
 ### Tests
 

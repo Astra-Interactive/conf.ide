@@ -45,10 +45,12 @@ these rules is the reviewer's call.
   A checker enforces only these bans; whether another verb says what happens as plainly is the reviewer's call.
 * Keep functions small and focused.
 * Each function should do one thing.
-* Avoid deeply nested logic. "Small" and "deeply nested" are the project's clippy `too-many-lines-threshold` and
-  `excessive-nesting-threshold` (60 lines and 5 levels when the project sets none). Clippy counts the body's
-  lines of code, and it counts an `impl` block and the function body as levels, so 5 leaves three nested blocks
-  inside a method.
+* Avoid deeply nested logic. "Small" and "deeply nested" are the project's clippy thresholds, which its
+  `clippy.toml` sets: `too-many-lines-threshold = 60` and `excessive-nesting-threshold = 5`, unless the project
+  chose other values; `[workspace.lints.clippy]` switches `too_many_lines` on. Both are written out because
+  clippy's own defaults differ: 100 lines with `too_many_lines` off, and no nesting check. Clippy counts the
+  body's lines of code, and it counts an `impl` block and the function body as levels, so 5 leaves three nested
+  blocks inside a method.
 * Prefer early returns and guard clauses: `?`, `let … else { return …; }` and `if … { return …; }`.
 * Avoid duplicated code.
 * Before writing a helper, look for one that exists in the project, in `std` or in a crate the project already

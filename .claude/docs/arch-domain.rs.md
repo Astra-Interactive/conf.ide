@@ -9,10 +9,16 @@ The examples sit in an unsplit sub-context crate, `modules/invoice`, so their it
 - An entity and a value object are immutable `struct`s holding what the domain rule lists. They derive `Debug`,
   `Clone` and `PartialEq` (Kotlin's generated `toString`, `copy` and `equals`), and also `Eq` and `Hash` when every
   field implements them: `f32` and `f64` implement only `PartialEq` (std, `Eq`). The model file holds the struct,
-  its derives and at most one `impl` block, which holds only associated constants and, for a value object with an
-  invariant, its `new` and accessors. A rule is a method of an `impl <Type>` block in `util/<type>_ext.rs` of the
-  level that uses it. No method of a model type takes `&mut self`, and no code assigns a field of a model value: a
-  state transition takes `self` and returns the new value.
+  its derives, at most one `impl` block, which holds only associated constants and, for a value object with an
+  invariant, its `new` and accessors, and the type's trait `impl`s: a conversion (`From`, `TryFrom`), an operator
+  of `std::ops`, `Display`, what serde needs (`#[serde(try_from = "i64")]` compiles only with `TryFrom<i64>`), any
+  trait a library's API requires. Like Kotlin's `override`s in a data class, which the Kotlin checker does not
+  report, they are left to review: whether one holds a rule that belongs in `util` is the reviewer's call. Two sit
+  elsewhere, since `model` names no technology or framework type: a conversion from or to a technology
+  representation, in the representation's file, and a framework's failure trait, in `error` (both below). A rule
+  is a method of an `impl <Type>` block in `util/<type>_ext.rs` of the level that uses it. No method of a model
+  type takes `&mut self`, and no code assigns a field of a model value: a state transition takes `self` and
+  returns the new value.
 
   ```rust
   // invoice/model/invoice.rs

@@ -146,7 +146,9 @@ if let Err(error) = save_order(order) {
 
 `unwrap` and `expect` are Kotlin's `getOrThrow`: allowed only where a panic is the intended contract, in tests,
 in a build script and in startup validation. Outside tests the call carries
-`#[expect(clippy::unwrap_used, reason = "…")]` or `#[expect(clippy::expect_used, reason = "…")]`. Never use them
+`#[expect(clippy::unwrap_used, reason = "…")]` or `#[expect(clippy::expect_used, reason = "…")]`. The fixture tree
+and the helpers of `tests/it` that are not `#[test]` functions are test code, but clippy treats only `#[cfg(test)]`
+modules and `#[test]` functions as tests: an `unwrap` or `expect` there carries the same marker. Never use them
 to skip handling a failure. Kotlin also allows `getOrThrow` for an API that takes failures only as exceptions;
 a Rust API reads a failure from its return type, so that case has no Rust form.
 
