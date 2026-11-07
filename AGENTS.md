@@ -63,6 +63,7 @@ reading them here first. A new document goes into one of these lists and keeps i
 
 - [.claude/docs/arch-package.rs.md](.claude/docs/arch-package.rs.md)
 - [.claude/docs/arch-domain.rs.md](.claude/docs/arch-domain.rs.md)
+- [.claude/docs/async.rs.md](.claude/docs/async.rs.md)
 - [.claude/docs/clean-code.rs.md](.claude/docs/clean-code.rs.md)
 - [.claude/docs/closure-naming.rs.md](.claude/docs/closure-naming.rs.md)
 - [.claude/docs/code-ordering.rs.md](.claude/docs/code-ordering.rs.md)
@@ -70,7 +71,10 @@ reading them here first. A new document goes into one of these lists and keeps i
 - [.claude/docs/di-manual.rs.md](.claude/docs/di-manual.rs.md)
 - [.claude/docs/di-manual-constructors.rs.md](.claude/docs/di-manual-constructors.rs.md)
 - [.claude/docs/error-handling.rs.md](.claude/docs/error-handling.rs.md)
+- [.claude/docs/function-reference.rs.md](.claude/docs/function-reference.rs.md)
 - [.claude/docs/imports.rs.md](.claude/docs/imports.rs.md)
+- [.claude/docs/no-callbacks.rs.md](.claude/docs/no-callbacks.rs.md)
+- [.claude/docs/no-print.rs.md](.claude/docs/no-print.rs.md)
 - [.claude/docs/no-tuples.rs.md](.claude/docs/no-tuples.rs.md)
 - [.claude/docs/notes.rs.md](.claude/docs/notes.rs.md)
 - [.claude/docs/rust-lsp.rs.md](.claude/docs/rust-lsp.rs.md)

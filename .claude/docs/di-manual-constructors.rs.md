@@ -1,18 +1,25 @@
 ## Constructors Dependency Injection Rule
 
-Never instantiate concrete dependencies inside a type's constructor (`new`/`from_*`), field initializers, or methods.
+Never instantiate concrete dependencies inside a type's `new`, its other constructors (`with_…`, `from_…`), a
+`Default` impl, or its methods. Rust has no default argument; a `Default` impl that builds a dependency is
+Kotlin's `= SomeImplementation()` default.
 
-Dependencies must be created only at the composition root / application wiring layer, then passed down from parent to child.
+A dependency is a value with behaviour the type calls and a test might replace (a repository, a client, a clock).
+The type's own state (a `Mutex<HashMap<…>>`, a channel, a `Vec`) is not one.
+
+Dependencies must be created only at the composition root / DI module, then passed down from parent to child
+through `new`.
 
 Bad:
 
 ```rust
-impl<R: OrderRepository> OrderService<R> {
-    pub fn new(repository: R) -> Self {
+impl InvoiceReminder {
+    pub(crate) fn new(invoice_repository: Arc<dyn InvoiceRepository>) -> Self {
         Self {
-            repository,
-            pricing: OrderPricing::new(DEFAULT_TAX_RATE), // hidden concrete dependency
-            clock: SystemClock::new(),                    // hidden concrete dependency
+            invoice_repository,
+            schedule: ReminderSchedule::new(),
+            mail_sender: Arc::new(SmtpMailSender::new()),
+            clock: Arc::new(SystemClock),
         }
     }
 }
@@ -21,15 +28,24 @@ impl<R: OrderRepository> OrderService<R> {
 Good:
 
 ```rust
-impl<R: OrderRepository, C: Clock> OrderService<R, C> {
-    pub fn new(repository: R, pricing: OrderPricing, clock: C) -> Self {
+impl InvoiceReminder {
+    pub(crate) fn new(
+        invoice_repository: Arc<dyn InvoiceRepository>,
+        schedule: ReminderSchedule,
+        mail_sender: Arc<dyn MailSender>,
+        clock: Arc<dyn Clock>,
+    ) -> Self {
         Self {
-            repository,
-            pricing,
+            invoice_repository,
+            schedule,
+            mail_sender,
             clock,
         }
     }
 }
 ```
 
-When adding a new dependency, update the root wiring instead of calling `SomeImplementation::new()` inside the type.
+When adding a new dependency, update the root wiring instead of calling `SomeImplementation::new()` in the type.
+
+A value the type derives from what it was given, such as `shutdown.child_token()` of the `CancellationToken` it
+received, is not a dependency: it is part of the type and stays a field.

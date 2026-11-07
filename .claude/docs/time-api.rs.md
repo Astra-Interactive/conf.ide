@@ -1,57 +1,78 @@
 ## Rust Timestamp and Duration Rule
 
 When writing Rust code, do not represent moments in time or durations as raw primitive or text types.
+Which values are moments or durations is the reviewer's call.
 
-Avoid `u16`, `u32`, `u64`, `i64`, `String` for time-related values in domain APIs.
+Avoid using:
 
-### Which type
+```rust
+u32
+u64
+i64
+f64
+String
+```
 
-| Value                                                                                  | Type                    |
-|----------------------------------------------------------------------------------------|-------------------------|
-| Interval, timeout, delay, cooldown, TTL                                                | `std::time::Duration`   |
-| Moment measured by this process only: elapsed time, deadlines, rate limiting           | `std::time::Instant`    |
-| Moment that is stored, transmitted, displayed, or compared with the outside world      | `chrono::DateTime<Utc>` |
-
-`std::time::Duration` and `core::time::Duration` are the same type; write `std::time::Duration` in a
-`std` crate and `core::time::Duration` only in `no_std` code.
-
-`Instant` is monotonic and unrelated to the calendar: it cannot be serialized, formatted, or compared
-across processes. Never store it and never use it for a timestamp a user or another system will see.
-
-For wall-clock time the standard library offers only `SystemTime`, which cannot be formatted or parsed
-without a crate. Use `chrono`: `DateTime<Utc>` in domain types, always UTC, converted to a local zone
-only at the presentation boundary. `chrono` is the most widely used time crate and the one every
-serialization, database and logging crate integrates with. If the project already depends on `time` or
-`jiff`, use that crate's types instead; never add a second time crate.
+or any other integer or float for time-related values.
 
 ### Bad
 
 ```rust
-fn schedule_retry(&mut self, delay_ms: u64)
-
-struct OrderTiming {
-    created_at: i64,
-    payment_timeout_ms: u32,
-}
+created_at: i64,
+expires_at: String,
+timeout_seconds: u32,
 ```
 
 ### Good
 
 ```rust
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
-use chrono::{DateTime, Utc};
-
-fn schedule_retry(&mut self, delay: Duration)
-
-struct OrderTiming {
-    created_at: DateTime<Utc>,
-    payment_timeout: Duration,
-}
+created_at: SystemTime,
+expires_at: SystemTime,
+timeout: Duration,
 ```
 
-Time that the code reads (rather than receives) must come from an injected `Clock` port, not from
-`Instant::now()` or `Utc::now()` called inline — otherwise the logic is untestable.
+Use `std::time::SystemTime` for exact moments in time: it is the standard library's wall-clock type.
+`std::time::Instant` is not a moment: it is monotonic and measures elapsed time inside one process, so it is
+never stored, sent or shown.
 
-Only convert timestamps or durations to raw integers or strings at external boundaries: the wire format,
-configuration parsing, serialization, or logging.
+Use `std::time::Duration` for time intervals, delays, cooldowns, timeouts, and expiration lengths.
+
+Only convert moments or durations to integers or strings at external boundaries, such as database storage,
+serialization, logging, or a wire format. A call that takes only an integer (`set_timeout_millis(u64)`) is
+such a boundary: the constant stays a `Duration` (`const CARD_IN: Duration = Duration::from_millis(400);`,
+never `const CARD_IN_MS: u64 = 400;`), and the conversion is written at that call; a literal at the call is
+already at the boundary. A call that takes a `Duration` (`tokio::time::sleep(delay)`) gets the `Duration`.
+
+### Time crates and the system clock
+
+- A time crate (`chrono`, `time`, `jiff`) is used only in a technology module or crate, or in a `contract`
+  crate, where a library or the wire format demands it, and its values are converted to `SystemTime` and
+  `Duration` there. A project uses one time crate at most: each brings its own moment type, and two of them
+  bring conversions between each other's types, which is what Kotlin avoids by using only `kotlin.time`.
+- The current moment comes from the project's `Clock` trait, `fn now(&self) -> SystemTime`. Kotlin takes
+  `kotlin.time.Clock` from its standard library; Rust's has no clock trait, so the project declares one, as any
+  contract: in the `api` of the unit that first needs it, moved to `core` once a second unit needs it
+  (`arch-context.md`, `core`). Its production implementation, `SystemClock`, sits in the technology module
+  `system` of the same concept (`arch-package.rs.md`, Modules and directories) and is the one place that calls
+  `SystemTime::now()`; a test fake implements `Clock` too:
+
+  ```rust
+  // clock/system/system_clock.rs
+  pub(crate) struct SystemClock;
+
+  impl Clock for SystemClock {
+      #[expect(
+          clippy::disallowed_methods,
+          reason = "SystemClock is the one reader of the system clock"
+      )]
+      fn now(&self) -> SystemTime {
+          SystemTime::now()
+      }
+  }
+  ```
+
+  An elapsed time comes from `std::time::Instant::now()`. No other clock read is called: not `SystemTime::now()`
+  elsewhere, not `chrono::Utc::now()`, not `jiff::Timestamp::now()`. A struct takes the `Clock` through its
+  constructor, and the DI module passes `SystemClock` (`di-manual-constructors.rs.md`).

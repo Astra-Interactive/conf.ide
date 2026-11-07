@@ -1,21 +1,20 @@
 # Rust imports guidelines
 
-- Never use wildcard imports (e.g., `use foo::*`)
-- Always use explicit imports
-- Imports form three groups separated by one blank line, in this order:
-    1. `std` / `core` / `alloc`
-    2. external crates
-    3. `crate` / `super` / `self`
-- Within a group the order is whatever `cargo fmt` produces; run it and do not fight it
-- Import a type through the kind module that re-exports it (`use crate::profile::api::ProfileClient;`), never
-  through its file module
-- Files in the `test/` tree import what they test the same way (`use crate::command::WhitelistCommand;`)
-- Allowed exception for wildcards: a crate's documented prelude when it is the intended way to consume the crate
+- Never use wildcard imports: not `use foo::*`, not `use Status::*`, not a crate's `prelude::*`, not
+  `use super::*` in a test. Import each item by name; a trait that a prelude would bring is imported by name too
+  (`use std::io::Read;`).
+- Always use explicit imports.
+- The imports of a file are one block at its top, with no blank line inside it, in the order `cargo fmt` gives:
+  rustfmt sorts a block of consecutive `use` lines (`self::`, `super::`, `crate::` first, then every crate
+  alphabetically, `std` among them). Put a new import anywhere in the block and run `cargo fmt`.
+- When the project's `rustfmt.toml` sets another import order (`reorder_imports = false`), that order wins.
+  Kotlin's layout groups (`java`, `javax`, `kotlin`) have no stable rustfmt counterpart: `group_imports` is
+  nightly-only, and the notes rule keeps the project on stable.
 
-### Why the groups are kept by hand
-
-Stable `rustfmt` sorts imports only within a block of consecutive `use` lines and never moves a `use`
-across a blank line, so the three groups survive formatting. The option that would build the groups
-automatically, `group_imports = "StdExternalCrate"`, is nightly-only, and the notes rule keeps the
-project on stable. When adding an import, put it into the right group; `cargo fmt` takes care of the
-position inside it.
+```rust
+use crate::invoice::model::Invoice;
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::fmt::Write as _;
+use tokio::sync::watch;
+```

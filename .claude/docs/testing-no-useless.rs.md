@@ -5,6 +5,7 @@ Do not write tests that only verify language/library behavior or trivial data st
 Avoid tests like:
 
 ```rust
+#[derive(Debug, Clone, PartialEq)]
 struct MyStruct {
     value: i32,
 }
@@ -19,7 +20,7 @@ Write tests only when they verify meaningful project behavior, such as:
 
 * business logic
 * validation rules
-* edge cases (boundaries, empty and oversized input, malformed input at parsing boundaries)
+* edge cases
 * error handling
 * integration between components
 * regressions for known bugs
@@ -28,8 +29,17 @@ Before adding a test, ask: **Would this test fail if our project logic were brok
 
 If the answer is no, do not write the test.
 
-This rule complements the testing rule, it does not compete with it. The testing rule demands 100%
-coverage of new code; this rule only removes tests that could never fail because they check the language
-or a library rather than the project. A test that exercises project logic is never useless, however small
-that logic is. If a line can be reached only by a test of this kind, the line itself is the problem: it
-is dead code or belongs to a scenario you have not written yet.
+The testing rule demands 100% line coverage and 100% branch coverage of new code that implements project
+behaviour. Generated code and trivial field storage are outside this denominator, so they need no tests
+that merely repeat language or library behaviour. Generated code is what a derive or a macro writes
+(`#[derive(Debug, Clone, PartialEq)]`, a `thiserror` `Display`); rustc gives the impls of the standard derives
+no coverage counter, so they are outside the measured lines too. An uncovered line of that excluded code is
+not, by itself, dead code.
+
+An invariant check in a value object is project behaviour and needs valid and invalid input scenarios
+(`Money::new` with a negative amount, `parse_money` with text that is not a number); checking that a struct
+stored the value it was built with is not. The exclusion is by what the code does, never by its module:
+`model`, `di` and entry points may all contain behaviour that must be covered. Meaningful integration tests can
+cover wiring and lifecycle ordering without a dedicated test file for each type. If new project behaviour
+remains uncovered, add the missing scenario or establish that the code is dead; do not classify it as trivial
+merely to reach the coverage target.

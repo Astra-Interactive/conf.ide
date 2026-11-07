@@ -3,24 +3,35 @@
 ### Tool priority
 
 1. `codebase-memory-mcp` — search for symbols, call chains, architecture overview.
-2. LSP tool (`rust-analyzer`) — precise navigation: go-to-definition, references, hover/type info, trait implementations.
-3. Bash (`grep`, `find`, `cat`) — last resort only, when the tools above cannot answer.
+2. `rust-analyzer` through an available LSP client — precise navigation: go-to-definition, references,
+   hover/type info, trait implementations.
 
-### Rust project source files → `rust-analyzer` via the LSP tool
+Text search in code goes through codebase-memory's `search_code`; `grep`/`find`/`cat` are for non-code files
+only, and for reading a file before editing it (`codebase-memory.md`).
 
-Use the built-in **LSP** tool (backed by `rust-analyzer`) to navigate and inspect Rust source files that
-are part of this workspace. The server communicates over stdio — the LSP tool handles the connection
-automatically, so never spawn or configure the server manually. It is the tool for resolving trait
-implementations and generic bounds, which text search cannot answer.
+### Rust project source files → `rust-analyzer`
 
-Dependency (crate) sources are covered by the dependency-sources rule, not by the LSP.
+Use `rust-analyzer` when navigating Rust source needs precise types, trait implementations, generic bounds or
+references: text search cannot resolve them. Prefer a dedicated LSP tool when the current agent exposes one. A
+working server installation does not mean that every agent session exposes such a tool.
 
-### When the LSP is not available
+When no dedicated tool is exposed, use an LSP client through the terminal to communicate with the installed
+`rust-analyzer`, which speaks LSP over stdio when started without arguments. This is an allowed way to use the
+same server, without asking the user for an exception to this rule. The client must initialize the workspace,
+open the relevant Rust file and complete the required LSP request; starting the executable or reading
+`--version` does not verify project navigation. Let a dedicated tool manage its own connection; never guess or
+hardcode a socket address.
 
-There is no fallback. If the LSP tool is missing, `rust-analyzer` is not installed, or the server fails
-to start for this workspace, stop and ask the user to configure it before continuing with any task that
-needs code navigation. Do not substitute `grep`/`find`/`cat` for the missing LSP: text search cannot
-resolve trait implementations, generic bounds, or references, and the code you write on top of guesses
-will be wrong.
+Searching the sources of a dependency crate is covered by the dependency-sources rule, not by the LSP.
 
-Report exactly what failed (tool absent, server binary not found, server error) so the user can fix it.
+### When LSP navigation is not available
+
+First distinguish a missing dedicated tool, a missing server executable and a failed project connection.
+Check that `rust-analyzer` is on `PATH`, try the available client, and inspect the initialization or request
+error. Restart the connection if the client allows it. Do not ask the user to reinstall or reconnect the
+server merely because the session has no dedicated LSP tool.
+
+If no client can complete the required request, report exactly what failed and what you tried. Continue
+independent work supported by `codebase-memory-mcp` and verified source. Stop only the part that requires
+unavailable type, trait-implementation or reference information; do not guess it or treat text matches as
+semantic resolution. The text-search restrictions above still apply.

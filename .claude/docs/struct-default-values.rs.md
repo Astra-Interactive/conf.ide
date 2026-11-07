@@ -1,15 +1,20 @@
 ## Struct Default Values Rule
 
-Do not derive or implement `Default` for domain structs, and do not fill fields with `..Default::default()`.
+Do not give a struct or an enum default values: no `#[derive(Default)]`, no `impl Default`. Rust has no default
+arguments, so `Default` and the struct update it enables (`..Default::default()`) are how a field gets a value
+the caller did not pass.
+
+Rust has no data-class keyword, so the rule covers every struct and enum; the exceptions below leave out the
+types that are not data.
 
 Bad:
 
 ```rust
 #[derive(Default)]
-pub struct PredictionInput {
-    pub symbol_id: u8,
-    pub window: u16,
-    pub threshold: f32,
+pub(crate) struct PredictionInput {
+    pub(crate) symbol: String,
+    pub(crate) window: u16,
+    pub(crate) features: Vec<f64>,
 }
 
 let input = PredictionInput {
@@ -21,27 +26,49 @@ let input = PredictionInput {
 Good:
 
 ```rust
-pub struct PredictionInput {
-    pub symbol_id: u8,
-    pub window: u16,
-    pub threshold: f32,
+pub(crate) struct PredictionInput {
+    pub(crate) symbol: String,
+    pub(crate) window: u16,
+    pub(crate) features: Vec<f64>,
 }
 
 let input = PredictionInput {
-    symbol_id: 1,
+    symbol: symbol.to_owned(),
     window: 100,
-    threshold: 0.5,
+    features: Vec::new(),
 };
 ```
 
 Allowed exceptions:
 
-* DTOs where defaults are required for serialization/backward compatibility (e.g. `serde` types using `#[serde(default)]`).
-* Implementing `Default` when an external crate's API contractually requires it.
-* A type whose constructor takes no arguments. `clippy::new_without_default` fires on a public
-  `fn new() -> Self` without parameters, and clippy runs with `-D warnings`, so such a type derives
-  `Default` or implements it by delegating to `new`. This is consistent with the rule: it protects
-  against a caller silently skipping a field that needed a value, and a type with nothing to configure
-  has no such field. `..Default::default()` stays forbidden even for these types.
+* A type that derives `serde::Deserialize`, where defaults are required for serialization/backward
+  compatibility: it may implement or derive `Default` and carry `#[serde(default)]`.
 
-If a struct is not serialized, do not give it defaults. Pass values explicitly from the caller/root wiring.
+  ```rust
+  // a config read from a file; the defaults keep old files readable
+  #[derive(Deserialize)]
+  #[serde(default)]
+  pub(crate) struct PredictionConfig {
+      pub(crate) symbol: String,
+      pub(crate) window: u16,
+      pub(crate) features: Vec<f64>,
+  }
+
+  impl Default for PredictionConfig {
+      fn default() -> Self {
+          Self {
+              symbol: String::new(),
+              window: 100,
+              features: Vec::new(),
+          }
+      }
+  }
+  ```
+
+* A type whose constructor takes no argument (`pub fn new() -> Self`) derives `Default` or implements it by
+  calling `new`: `clippy::new_without_default` demands it for a public `new`, and such a type has no value for
+  a caller to pass.
+* A type that a library's API requires to implement `Default` (a `T: Default` bound of a function the project
+  calls); whether the bound requires it is the reviewer's call.
+
+If a type is not deserialized, do not give it defaults. Pass values explicitly from the caller/root wiring.
