@@ -108,6 +108,8 @@ for ordinary contract operations, implementation types or cycles.
 | the platform unit of `core` (`core/bukkit`) | `core/api` |
 | the design-system unit of `core` (`core/ui`) | `core/api` |
 | `<feature>/fake` | the `api` it fakes |
+| a Rust `proc-macro` crate | nothing of the project; every production unit may depend on it, whatever its own row says, since the crates that expand its macros need it in their normal build |
+| a Rust `tooling` crate (`xtask`) | nothing of the project; nothing depends on it, as on Kotlin's `build-logic` |
 | a unit that serves or calls a context's routes | its row above, plus that context's `contract` unit |
 | a test source set (in Rust, a crate's `test/` tree with its `[dev-dependencies]`) | its unit's row above, plus shared fakes from `<feature>/fake` or `testFixtures` (in Rust, another crate's `fixture/` tree through its `fake` feature); these additions are test-only dependencies |
 

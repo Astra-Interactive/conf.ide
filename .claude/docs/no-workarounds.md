@@ -10,7 +10,9 @@ Each of these has been written into this codebase by an agent and taken out agai
 * a `delay`, `sleep`, poll, retry loop or timeout added to hide a race or an ordering problem;
 * catching a broad exception type, swallowing a cancellation or a task's `JoinError`, wrapping the symptom
   in `runCatching` or `unwrap_or_default` so that the error does not surface;
-* a suppression annotation, a lint baseline, a disabled rule, a lint error turned into a warning;
+* a suppression annotation, a lint baseline, a disabled rule, a lint error turned into a warning; an exception a
+  document prescribes, in its form and for its case, is not one (`testing.kt.md`'s `FunctionNaming`, the
+  `#[expect]`, `cfg_attr` and manifest exceptions of `notes.rs.md`);
 * a keep-alive, a lock in multiplatform code, a blocking call inside suspending or `async` code (a Rust lock
   whose guard no `.await` crosses is not one: `async.rs.md`, Shared state and locks), a reflection call, a
   hard-coded value where the real value could not be found;

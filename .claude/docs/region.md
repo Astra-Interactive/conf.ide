@@ -1,6 +1,8 @@
 ## Code region rules
 
-Region markers and artificial section delimiters are forbidden. There are no exceptions.
+Region markers and artificial section delimiters are forbidden. There are no exceptions in code written by hand;
+a Rust file whose first line is a comment containing `@generated` is a tool's output (`arch-package.rs.md`, What
+goes in one file).
 
 Forbidden examples:
 

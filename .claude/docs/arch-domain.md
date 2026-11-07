@@ -12,8 +12,8 @@ import and Validation apply to every context.
 - The model is data: a `data class` holds fields, the data classes and enums nested in it that only it uses, a
   `companion object` of constants, and, for a value object with an invariant, the check of that invariant in
   its constructor; never a function (Rust adds the constructor and an accessor per private field, having no
-  read-only field; `arch-domain.rs.md`). A rule about one type is an extension of that type in
-  `util/<Type>Ext.kt` (in Rust, a method of an `impl <Type>` block in `util/<type>_ext.rs`, or of a
+  read-only field, and the trait impls of the type; `arch-domain.rs.md`). A rule about one type is an extension
+  of that type in `util/<Type>Ext.kt` (in Rust, a method of an `impl <Type>` block in `util/<type>_ext.rs`, or of a
   `<Type>Ext` trait when another crate declares the type), returning a copy or a decision and taking what it
   needs as parameters (`fun JailInmate.isSentenceOver(now: Instant)` in `jail/util/JailInmateExt.kt`,
   `fun Dictionary.canRead(user: User?)` in `dictionary/util/DictionaryExt.kt`). It is never a member of the
