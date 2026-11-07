@@ -1,6 +1,6 @@
 ---
 name: linter-rollout
-description: "Rolls a new rules-architecture linter version out to one consumer repository: checks the branch starts from the remote default branch, bumps the linter and the project version, runs the checks, fixes the findings by the documents and prepares the pull request. Use once per repository, in that repository's worktree. No baselines or new suppressions; a finding with no legal fix is reported as a suspected linter problem."
+description: "Rolls a new rules-architecture linter version out to one consumer repository, Kotlin (the Gradle plugin) or Rust (the klibs-rules crate): checks the branch starts from the remote default branch, bumps the linter and the project version, runs the checks, fixes the findings by the documents and prepares the pull request. Use once per repository, in that repository's worktree. No baselines; no suppression except one a document prescribes (in Rust also the notes.rs.md exceptions the user approved); a finding with no legal fix is reported as a suspected linter problem."
 tools: Read, Edit, Write, Bash, LSP, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: sonnet
 color: purple
@@ -87,3 +87,34 @@ checks: pass | fail — base: origin/<default> @ <hash> — commits: <hash title
 ## Left for the user
 - …
 ```
+
+## Rust repositories
+
+A repository with `Cargo.toml` at its root takes the Rust linter, the `klibs-rules` crate. The steps, the
+Forbidden list and the output above hold, with these differences:
+
+- Step 2: "latest" is the newest `klibs-rules` version on crates.io.
+- Step 3: the pin is the exact version in the `[dependencies]` of the `xtask` crate, `klibs-rules = "=X.Y.Z"`.
+  Commit: `[CHORE] Bump klibs-rules to X.Y.Z`. The wiring copied from the reference repository is that
+  dependency, the `xtask` architecture test, the `check-cfg` line of `notes.rs.md` and the CI steps.
+- Step 4: the project version is `[workspace.package] version`, or the `version` of each published crate; a
+  workspace that declares none has nothing to bump.
+- Step 5: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings` and
+  `cargo test --workspace`, whose `xtask` architecture test prints the linter's findings.
+- Before step 6, the re-layout: every merge, move, rename or deletion the findings need (a crate, a module, a
+  file, a type) goes into one "before → after" tree for the whole repository, which the user approves
+  (`arch-package.md`, Existing code); findings that need none skip this step. The approved tree comes in the
+  prompt. Without it, fix nothing: return the tree and the findings under "Left for the user", hand nothing to
+  `pr-creator`, and the repository stays on its current linter version.
+- Step 6, exceptions: a finding is fixed by the documents and the approved tree. The only exceptions are those of
+  `notes.rs.md`, the `cfg_attr(klibs_rules, expect(…))` and its manifest form, in its three cases, each approved
+  by the user: list each one you propose with its finding and reason under "Left for the user", and write only
+  those the prompt approves. An existing-code reason names the document line that keeps the thing
+  (`arch-package.rs.md`: existing paths and names stay); a reason that fits any finding ("existing code") is a
+  baseline. A suspected false positive is reported for the `klibs-rules` repository; no agent writes Rust rules.
+- Step 8, acceptance: `git diff origin/<default>...HEAD` adds no `#[allow(`, no `#[expect(` that no document
+  prescribes, no `cfg_attr(klibs_rules, expect(` and no `checks.disabled` or `checks.allowed-dependencies` entry
+  the prompt did not approve, and no lint lowered or removed in `Cargo.toml` or `clippy.toml`. Quote the result.
+- Forbidden: the Kotlin `@Suppress` item reads as a new `#[allow(…)]`, an `#[expect(…)]` no document prescribes,
+  or a `notes.rs.md` exception the prompt did not approve. An approved `checks.disabled` entry names one subject
+  of one rule, so it is that exception, not a disabled rule.
