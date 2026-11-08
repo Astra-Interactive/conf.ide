@@ -134,7 +134,7 @@ constructs. An entry-point or UI kind is a word listed in the checker's config, 
 (`command`, `gui`, `slot`, `expansion`); any other package that holds files is flagged. A unit's type comes
 from its build file: in Kotlin, the convention plugin it applies (one per unit type, `arch-package.kt.md`),
 which the checker's config maps to a row of the table above, and a unit without such a plugin is checked by
-hand; in Rust, the `role` its manifest declares, else the role its path gives (`arch-package.rs.md`).
+hand; in Rust, the `role` its manifest declares, else the role its path and targets give (`arch-package.rs.md`).
 
 Every row of these tables, the package names and the naming of implementations are meant to be checked by a
 tool in the build; the platform and framework imports of `model`, `api` and `usecase` are the reviewer's call.

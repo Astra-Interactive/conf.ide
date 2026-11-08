@@ -63,7 +63,9 @@ under a target `#[cfg]`. Where Rust needs a form of its own, the reason stands n
   layout above passes both. An inline `mod … { }` inside a file module is left to the checker.
 - The root file holds the module tree and nothing else, except inner attributes and `//!` lines at its top, the
   items the platform calls in an entry-point crate (Entry points) with the `use` declarations those items need,
-  and, as its last items, the fixture block and the test block (Tests). Inside a block the `use` lines come
+  the `#[proc_macro]`, `#[proc_macro_derive]` and `#[proc_macro_attribute]` `pub fn`s of a `proc-macro` crate with
+  the `use` declarations they need (rustc requires them at the crate root: Reference, Procedural macros), and, as
+  its last items, the fixture block and the test block (Tests). Inside a block the `use` lines come
   first, then the `mod` lines: the Rust Style Guide puts imports before module declarations (Items), and
   `code-ordering.rs.md` rule 1 puts `use` first in every scope.
 - A file module is private (`mod invoice;`, no visibility). Its kind block re-exports each of its items once, by
@@ -187,7 +189,7 @@ pub(crate) struct FileInvoiceRepository {
   |---|---|---|
   | `tooling` | build automation, no product code | named `xtask` |
   | `proc-macro` | the procedural macros of a sub-context | `[lib] proc-macro = true` |
-  | `entry-point` | the items the platform calls and `RootModule` | under `instances/`, or no `lib` target |
+  | `entry-point` | the items the platform calls and `RootModule` | under `instances/`, or no Rust library target (`lib`, `rlib`, `dylib`, `proc-macro`) |
   | `core-ui` | the design system | `modules/core/ui` and below |
   | `core-platform` | shared platform code | `modules/core/<word>`, the word listed in `platform-words` |
   | `core-api` | shared platform-free code | other crates under `modules/core` |
@@ -201,12 +203,16 @@ pub(crate) struct FileInvoiceRepository {
   | `technology` | one technology's implementation (`data/sqlx`) | path ends with a technology module's name for a crate it depends on (Modules and directories) |
   | `context` | an unsplit sub-context | anything else |
 
+  A crate whose only library target is a `cdylib` or a `staticlib` is an entry point: no crate can use it (Cargo
+  warns that it "provides no linkable target", a `use` of it fails with E0432 and a path into it with E0433), so
+  only a host loads it.
+
   `platform` comes before `technology`: a platform crate is named after the host framework it depends on, so its
   path matches that dependency too. While `platform-words` is empty, no crate is detected as `platform` or
   `core-platform`, and such a crate declares its role.
 
   `tooling` and `proc-macro` are Rust's own: Cargo has no included build, so `xtask` is a workspace member, and a
-  procedural macro compiles only as the root of a crate of its own (Reference, Procedural macros). A
+  procedural macro is a `pub fn` at the root of a crate of its own (Reference, Procedural macros). A
   `proc-macro` crate depends on no crate of the project, and any production crate may depend on it, since the
   crates that expand its macros need it in their normal build. There is no fake role: shared fakes are a feature
   of the crate they fake (Tests).
