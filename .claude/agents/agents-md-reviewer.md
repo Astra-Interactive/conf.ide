@@ -31,8 +31,9 @@ Steps:
 3. Walk the diff hunk by hunk and test each against the rules. Use `codebase-memory-mcp` and `LSP` when a
    rule needs context beyond the hunk: which package owns a type, whether a function is public API,
    whether a module is a published library.
-4. Run the checks the rules name when they exist and are cheap: `./gradlew detekt`, `architectureLint`,
-   `cargo clippy`. Quote their output; do not re-derive what a linter already reports.
+4. Request checks the rules name through the parent runner: `./gradlew detekt`, `architectureLint`,
+   `cargo clippy`. Use fresh runner evidence; mark missing validation as pending. Follow `subagents.md`,
+   start no agent or fork and do not substitute a local check run.
 
 The rules that past reviews missed most often, in case the documents have moved:
 

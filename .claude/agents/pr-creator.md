@@ -31,6 +31,9 @@ Steps:
    file that carried the user's changes before the task. No `--author`, no trailers, no tool footer.
    A version bump the prompt asks for is its own commit, made before the commits of the change: only the
    version line changes, by MINOR unless the prompt names another part, `[CHORE] Bump version to X.Y.Z`.
+   Require parent-supplied runner evidence for the current state before committing. A version-bump edit
+   changes that state: return the pending validation commands to the parent and resume committing only
+   with fresh evidence after the edit. Follow `subagents.md`; start no agent or fork and run no checks.
 3. Open or update the PR by the `pull-request` skill: push only the feature branch, title
    `[<kind>] [<ref>] Task name`, description from `.github/pull_request_template.md` with every hint
    replaced, six headings in the template's order, nothing the diff already says.

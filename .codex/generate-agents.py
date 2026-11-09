@@ -36,6 +36,7 @@ READONLY_COMMANDS = (
 READONLY_MODES = {
     "research": "",
     "gradle": "; ./gradlew, rg (without --pre) and grep",
+    "cargo": "; cargo [ +toolchain ] build|check|test|clippy, cargo [ +toolchain ] fmt --check (all Cargo commands reject arguments containing --fix, including --fix=...); rg (without --pre) and grep",
     "docker": "; docker compose config|ps, docker ps|logs|inspect, docker network ls|inspect",
     "docs": "; rg (without --pre), grep, and find without -exec, -execdir, -ok, -okdir, -delete, -fprint or -fls",
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 # PreToolUse guard for read-only agents: lets Bash run inspection commands only.
-# Usage in agent frontmatter: readonly-guard.sh [research|gradle|docker|docs]
+# Usage in agent frontmatter: readonly-guard.sh [research|gradle|cargo|docker|docs]
 # docs is research plus rg, grep and find for searching documents; find may not run, write or delete.
 # Exit 2 blocks the call and sends stderr to the agent. Written for bash 3.2.
 # The allowlist is repeated as text in .codex/generate-agents.py; change both together.
@@ -33,11 +33,31 @@ for part in $(printf '%s' "$COMMAND" | sed -E 's/\|\||&&|;|\|/\n/g'); do
         head|head\ *|tail|tail\ *|wc|wc\ *|sort|sort\ *|uniq|uniq\ *|cut\ *|jq|jq\ *|tr\ *|awk\ *|sed\ -n*|sed\ -E\ *) ;;
         ls\ *|ls|pwd|which\ *|echo\ *|date*|true) ;;
         ./gradlew*|gradle\ *) [ "$MODE" = gradle ] || block "$part" ;;
+        cargo\ *)
+            [ "$MODE" = cargo ] || block "$part"
+            case "$part" in
+                *--fix*) block "$part" ;;
+            esac
+            cargo_args="${part#cargo }"
+            case "$cargo_args" in
+                +*) cargo_args="${cargo_args#* }" ;;
+            esac
+            case "$cargo_args" in
+                build|build\ *|check|check\ *|test|test\ *|clippy|clippy\ *) ;;
+                fmt\ *)
+                    case " $cargo_args " in
+                        *" --check "*) ;;
+                        *) block "$part" ;;
+                    esac
+                    ;;
+                *) block "$part" ;;
+            esac
+            ;;
         rg\ *|grep\ *)
             case "$part" in
                 rg\ *--pre*) block "$part" ;;
             esac
-            [ "$MODE" = gradle ] || [ "$MODE" = docs ] || block "$part"
+            [ "$MODE" = gradle ] || [ "$MODE" = cargo ] || [ "$MODE" = docs ] || block "$part"
             ;;
         find\ *)
             case "$part" in

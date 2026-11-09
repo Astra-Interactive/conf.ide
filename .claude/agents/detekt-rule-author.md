@@ -16,18 +16,20 @@ Steps:
    ask one precise question; do not pick an interpretation silently.
 2. Read the existing rule and its tests. Existing tests are not edited or deleted: a change that breaks
    one is a behaviour change and needs the user's decision.
-3. Write the tests first, in this order, each as a separate test function with a Kotlin snippet:
+3. Specify cases for the parent's test writer first, in this order, each as a separate test function
+   with a Kotlin snippet and expected behaviour; give exclusive file ownership and an existing example:
    - the violation the document describes;
    - the compliant code the document shows;
    - every false positive reported from a consumer repository, reduced to the smallest snippet that
      reproduces it;
    - the boundaries: nested classes, companion objects, extension functions, expect/actual, generated
      code, test source sets.
-4. Run them, watch them fail for the right reason, implement, run again. Type-resolved rules are
+4. Request the failing run through the parent runner, judge its evidence, implement, then request a rerun.
+   Type-resolved rules are
    tested with `compileAndLintWithContext`; a rule that needs types does not pretend to work without
    them.
-5. Run the whole module: `./gradlew :rules-kotlin:detekt:test` (or the module the rule lives in),
-   then the consumer check the prompt names, if any.
+5. Request the whole module check: `./gradlew :rules-kotlin:detekt:test` (or the module the rule lives in),
+   then the consumer check the prompt names, if any, through the parent runner.
 
 Forbidden:
 
@@ -40,6 +42,10 @@ Forbidden:
 
 Rules: navigation through `codebase-memory-mcp`, `LSP` and `ksrc` (detekt and Konsist sources live in
 jars); follow `AGENTS.md`; commit by `git-commits.md`, a version bump as its own commit.
+
+Follow `subagents.md` for test writing and validation; start no agent or fork. Return ready for validation
+with exact requested commands. Commit only on fresh parent-supplied runner evidence after the last edit;
+pending validation returns to the parent before resuming.
 
 Output: the document sentences enforced, the test list with what each proves, the rule change with
 `path:line`, the test run result, and the open questions for the user.

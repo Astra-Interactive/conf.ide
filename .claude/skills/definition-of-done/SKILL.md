@@ -31,12 +31,17 @@ suggestion for the user.
 
 ## 4. Run it
 
-1. The CI task set: read the repository's CI workflow files and run the tasks they run, per source set and
-   platform as the workflow does. Long or noisy builds go through the `gradle-check` agent.
+1. The CI task set: read the repository's CI workflow files and identify the tasks per source set and
+   platform, with working directory, toolchain and flags. The main thread delegates execution following
+   `.claude/docs/subagents.md`; a worker returns the requested commands to its parent. Requested test
+   implementation follows the same document's test-writer route. No nested agents or local check substitute.
 2. The entry point the user runs (the CLI command, the app screen, the endpoint, the scheduled job), with
    real input. Quote the output in the report. When it cannot run here, say why and what would run it.
 
 A check counts when it ran after the last edit and its command and exit code are in the report.
+Workers return ready for validation until the parent supplies that evidence. The main thread owns final
+validation; unavailable execution is blocked validation, never a pass. Operational entry-point verification
+in step 2 stays with the responsible specialist.
 
 ## 5. Traceability table
 
