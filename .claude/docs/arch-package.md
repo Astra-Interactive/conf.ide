@@ -252,9 +252,10 @@ root package of the entry-point unit, which holds the classes the platform const
   a sealed family and required nested types stay together. Passing 400 lines does not itself require a split.
 - A data class that is a property type of exactly one class is nested in it. A type that is a property of two
   or more classes, or is returned to another class, is top-level in `model`.
-- Every error family is its own file in `model`, a sealed error with all its subclasses or a single error
-  class: an error a contract names in the `model` of the contract's level, any other in the `model` of the
-  level that uses it, even one used by one class. There is no `exception` package.
+- Every error family is its own file in `model`, a sealed error with all its subclasses or a single error class
+  (in Rust always one `enum`, of one variant when the family has one failure, `error-handling.rs.md`): an error
+  a contract names in the `model` of the contract's level, any other in the `model` of the level that uses it,
+  even one used by one class. There is no `exception` package.
 - Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
   the type's own file. A file that declares a class holds no top-level function; a Compose composable file
   declares no class, so an extension of a type the project does not declare that only it uses is `private` in

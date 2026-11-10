@@ -22,7 +22,7 @@ The examples sit in an unsplit sub-context crate, `modules/invoice`, so their it
 
   ```rust
   // invoice/model/invoice.rs
-  #[derive(Debug, Clone, PartialEq, Eq)]
+  #[derive(Debug, Clone, PartialEq, Eq, Hash)]
   pub(crate) struct Invoice {
       pub(crate) id: InvoiceId,
       pub(crate) total: Money,

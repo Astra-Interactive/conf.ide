@@ -1,7 +1,8 @@
 ## Notes
 
 - Stay on stable Rust: no nightly-only language feature and no nightly-only `rustfmt` or `clippy` option. If the
-  project pins a toolchain in `rust-toolchain.toml`, use that one.
+  project pins a toolchain in `rust-toolchain.toml`, use that one; the pin is a stable release at or above
+  1.93, the `rust-version` of the `klibs-rules` crate that the project's tests build.
 - `cargo clippy --workspace --all-targets -- -D warnings` runs in CI: a finding is fixed, not silenced. Where a
   rule prescribes an exception, it is `#[expect(<lint>, reason = "<why>")]` on the smallest item that needs it,
   never `#[allow(…)]`.

@@ -168,8 +168,8 @@ pub(crate) struct FileInvoiceRepository {
   glob is not used: `modules/*` also matches the container `modules/billing`, and Cargo stops with
   `failed to load manifest for workspace member`.
 - Product crates sit under `modules/` (`arch-package.md`, Units 3), entry-point crates under `instances/<name>`,
-  and `xtask/` at the root. A container directory holds crate directories and nothing else: no `Cargo.toml`, no
-  `src/`. A crate's directory never holds another crate.
+  and `xtask/` at the root. A container directory holds crate directories and nothing else, an optional
+  `README.md` aside: no `Cargo.toml`, no `src/`, no other file. A crate's directory never holds another crate.
 - A crate's `name` is the project prefix followed by its path without the container, `/` replaced by `-`:
   `modules/billing/api` → `shop-billing-api`, `modules/event-host` → `shop-event-host`, `instances/cli` →
   `shop-cli`. A project keeps the convention it has, and a new crate takes the name its neighbours would give
@@ -192,7 +192,7 @@ pub(crate) struct FileInvoiceRepository {
   | `entry-point` | the items the platform calls and `RootModule` | under `instances/`, or no Rust library target (`lib`, `rlib`, `dylib`, `proc-macro`) |
   | `core-ui` | the design system | `modules/core/ui` and below |
   | `core-platform` | shared platform code | `modules/core/<word>`, the word listed in `platform-words` |
-  | `core-api` | shared platform-free code | other crates under `modules/core` |
+  | `core-api` | shared platform-free code | `modules/core` itself and the other crates under it |
   | `core` | an unsplit core of an app, with no project dependencies | never |
   | `contract` | wire types a server and its client share | path ends with `contract` |
   | `storage-contract` | storage contracts (`data/dao`) | path ends with `dao` |
