@@ -11,7 +11,10 @@ field of that kind to the project's own API. The one allowed exception is a list
 three triggers under Things that happen; a type in the `event` kind that implements the platform's own listener
 trait declares no callback. A checker flags every `on_…` parameter of a closure type and every `…Listener` and
 `…Callback` trait outside the platform listener impls of `event`; the reviewer clears one that runs before the
-function returns or meets a documented listener trigger. A trigger must be named, as required below.
+function returns or meets a documented listener trigger. The checker judges a field of a closure type in a struct
+and in an enum variant alike. It does not flag a closure inside a container field (`Vec<Box<dyn Fn…>>`,
+`HashMap<…, Box<dyn Fn…>>`): by its type a listener registry cannot be told from a table of functions that run
+before the function returns, so that field stays with the reviewer. A trigger must be named, as required below.
 
 Outside that exception, project code declares no callback. A result that arrives later is the return value of an
 `async fn`; state is a `watch` channel; things that happen are a stream. A library or platform callback is
