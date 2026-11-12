@@ -194,6 +194,44 @@ Do not mix unrelated responsibilities in one type or function.
   current
   ```
 
+* `=` never ends a line. The initializer of a `let`, a `const` or a `static`, and the type of a type alias,
+  start on the line of their `=`, in an `impl` or a trait too (`const LIMIT: …`, `type Output = …;`), and a type
+  alias is one line, from `type` to `;`. A `where` clause is the exception: rustfmt always puts it, and then the
+  `=`, on lines of their own (`type Item<'a>`, `= &'a str`, `where`, `Self: 'a;`), and the type after `=` is still
+  one line. Kotlin keeps such a declaration by wrapping inside its
+  initializer; rustfmt does not keep a layout written by hand (a `.map_err(…)` moved to its own line goes back after
+  `=`), so when rustfmt breaks a declaration after `=`, or inside the type of an alias, the code is shortened
+  instead:
+  1. a name that repeats its context, or a call that changes nothing, is shortened or dropped;
+  2. a part is named on its own: the receiver of a call or one of its arguments as a `let` before it (a `const` for
+     a constant), a generic type argument as an alias beside it, a long path as a `use` import.
+
+  ```rust
+  // Bad
+  let serialized_invoice =
+      serde_json::to_string(&reminder_invoice).map_err(|source| InvoiceError::Serialize {
+          id: reminder_invoice.id,
+          source: Box::new(source),
+      })?;
+
+  // Good
+  let serialization = serde_json::to_string(&reminder_invoice);
+  let serialized_invoice = serialization.map_err(|source| InvoiceError::Serialize {
+      id: reminder_invoice.id,
+      source: Box::new(source),
+  })?;
+  ```
+
+  ```rust
+  // Bad
+  type ReminderGate =
+      FeatureGate<InvoiceReminderModule, ConfigurationFlagReader<InvoiceReminderConfiguration>>;
+
+  // Good
+  type ReminderFlagReader = ConfigurationFlagReader<InvoiceReminderConfiguration>;
+  type ReminderGate = FeatureGate<InvoiceReminderModule, ReminderFlagReader>;
+  ```
+
 * Kotlin's `.invoke()` rule, which shows that a value is called rather than a declared function, has no Rust
   form to add: a use case or a factory is already called through its `invoke` method (the domain rule), and a
   closure held in a field can only be called as `(self.refresh)()`, whose parentheses already show a value being
