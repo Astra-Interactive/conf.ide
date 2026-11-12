@@ -1,7 +1,7 @@
 ---
 name: package-layout
 description: Plan and review where new source files, packages and build units go in Kotlin and Rust projects. Use before creating the first new file of any task (feature, bugfix, refactor, test), whenever a task may need a new package, Gradle module or Cargo crate, and before moving or merging anything that exists. Gives the planning procedure, the questions to ask the user, the decision tests, worked examples and the review checklist.
-version: 3.1.0
+version: 3.2.0
 ---
 
 # Package layout
@@ -73,6 +73,12 @@ kind, asked in this order:
 3. Operation of more than one step → `usecase`. Wiring → `di`.
 4. Run by the platform → the word of its mechanism, in the unit it serves: `command`, `event`, the UI words,
    `service` (timer), `warmup` (once at start), `migration` (format change), `error` (failure to reply).
+   `event` holds listeners and platform event types only. A class a listener uses goes, asked in this order
+   (`arch-package.md`, Concepts and kinds 8): run by a timer or on a lifecycle of its own → `service` or the
+   project's word (`job`), once at start → `warmup`; state kept between calls → a contract in `api` and its
+   implementation in `memory`, or, when it also acts on the platform, in the technology package of the
+   platform library (directly in the concept of a unit that is wholly that technology); a flow of several
+   steps → `usecase`; a platform effect or a conversion with no state → functions in `util`.
 5. Generic code that units of two sub-contexts need → `core`, in the technology package of the library it is
    built on (`core/cache/cache4k`); until then beside its only user.
 6. Functions (extensions, rules of the model, formatting) → `util`. Never a class.
@@ -89,8 +95,10 @@ contract in `api` with its implementation beside the other implementations, not 
 The project's existing word wins unless it is forbidden.
 
 **T5. Does this need an interface?**
-Exactly four triggers: another unit calls it; two or more implementations exist or one is known to come; an
-inner part declares what it needs from an outer one; a test must replace a contract over I/O or the platform.
+Exactly five triggers: another unit calls it; two or more implementations exist or one is known to come; an
+inner part declares what it needs from an outer one; a test must replace a contract over I/O or the platform;
+an entry point or a use case needs state that is kept between calls (the contract in `api`, the
+implementation in `memory`).
 
 **T6. One file or several?**
 A sealed type with its variants, or a data class with its nested data classes, is
@@ -255,7 +263,7 @@ line. A "no" is fixed by moving the new file, never an old one.
    implementation named by technology, variant or `Default<Interface>`, no `Impl`, no `I` prefix?
    Does a framework registration interface stay beside its mechanism under the signature and dependency
    restrictions of `arch-package.md`, with no domain consumers?
-9. Does every new interface pass one of the four triggers?
+9. Does every new interface pass one of the five triggers?
 10. Is every model and every function in the `model` or `util` of the level that uses it, or, for a rule two
     units use, in the `util` of the model's own unit?
 11. Does every class with behaviour and every error type have its own file, and every extension sit in

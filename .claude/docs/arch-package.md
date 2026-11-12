@@ -176,6 +176,19 @@ root package of the entry-point unit, which holds the classes the platform const
    one sub-context share it through the `api` unit. Only when every answer is no and the file holds functions,
    a rule of the model included, is it `util`. `util` and `model` are never the place for a class no kind
    fits: the agent asks the user and proposes a word.
+
+   **Before `event`, ask the same way.** `event` holds listeners and platform event types, nothing else: a
+   class a listener uses is not an entry point. Does the platform or the project's scheduler run it? The kind
+   of that mechanism, never `event`: `service` or the project's word for it (`job`) for a timer or a lifecycle
+   of its own, `warmup` for a task run once at start. Does it keep state between calls and touch no platform?
+   Storage: a contract in `api`, its implementation in `memory` (`RatingCache` with `InMemoryRatingCache`).
+   Does it keep state and act on the platform (entities it spawned, packets it sent)? A contract in `api` in
+   model types, its implementation in the technology package named after the platform library, or directly in
+   the concept when the unit is wholly that technology (2). Is it a flow of several steps (it reads a
+   contract, applies a rule, acts on the outcome)? A use case: the listener turns platform values into model
+   values before the call and applies the platform effect to the result after it (`KillEventListener` with
+   `LowerKillerRatingUseCase`). Otherwise it is a platform effect or a conversion with no state: functions in
+   `util`, an extension of the platform type. When none fits, the agent asks the user.
 9. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
    singular, except an inherently plural concept (`news`); which concept is plural is the reviewer's call.
 10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
@@ -188,9 +201,12 @@ root package of the entry-point unit, which holds the classes the platform const
 
 ### Contracts and implementations
 
-- An operation contract interface exists on four triggers and no other: another unit calls it; two or more
+- An operation contract interface exists on five triggers and no other: another unit calls it; two or more
   implementations exist or one is known to come; an inner part declares what it needs from an outer one; a test must replace it with
-  a fake, which is allowed only for a contract over I/O or the platform. Pure logic, entities and use cases get
+  a fake, which is allowed only for a contract over I/O or the platform; an entry point or a use case needs
+  state that is kept between calls (a cache of what was sent, cooldowns, open sessions), which is storage
+  (Units 4): its contract in `api`, its implementation in `memory` (in an app, `memory` of the `impl` unit).
+  Pure logic, entities and use cases get
   no interface, except an app's use case that another unit calls (Units 6). Whether one is known to come and
   whether a test must replace it are the reviewer's call.
 - A polymorphic serialization data shape may use an interface in `model` when it declares only read-only

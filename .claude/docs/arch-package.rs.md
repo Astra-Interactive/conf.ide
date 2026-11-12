@@ -257,6 +257,14 @@ pub(crate) struct FileInvoiceRepository {
   run once at start is `warmup`, a format converter `migration`, a failure handler `error`. UI kinds come from
   the UI framework. Entry-point kinds and technology modules may use platform crates; `model`, `api` and
   `usecase` never do (`arch-domain.rs.md`).
+- In `event` a type is a listener named `<Subject>Listener` or the platform's own event type named `<Name>Event`
+  (`arch-package.md`, Concepts and kinds 8; `arch-domain.rs.md`). The checker reports any other struct, enum or
+  union there, except a plain-data type (one with no hand-written `impl` that holds a function) in a file that
+  declares a listener or an event type, and it reports a free function or a `static` there. A guard whose `Drop`
+  is the teardown of a job sits beside the job: Rust runs teardown through `Drop` where Kotlin has `onDisable`.
+  The checker reads the name only, so a helper renamed `…Listener` is the reviewer's to catch, and so is state
+  handed to listeners as a bare `Arc<Mutex<…>>`: state kept between calls goes behind a contract
+  (`arch-package.md`, Contracts and implementations, the fifth trigger).
 - The root of the entry-point crate holds its `di` block, the `model` and `error` kinds of its framework failure
   type (`arch-domain.rs.md`, `error-handling.rs.md`) and the items the platform calls, nothing else. In a
   binary that is `fn main` in `src/main.rs`, which builds the async runtime, constructs `RootModule` and drives

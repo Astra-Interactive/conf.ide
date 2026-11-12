@@ -68,7 +68,7 @@ these rules is the reviewer's call.
 * Open/Closed Principle: code should be extendable without modifying existing logic too much.
 * Liskov Substitution Principle: every implementation of a trait should be safely replaceable by any other.
 * Interface Segregation Principle: avoid large traits with unrelated methods.
-* Dependency Inversion Principle: depend on traits, not concrete implementations. A trait exists on the four triggers of the package-layout rule: another unit calls it, two or more implementations exist or one is known to come, an inner part declares what it needs from an outer one, or a test must replace a contract over I/O or the platform with a fake.
+* Dependency Inversion Principle: depend on traits, not concrete implementations. A trait exists on the five triggers of the package-layout rule: another unit calls it, two or more implementations exist or one is known to come, an inner part declares what it needs from an outer one, a test must replace a contract over I/O or the platform with a fake, or an entry point or a use case needs state that is kept between calls.
 
 ### 3. Use design patterns when appropriate
 
