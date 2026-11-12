@@ -68,7 +68,8 @@ internal class FileJailRepository(
   platform dependency (no Paper, no Bukkit). The platform unit (`gui/bukkit`) depends on it and holds what
   imports the platform.
 - In an app, an `api` unit holds contracts, the models in their signatures, the `util` rules of those models and
-  stubs (`<concept>/stub/`); the `impl` unit holds the rest. Only the entry-point unit depends on an `impl` unit.
+  stubs (`<concept>/stub/`); the `impl` unit holds the rest. Only the entry-point unit depends on an `impl` unit, and a feature's UI
+  unit (`impl-ui`) on the `impl` unit beside it.
 - Dependencies between units follow the second table of `arch-context.md`; nothing depends on the entry-point
   unit, and `core` depends on no feature unit.
 - A `<context>/contract` unit holds only `@Serializable` types and route constants shared by a server unit and
@@ -145,7 +146,9 @@ the details.
 - A `Fake…` scripts failures or records calls. A same-unit fake lives in the test tree in `fake/` inside the
   concept of the contract it replaces (`src/test/kotlin/…/data/dao/rating/fake/FakeRatingRepository.kt`). A double that only
   stores values in memory is not a fake but an in-memory implementation: production code in a `memory`
-  technology package, usable by any unit's tests and by demos.
+  technology package, usable by its own unit's tests and by demos; another unit reaches it only from a plugin's
+  `api` unit or the storage contracts unit (in an app, a double other units need is a `stub` in `api` or a
+  `<feature>/fake` unit).
 - A fake that tests of other units need lives in the `testFixtures` source set of the owning unit at the same
   path (`java-test-fixtures` for JVM units, `android { testFixtures { enable = true } }` for Android units),
   consumed with `testImplementation(testFixtures(projects.modules.jail.api))`. A Multiplatform unit has no

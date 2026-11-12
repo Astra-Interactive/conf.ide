@@ -134,7 +134,10 @@ item is its tier. Decide it while writing the declaration:
 - The items the platform calls in an entry-point crate take the visibility the platform demands: `fn main` of a
   binary has none, and the functions or the plugin type a host loads from a library are `pub`. Entry points
   (`InvoiceCommand`, `InvoiceListener`) are `pub(crate)`: other crates construct the crate's DI module, not its
-  types. The test tree is part of the crate and sees `pub(crate)`, so nothing in production is widened for
+  types. Two exceptions are `pub`: the public interface of an app `api` state holder (`arch-package.md`, Concepts
+  and kinds), and a platform event type in the `event` kind (`arch-domain.rs.md`), which is declared for other
+  programs, reached through the host, and carries the host's event derive or trait.
+  The test tree is part of the crate and sees `pub(crate)`, so nothing in production is widened for
   same-crate tests. A fake of the fixture tree is `pub` for its test consumers; a fake of the test tree is
   `pub(crate)`.
 - Kotlin's explicit API mode has no Rust counterpart: every `pub` is already written on purpose, and
@@ -229,7 +232,8 @@ pub(crate) struct FileInvoiceRepository {
   framework) depends on it and holds what uses the platform.
 - In an app, an `api` crate holds contracts, the models in their signatures, the `util` rules of those models and
   stubs (`<concept>/stub/`), and names a platform crate only under `[target.'cfg(…)'.dependencies]`; the `impl`
-  crate holds the rest. Only the entry-point crate depends on an `impl` crate.
+  crate holds the rest. Only the entry-point crate depends on an `impl` crate, and a feature's UI crate (`impl-ui`)
+  on the `impl` crate beside it.
 - Dependencies between crates follow the second table of `arch-context.md`. Cargo rejects a cycle of normal
   dependencies, but only warns about a dependency on a crate with no library ("ignoring invalid dependency")
   and accepts a cycle through `[dev-dependencies]`; the checker reports both.
@@ -253,7 +257,8 @@ pub(crate) struct FileInvoiceRepository {
   run once at start is `warmup`, a format converter `migration`, a failure handler `error`. UI kinds come from
   the UI framework. Entry-point kinds and technology modules may use platform crates; `model`, `api` and
   `usecase` never do (`arch-domain.rs.md`).
-- The root of the entry-point crate holds its `di` block and the items the platform calls, nothing else. In a
+- The root of the entry-point crate holds its `di` block, the `model` and `error` kinds of its framework failure
+  type (`arch-domain.rs.md`, `error-handling.rs.md`) and the items the platform calls, nothing else. In a
   binary that is `fn main` in `src/main.rs`, which builds the async runtime, constructs `RootModule` and drives
   its lifecycle (`di-manual.rs.md`); in a library a host loads (`crate-type = ["cdylib"]`), the functions or the
   plugin type the host calls, in `src/lib.rs`.
@@ -314,8 +319,9 @@ rule has the rest.
 - A `Fake…` scripts failures or records calls. A same-crate fake lives in the test tree, in `fake/` inside the
   concept of the trait it replaces (`test/invoice/fake/fake_invoice_repository.rs`), `pub(crate)`, re-exported by
   the test tree's `fake` block. A double that only stores values in memory is not a fake but an in-memory
-  implementation, `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code or
-  another crate uses it, and in the test tree (`test/invoice/memory/in_memory_invoice_repository.rs`) when only
+  implementation, `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code uses it or,
+  from a plugin's `api` crate or the storage contracts crate only, another crate does (an app's other crates take a
+  `stub` in `api` or the `fake` feature), and in the test tree (`test/invoice/memory/in_memory_invoice_repository.rs`) when only
   the crate's own tests construct it. Kotlin keeps it in production code either way; Rust cannot, because an item
   that only tests use is dead code in the crate's normal build, and `dead_code` under `-D warnings` stops it.
 - A fake that tests of other crates need lives in the fixture tree of the crate that owns the trait, Kotlin's

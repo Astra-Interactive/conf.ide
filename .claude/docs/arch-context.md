@@ -6,8 +6,9 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 ### The dependency graph
 
 - The units' production dependencies form an acyclic graph. An edge is one of these kinds: a use of an `api`
-  unit or of the storage contracts unit (its contracts, models, model rules in `util`, use cases, and its `stub` and `memory`
-  implementations); a subscription to its events; a use of `core` (its models, helpers and scopes); a use of a
+  unit or of the storage contracts unit (its contracts, models, model rules in `util`, use cases, its `stub`
+  implementations and, in a plugin's `api` unit or the storage contracts unit, its `memory` implementations); a
+  subscription to its events; a use of `core` (its models, helpers and scopes); a use of a
   context's `contract` unit; a unit implementing a contract of a unit it may depend on (a technology unit the
   storage contracts or its own `api`, a platform unit its own `api`, a `<feature>/fake` the `api` it fakes); a DI module taking
   the DI module of a unit it may depend on; the entry-point unit building the product units' DI modules.
@@ -20,7 +21,8 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
   this does not permit unrelated platform, ORM or network types in its contracts or models.
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
   `AddRatingUseCase`). Only the entry-point unit depends on a feature's platform unit (`gui/bukkit`), and
-  nothing depends on the entry-point unit. In an app, only the entry-point unit depends on an `impl` unit.
+  nothing depends on the entry-point unit. In an app, only the entry-point unit depends on an `impl` unit, and a
+  feature's UI unit (`impl-ui`) on the `impl` unit beside it.
 - The owner and production consumers determine a use case's unit (`arch-package.md`, Units 4–6).
   A dependency permitted by this table does not by itself justify putting code in an API unit.
 - Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and
@@ -101,6 +103,7 @@ for ordinary contract operations, implementation types or cycles.
 | an unsplit sub-context (`event-bukkit`) | `api` units, `core` and its platform unit, the storage contracts unit |
 | an `api` unit | other `api` units, the platform-free `core` (`core/api`), the storage contracts unit |
 | an `impl` unit (app) | its own `api`, other `api` units, `core` |
+| an `impl-ui` unit (app) | its own `api`, other `api` units, `core` and its design-system unit, the `impl` unit beside it; another feature's `impl-ui` when it composes them (`composition = "host"`) |
 | a technology unit (`data/exposed`, `discord-ai/ktor`) | its own `api` unit (both unit paths have the same immediate parent), the storage contracts unit, platform-free `core` |
 | the storage contracts unit (`data/dao`) | `core` |
 | `contract` | nothing of the project |

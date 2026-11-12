@@ -210,6 +210,8 @@ components/shop/payment/impl   …payment.impl: offer/usecase/DefaultCheckSubscr
                                offer/di/PaymentModule.kt; androidMain at the same paths
 ```
 
+With a UI unit (`impl-ui`) beside `impl`, the `composable` and `DefaultOfferComponent.kt` paths sit there.
+
 ### A Rust workspace
 
 Rust follows the same procedure, decision tests and checklist; `arch-package.rs.md` translates them: a unit is

@@ -4,8 +4,8 @@ How a UI unit built on Compose is laid out and written. The package-layout rule 
 path of Concepts and kinds); the `compose-hoisting` skill gives state hoisting, `Render()` and previews; this
 rule fills what is specific to Compose. The verb table of `clean-code.kt.md` and the flow rules of
 `coroutines.kt.md` apply unchanged. A UI unit is one whose build already depends on Compose: the `impl` unit
-of a screen feature, an `api` unit whose state holder declares `Render()`, the design-system unit (`core/ui`:
-a unit path, which may keep its word, not a package created inside a unit).
+of a screen feature or its `impl-ui` unit, an `api` unit whose state holder declares `Render()`, the
+design-system unit (`core/ui`: a unit path, which may keep its word, not a package created inside a unit).
 
 ### Packages of a UI unit
 

@@ -214,7 +214,7 @@ keeps that order and those semantics. Only `std`'s locks differ: they poison.
    asynchronous code alike: tokio's own documentation prefers a blocking mutex for data (`tokio::sync::Mutex`,
    "Which kind of mutex should you use?").
    - `tokio::sync::Mutex` is only for a guard that must live across an `.await`.
-   - A synchronous function on a runtime thread (a `Drop`, a synchronous `on_disable`) cannot lock it:
+   - A synchronous function on a runtime thread (a `Drop`, a synchronous `on_enable` or `on_reload`) cannot lock it:
      `blocking_lock` panics there.
    - `clippy::await_holding_lock` reports a `parking_lot` guard held across an `.await`.
 3. `std::sync::Mutex` and `std::sync::RwLock` are not used, in tests and fakes either. After a panic inside the

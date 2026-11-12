@@ -23,8 +23,9 @@ Terms used below:
 1. A project has these kinds of unit:
    - **sub-context units** of a context (`modules/command`, `modules/gui/api`, `modules/data/exposed`);
    - an **entry-point unit** (`instances/bukkit`, `androidApp`): the classes the platform constructs (a
-     plugin's main class; an Android `Application` and its `Activity`) and `RootModule`, nothing else. Nothing
-     depends on it. An application may have several, one per platform or a debug instance;
+     plugin's main class; an Android `Application` and its `Activity`), `RootModule` and the `model` and `error`
+     kinds of its framework failure type, nothing else. Nothing depends on it. An application may have several,
+     one per platform or a debug instance;
    - **`core`**: the common unit for what is not worth a unit of its own: config, translation and permission
      models, shared helpers, shared coroutine scopes (Rust: a `TaskScope`, `async.rs.md`), small platform
      pieces. It holds no use case and no repository, and depends on no feature unit. It may be split by
@@ -53,8 +54,8 @@ Terms used below:
    sub-context (`jail/file`).
 5. **App** (Kotlin Multiplatform, Android, and every Rust project that is not a plugin): a feature others
    depend on is an `api` unit (contracts, the models in their signatures, the `util` rules of those models,
-   stubs) plus an `impl` unit (the implementation and its use cases). Platform code is a source set of the
-   unit (in Rust, code under a target `cfg`), never a unit.
+   stubs) plus an `impl` unit (the implementation and its use cases); its UI lives in a UI unit (`impl-ui`) beside
+   `impl`. Platform code is a source set of the unit (in Rust, code under a target `cfg`), never a unit.
 6. A use case that several production units need lives in the `api` unit of the sub-context that owns the
    operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an
    app, the `usecase` package of the owner's `api` unit holds the use case's interface and the `usecase` package
@@ -62,7 +63,7 @@ Terms used below:
    others call the interface. When no owner can be named, the agent asks.
    Placement follows responsibility and production consumers, not the absence of platform imports.
    A plugin use case used only by one platform unit stays in that unit's `usecase`; an app's implementation
-   stays in the feature's implementation unit, including its UI implementation.
+   stays in `impl` or, when the feature has one, its `impl-ui` unit, including its UI implementation.
    An unsplit owner's use case stays in its unit.
    Contracts, models, errors and functions used only by that implementation stay with it. The `api` package
    of a concept is a place for contracts inside any unit; it does not require a separate `api` build unit.
@@ -92,7 +93,7 @@ root package of the entry-point unit, which holds the classes the platform const
    sub-packages (`screen`, `component`, `layout`, a project's own words) instead of files; the Kotlin Compose
    rule says when. Two packages hold both: the concept package of a unit that is wholly one technology
    (Implementation exception, 2) and the root package of the entry-point unit (the classes the platform
-   constructs beside `di`).
+   constructs beside `di` and the `model` and `error` kinds of its framework failure type).
 
    ```
    …gui.api.rating.change.model.RatingPlayer         data it returns
