@@ -59,10 +59,11 @@ The examples sit in an unsplit sub-context crate, `modules/invoice`, so their it
   deriving `Debug, Clone, Copy, PartialEq, Eq, Hash`, `Copy` only when the inner type is `Copy` (a `String` inside
   refuses it, E0204). A single-property value object is a tuple struct too.
 - A value object with an invariant keeps its fields private: Rust has no read-only field, and only a private
-  field stops a struct literal in another module from skipping the check (E0451). Its `new` checks the invariant
-  with `assert!` calls and nothing else when a violation is a programmer error, and each field gets an accessor
-  named after what it holds. When the input comes from a user, `parse_<type>(raw) -> Result<Type, TypeError>` in
-  its `util` returns `Err` before it calls `new`.
+  field stops a literal in another module from skipping the check (E0423 for the tuple form `Money(5)`, E0451 for
+  a braced literal or a struct update). Its `new` checks the invariant with `assert!` calls and nothing else
+  when a violation is a programmer error, and each field gets an accessor named after what it holds. When the
+  input comes from a user, `parse_<type>(raw) -> Result<Type, TypeError>` in its `util` returns `Err` before it
+  calls `new`.
 
   ```rust
   // invoice/model/money.rs
@@ -146,8 +147,8 @@ The examples sit in an unsplit sub-context crate, `modules/invoice`, so their it
 - A repository, like every contract in `api`, is a trait with the supertraits `Send + Sync`, named
   `<Aggregate>Repository`, in the `api` module of the concept it stores (`invoice/api/invoice_repository.rs`). Its
   methods are `async fn` where they do I/O, and the trait and every `impl` of it carry `#[async_trait]`, from
-  async-trait 0.1.92 or later: 0.1.89 and 0.1.91 fail `clippy::double_must_use` on clippy 1.99, and 0.1.90 is not
-  on crates.io. A trait with a native `async fn` cannot be a `dyn` type (Reference, Dyn compatibility; E0038 on
+  async-trait 0.1.92 or later: 0.1.89 and 0.1.91 fail `clippy::double_must_use` on clippy 1.99, and 0.1.90 is
+  yanked. A trait with a native `async fn` cannot be a `dyn` type (Reference, Dyn compatibility; E0038 on
   1.93 and 1.99), and the Rust Async Working Group names the `async-trait` crate for dynamic dispatch (Rust blog,
   2023-12-21); `Send + Sync` lets one `Arc<dyn …>` serve several threads (std, `Arc`). Implementations are
   `pub(crate)` structs in the technology module under the same concept (`invoice/file/file_invoice_repository.rs`).

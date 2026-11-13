@@ -165,8 +165,9 @@ pub(crate) struct FileInvoiceRepository {
 
 - The root `Cargo.toml` is a virtual manifest: `[workspace]` and no `[package]`, and the root holds no `src/`. A
   project of one crate is a workspace of one member. The root `[workspace]` sets `resolver = "3"`: a virtual
-  manifest otherwise gets resolver 1, and only Rust-version-aware resolution keeps a dependency's dependencies
-  within the project's toolchain.
+  manifest otherwise gets resolver 1, which builds a dev-dependency's features into normal builds, so the `fake`
+  feature of Tests would reach `cargo build --release`; and 3, not 2, because only Rust-version-aware resolution
+  keeps a dependency's dependencies within the project's toolchain.
 - `members` lists each crate's path (`"modules/billing/api"`), as `settings.gradle.kts` includes each unit. A
   glob is not used: `modules/*` also matches the container `modules/billing`, and Cargo stops with
   `failed to load manifest for workspace member`.
@@ -224,8 +225,9 @@ pub(crate) struct FileInvoiceRepository {
   unit applies a convention plugin. Every member takes the lints. `[profile.*]`, `[patch]` and `[replace]` stay
   in the root manifest: Cargo ignores them in a member.
 - A dependency is declared by the crate that uses it. A crate never re-exports another crate's item
-  (`pub use other_crate::…`); a consumer declares its own dependency. This is Gradle's `implementation`: Cargo's
-  `public` flag, the counterpart of `api`, is ignored on stable.
+  (`pub use other_crate::…`); a consumer declares its own dependency. A type in a crate's public signatures
+  still reaches its consumers as a value (a consumer of `pub struct InvoiceId(pub Uuid)` holds a `Uuid`), and
+  Cargo's `public` flag, which would track that, is ignored on stable.
 - In a plugin, an `api` crate (`modules/billing/api`) holds the platform-free code of its sub-context that other
   crates call: models, use cases, contracts and their platform-free implementations, with its own DI module.
   Its manifest names no platform crate. The platform crate (`modules/billing/<host>`, named after the host
@@ -330,8 +332,9 @@ rule has the rest.
   implementation, `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code uses it or,
   from a plugin's `api` crate or the storage contracts crate only, another crate does (an app's other crates take a
   `stub` in `api` or the `fake` feature), and in the test tree (`test/invoice/memory/in_memory_invoice_repository.rs`) when only
-  the crate's own tests construct it. Kotlin keeps it in production code either way; Rust cannot, because an item
-  that only tests use is dead code in the crate's normal build, and `dead_code` under `-D warnings` stops it.
+  the crate's own tests construct it. Kotlin keeps it in production code either way. Rust keeps it in the test
+  tree: an item that only tests use is dead code in the crate's normal build, which `dead_code` under
+  `-D warnings` stops, and the `#[cfg(test)]` that would exempt it is kept out of `src/` (above).
 - A fake that tests of other crates need lives in the fixture tree of the crate that owns the trait, Kotlin's
   `testFixtures`: a `fixture/` directory beside `src/` and `test/` that mirrors `src/`
   (`fixture/invoice/fake/fake_invoice_repository.rs`), `pub`, and never copied into each consumer. The crate
