@@ -240,7 +240,10 @@ which holds the classes the platform constructs beside its `di`.
   `arch-package.rs.md`); preview stubs use `stub`.
   `Impl`, the `I` prefix and the `Interface` suffix are forbidden. `database`, `network`, `local` and `remote` are not
   technology names. An implementation with no technology and no variant, such as an app's use case or a state
-  holder behind its interface, is named `Default<Interface>` (`DefaultAddRatingUseCase`).
+  holder behind its interface, is named `Default<Interface>` (`DefaultAddRatingUseCase`). `InMemory<Contract>`
+  names a store that only holds its values in memory; a store that keeps them in memory and writes them to a
+  file or a database is named by that technology (`YamlRatingRepository`, `FileJailRepository`) and sits in the
+  technology's package.
 - A framework registration interface stays in the package of its mechanism (`route`, `command`, or the
   project's equivalent), including in mixed `core` when several units use it. It connects implementations
   to the framework during setup; it is not a domain operation. Its instance members are abstract,

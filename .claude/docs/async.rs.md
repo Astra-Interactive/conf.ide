@@ -135,9 +135,13 @@ a Kotlin contract names `StateFlow`.
   that needs it, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1); a later consumer
   uses it as `arch-package.md`, Existing code says. A DI module whose types start tasks either builds a scope of
   its own for them or hands them the shared scope that `CoreModule` holds; each such type receives an
-  `Arc<TaskScope>`. The DI module that owns a scope calls its `abort` in its `on_disable`, which does nothing else
-  for those tasks. `new` spawns the drain, so it runs inside the runtime: `main` constructs `RootModule` inside
-  `block_on` (`di-manual.rs.md`).
+  `Arc<TaskScope>`. The DI module that owns a scope calls its `spawn` in its `on_enable`, its `abort` in its
+  `on_disable` and its `reload` in its `on_reload`, which hands the reloaded configuration to the scope's running
+  tasks; a lifecycle method does nothing else for those tasks. A scope whose tasks read a configuration declares
+  `reload`, which hands the reloaded configuration to each of its running tasks: in a tokio runtime through a
+  `watch` channel the tasks observe (Shared state and locks, item 1), where the tasks are synchronous by calling
+  each one's `reload`. The sketch below has no `reload`, its tasks read none. `new` spawns the drain, so it runs
+  inside the runtime: `main` constructs `RootModule` inside `block_on` (`di-manual.rs.md`).
 
   ```rust
   // reminder/service/task_scope.rs, beside its only user, reminder/service/invoice_reminder.rs

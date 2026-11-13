@@ -50,7 +50,9 @@ impl InvoiceModule {
   its own DI module in the unit that owns it. Several DI modules in one unit are normal, and existing ones are
   never merged.
 - Declaring a constructible type or allocating its own state is not dependency assembly. Tests may construct
-  fakes directly; the fixture tree of shared fakes (`arch-package.rs.md`, Tests) needs no DI module.
+  fakes directly; the fixture tree of shared fakes (`arch-package.rs.md`, Tests) needs no DI module. A type
+  named `…Module` in the test or fixture tree is a fake of a DI-module trait, not wiring: the rule that a DI module
+  sits in `di` reads `src/` only.
 - A DI module that starts or stops something implements the project's `Lifecycle` trait (`on_enable`,
   `on_disable`, `on_reload`, all synchronous, as AstraLibs' `Lifecycle` is), and its methods call the same method
   of only the DI modules it owns, in order. It never starts, reloads or stops a DI module it received; it holds
@@ -61,7 +63,9 @@ impl InvoiceModule {
   (`arch-package.md`, Units 1 and Existing code).
 - A DI module whose types start tasks either owns a `TaskScope` for them or hands them the shared scope that
   `CoreModule` holds, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1). The DI module
-  that owns a scope calls its `abort` in its `on_disable` (`async.rs.md`, Tasks); `on_disable` waits for no task.
+  that owns a scope calls its `spawn` in its `on_enable`, its `abort` in its `on_disable` and its `reload` in its
+  `on_reload`, which hands the reloaded configuration to the scope's running tasks (`async.rs.md`, Tasks); a
+  lifecycle method does nothing else for those tasks, and `on_disable` waits for no task.
 
   ```rust
   // instances/server: di/root_module.rs, public because `main.rs` constructs it

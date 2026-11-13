@@ -60,7 +60,11 @@ The examples sit in an unsplit sub-context crate, `modules/invoice`, so their it
 
 - A typed identifier is a tuple struct over the primitive, `pub(crate) struct InvoiceId(pub(crate) Uuid)`,
   deriving `Debug, Clone, Copy, PartialEq, Eq, Hash`, `Copy` only when the inner type is `Copy` (a `String` inside
-  refuses it, E0204). A single-property value object is a tuple struct too.
+  refuses it, E0204). A single-property value object is a tuple struct too, and when it derives `Deserialize` it
+  carries `#[serde(try_from = …)]` (the `Money` example below). A struct with one named field that derives
+  `serde`'s `Serialize` or `Deserialize` and carries no `#[serde(transparent)]`, `#[serde(try_from = …)]` or
+  `#[serde(from = …)]` is the record of a file format and keeps its named field: the field name is a key of the
+  format, and a newtype is written without it.
 - A type with an invariant (a value object, an entity, an aggregate root) keeps its fields private: Rust has no
   read-only field, and only a private field stops a literal in another module from skipping the check (E0423 for
   the tuple form `Money(5)`, E0451 for a braced literal or a struct update). Its one check is

@@ -281,7 +281,9 @@ lifecycle and what `RootModule` lists: `di-manual.rs.md`.
   type is declared in this crate, or a trait `<Type>Ext` with its one `impl` when another crate declares the
   type (an inherent `impl` of another crate's type does not compile, E0116). A file of free functions is named
   after what they do (`duration_format.rs`, `transfer_limit.rs` for a rule over several types); never
-  `utils.rs`, `helpers.rs` or `extensions.rs`.
+  `utils.rs`, `helpers.rs` or `extensions.rs`. A `const` or `static` that the functions of a `util` file use, or
+  that the `impl` of its `<Type>Ext` trait uses, may stay in that file; a file with no function and no `impl`
+  holds no `const` or `static`.
 - Never an item (`struct`, `enum`, `union`, `trait`, `impl`, `mod`) inside a function body. Functions are never
   grouped as associated functions of a type with no field and no trait `impl`.
 - A file whose first line is a comment containing `@generated` is a tool's output (prost-build writes
