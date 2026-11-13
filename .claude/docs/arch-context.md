@@ -1,7 +1,6 @@
 ## Boundaries between units
 
-This rule says how units relate: what one may depend on, what crosses between them, what is shared, and what
-enforces it. The package-layout rule defines the units; the domain rule defines what is inside them.
+This rule says how units relate: what one may depend on, what crosses between them and what is shared.
 
 ### The dependency graph
 
@@ -20,11 +19,11 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
   may expose its state holder's UI framework and the Compose model types allowed by `compose.kt.md`;
   this does not permit unrelated platform, ORM or network types in its contracts or models.
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
-  `AddRatingUseCase`). Only the entry-point unit depends on a feature's platform unit (`gui/bukkit`), and
-  nothing depends on the entry-point unit. In an app, only the entry-point unit depends on an `impl` unit, and a
-  feature's UI unit (`impl-ui`) on the `impl` unit beside it.
-- The owner and production consumers determine a use case's unit (`arch-package.md`, Units 4–6).
-  A dependency permitted by this table does not by itself justify putting code in an API unit.
+  `AddRatingUseCase`, `command` → `vote/api` for a new capability). Only the entry-point unit depends on a
+  feature's platform unit (`gui/bukkit`), and nothing depends on the entry-point unit. In an app, only the
+  entry-point unit depends on an `impl` unit, and a feature's UI unit (`impl-ui`) on the `impl` unit beside it.
+- Where a use case lives: `arch-package.md`, Units 4–6. A dependency the table below allows does not by itself
+  justify putting code in an `api` unit.
 - Storage is reached through its contracts unit (`data/dao`). Only the technology unit (`data/exposed`) and
   the entry-point unit depend on the technology.
 - A sub-context publishes general events, shaped for no single consumer.
@@ -40,28 +39,22 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 ### The anti-corruption layer
 
 - When a provider's model is not yours to control (an external library, a platform API, a remote system, a
-  third-party plugin such as PlaceholderAPI, Vault, LuckPerms), the integration with it is its own sub-context
-  (`integration-papi`) or a concept inside one. It declares in its own words what it needs, translates at its
+  third-party plugin), the integration with it is its own sub-context (`integration-<system>`) or a concept
+  inside one. It declares in its own words what it needs, translates at its
   edge, and holds both what it calls on that system and what it exposes to it (`RatingPlaceholderExpansion`).
-- A framework type that leaks into a contract (`Page`, `Pageable`, a plugin's `Location`) is the violation to
-  look for: it is replaced by a model type and mapped in the implementation. A state holder's UI contract
-  is the exception: it may use its own UI framework (`ComponentContext`, `Value`, `Render()`), as
-  `arch-package.kt.md` allows; a UI unit's models may carry Compose types as `compose.kt.md` allows.
+- A framework type that leaks into a contract (a paging type, a platform location) is the violation to look
+  for: it is replaced by a model type and mapped in the implementation. A state holder's UI contract is the
+  exception: it may use its own UI framework (Decompose's `ComponentContext`, `Value`, `Render()`), as
+  `arch-package.md`, Contracts and implementations, allows; a UI unit's models may carry Compose types as
+  `compose.kt.md` allows.
 
 ### `core`
 
-- `core` is the project's common unit for what is not worth a unit of its own: config, translation and
-  permission models, shared functions, shared coroutine scopes (Rust: a `TaskScope`, `async.rs.md`), generic
-  classes that units of two sub-contexts need (`core/cache/cache4k/<Class>`, moved there once a unit of a
-  second sub-context needs it), small platform pieces as packages (`core/coroutine`). It has the same concept →
-  kind shape as any unit. It may be split by platform (`core/api`, `core/bukkit`) and, in an app with Compose,
-  into a design-system unit (`core/ui`).
-- A platform unit of `core` may keep implementations directly in concept packages, as described by the
-  package-layout implementation exception. This does not change the dependency tables below: `core/bukkit`
-  still depends only on `core/api`, and its explicit kind packages keep their import restrictions.
-- `core` holds no use case and no repository, and depends on no feature unit. Nothing enters it before its
-  second consumer.
-- A published library (AstraLibs) is a dependency, not the `core` of any project.
+- What `core` holds and what it depends on: `arch-package.md`, Units 1. It has the same concept → kind shape as
+  any unit.
+- A platform unit of `core` keeps implementations directly in concept packages (`arch-package.md`, Concepts
+  and kinds 2); the tables below apply to it unchanged.
+- A published library is a project of its own (`arch-package.md`, Units 1).
 
 ### Direction and enforcement
 
@@ -69,21 +62,22 @@ enforces it. The package-layout rule defines the units; the domain rule defines 
 |---|---|
 | `model` | other `model` packages: of a higher level or of another concept of the unit |
 | `api` (contracts) | `model`; runtime contract parameters of the `Factory` exception below (nested in Kotlin; a `<Type>Factory` trait in the contract's file in Rust) |
-| `usecase` | `api`, `model`, `util` |
-| implementations (technology packages and units), `stub` | `api` (the contract they implement and the contracts they call), `model`, `util`, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
+| `usecase` | `api`, `model`, `util`, role kinds |
+| implementations (technology packages and units), `stub` | `api` (the contract they implement and the contracts they call), `model`, `util`, role kinds, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
 | `fake` (test implementations) | `api` (the contract it replaces), `model`, `util` |
-| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`, role kinds; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
 | `theme` (Compose) | `model`, `theme` (including the theme object's access to its `CompositionLocal`s) |
-| `util` | `api`, `model`, `util`; `theme` in a Compose unit; `table`, `entity`, `database` in a unit that is wholly one technology |
+| `util` | `model`, `util`, a data type nested in an `api` contract; `theme` in a Compose unit; `table`, `entity`, `database` in a unit that is wholly one technology |
+| role kinds | `model`, `util`, role kinds |
 | `di` | everything |
 | classes the platform constructs at the root of the entry-point unit | `di` to create and use the composition root; the UI kinds they host |
 
 A row names kinds, not concepts, except for the platform-constructed root classes. A kind may depend on the
-listed kinds of any concept and any higher level of
-its unit, with no cycle between packages (`jail/model/JailInmate` on `PlayerId` in the unit's `model`).
-The `util` and `theme` rows allow references within the same kind; they do not grant that permission to
-every kind. A use case still never calls another use case. Only `di` and the platform-constructed root
-classes may depend on `di`; ordinary entry-point kinds do not gain that access.
+listed kinds of any concept and any higher level of its unit, with no cycle between packages
+(`jail/model/JailInmate` on `PlayerId` in the unit's `model`). The `util`, `theme` and role-kind rows allow
+references within the same kind; they do not grant that permission to every kind. A use case still never calls
+another use case. Only `di` and the platform-constructed root classes may depend on `di`; ordinary entry-point
+kinds do not gain that access.
 
 Framework registration interfaces described in `arch-package.md` may be used by entry mechanisms,
 implementations and DI, including through a permitted dependency on mixed `core`. This allows a reference
@@ -104,7 +98,7 @@ for ordinary contract operations, implementation types or cycles.
 | an `api` unit | other `api` units, the platform-free `core` (`core/api`), the storage contracts unit |
 | an `impl` unit (app) | its own `api`, other `api` units, `core` |
 | an `impl-ui` unit (app) | its own `api`, other `api` units, `core` and its design-system unit, the `impl` unit beside it; another feature's `impl-ui` when it composes them (`composition = "host"`) |
-| a technology unit (`data/exposed`, `discord-ai/ktor`) | its own `api` unit (both unit paths have the same immediate parent), the storage contracts unit, platform-free `core` |
+| a technology unit (`data/exposed`, `chat/ktor`) | its own `api` unit (both unit paths have the same immediate parent), the storage contracts unit, platform-free `core` |
 | the storage contracts unit (`data/dao`) | `core` |
 | `contract` | nothing of the project |
 | `core` (`core/api`) | nothing of the project |
@@ -117,29 +111,21 @@ for ordinary contract operations, implementation types or cycles.
 | a test source set (in Rust, a crate's `test/` tree with its `[dev-dependencies]`) | its unit's row above, plus shared fakes from `<feature>/fake` or `testFixtures` (in Rust, another crate's `fixture/` tree through its `fake` feature); these additions are test-only dependencies |
 
 A technology unit's own `api` allowance does not permit dependencies on another sub-context's `api`,
-including a nested unit with a different immediate parent. The resolved unit roles determine this allowance,
-including when a declared role (a convention plugin, a Rust manifest's `role`) overrides the detected one or
-the API unit has a name other than `api`.
+including a nested unit with a different immediate parent.
 
 No cycles between production units or between packages. Test-only dependencies do not become production
 edges; each compilation's dependency graph must remain acyclic. Only test source sets consume a
 `<feature>/fake` unit or a Rust `fake` feature. These two tables are the whole list.
 
-A checker knows the fixed kinds by name: `api`, `model`, `usecase`, `util`, `di`, `theme`, `stub`, `warmup`,
-`migration`, `error`, `table`, `entity`, `database`, `composable` (the one kind whose sub-packages are kinds
-too: `screen`, `component`, `layout`, a project's own word) and `fake` in a test tree (Kotlin test or
-`testFixtures`; a Rust crate's `test/` or `fixture/`), or in `commonMain` of a dedicated `<feature>/fake`
-unit. A technology package is named after a library the unit depends on (read from its build file), or
-`file`, `memory` (Rust also `system`). In a
-unit that is wholly one technology, a concept package holds its implementations directly
-(`router/BukkitGuiRouter`), and the root package of the entry-point unit holds the classes the platform
-constructs. An entry-point or UI kind is a word listed in the checker's config, the project's own words
-(`command`, `gui`, `slot`, `expansion`); any other package that holds files is flagged. A unit's type comes
-from its build file: in Kotlin, the convention plugin it applies (one per unit type, `arch-package.kt.md`),
-which the checker's config maps to a row of the table above, and a unit without such a plugin is checked by
-hand; in Rust, the `role` its manifest declares, else the role its path and targets give (`arch-package.rs.md`).
+The fixed kinds are `api`, `model`, `usecase`, `util`, `di`, `theme`, `stub`, `warmup`, `migration`, `error`,
+`table`, `entity`, `database`, `composable` (its sub-packages are kinds too: `screen`, `component`, `layout`, a
+project's own word) and `fake` (in a test tree, `testFixtures` or a `<feature>/fake` unit; Rust: `test/` or
+`fixture/`). A technology package is named after a library the unit depends on, or `file`, `memory` (Rust also
+`system`). Entry-point, UI and role-kind words are those in the project's linter configuration (Kotlin
+`entryPointWords`, `roleKinds`; Rust `entry-point-words`, `role-kinds`). Any other package that holds files fails
+the build.
 
-Every row of these tables, the package names and the naming of implementations are meant to be checked by a
-tool in the build; the platform and framework imports of `model`, `api` and `usecase` are the reviewer's call.
-Run the checks configured in the project and review any uncovered requirements with the skill's checklist.
-Dependency-direction checks do not establish whether a declaration needs to cross a unit boundary.
+Run the project's configured linter: it checks every row of these tables, the package names and the naming of
+implementations. The platform and framework imports of `model`, `api` and `usecase` are those of the linter's
+built-in framework list and the project's technology words (Kotlin `technologyWords`; Rust `platform-words` and
+`technology-words`). Whether a declaration crosses a unit boundary follows `arch-package.md`, Units 6.

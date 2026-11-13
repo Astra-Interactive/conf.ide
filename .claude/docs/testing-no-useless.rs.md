@@ -36,8 +36,8 @@ that merely repeat language or library behaviour. Generated code is what a deriv
 no coverage counter, so they are outside the measured lines too. An uncovered line of that excluded code is
 not, by itself, dead code.
 
-An invariant check in a value object is project behaviour and needs valid and invalid input scenarios
-(`Money::new` with a negative amount, `parse_money` with text that is not a number); checking that a struct
+The check of a type's invariant is project behaviour and needs valid and invalid input scenarios
+(`Money::try_from` with a negative amount, `parse_money` with text that is not a number); checking that a struct
 stored the value it was built with is not. The exclusion is by what the code does, never by its module:
 `model`, `di` and entry points may all contain behaviour that must be covered. Meaningful integration tests can
 cover wiring and lifecycle ordering without a dedicated test file for each type. If new project behaviour

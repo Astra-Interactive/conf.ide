@@ -117,8 +117,8 @@ Forbidden list and the output above hold, with these differences:
   `notes.rs.md`, the `cfg_attr(klibs_rules, expect(…))` and its manifest form, in its three cases, each approved
   by the user: list each one you propose with its finding and reason under "Left for the user", and write only
   those the prompt approves. An existing-code reason names the document line that keeps the thing
-  (`arch-package.rs.md`: existing paths and names stay); a reason that fits any finding ("existing code") is a
-  baseline. A suspected false positive is reported for the `klibs-rules` repository; no agent writes Rust rules.
+  (`arch-package.md`, Existing code: existing paths and names stay); a reason that fits any finding ("existing
+  code") is a baseline. A suspected false positive is reported for the `klibs-rules` repository; no agent writes Rust rules.
 - Step 8, acceptance: `git diff origin/<default>...HEAD` adds no `#[allow(`, no `#[expect(` that no document
   prescribes, no `cfg_attr(klibs_rules, expect(` and no `checks.disabled` or `checks.allowed-dependencies` entry
   the prompt did not approve, and no lint lowered or removed in `Cargo.toml` or `clippy.toml`. Quote the result.

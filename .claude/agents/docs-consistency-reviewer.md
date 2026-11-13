@@ -56,6 +56,14 @@ Steps:
    - it is English;
    - every path, link, document, skill, agent and heading it names exists (`ls`, `git ls-files`, Read),
      and a new document is listed in `AGENTS.md` in the group whose suffix it carries.
+   - every reference to a numbered item or a section resolves: `python3 .claude/hooks/check-refs.py`
+     exits 0 (pass the linter READMEs and the decision record as arguments when they are in scope). An
+     item's number is the rule's id: a change that shifts or reuses a number is reported, a removed item
+     leaves its number unused;
+   - a new rule sentence states a case that two projects have; a word or a mechanism of one project
+     belongs in that project's linter configuration, and is reported when it is written as a general rule;
+   - a sentence that leaves a decision to a reviewer or tells the agent to ask the user is reported,
+     except the approval before existing code moves (`arch-package.md`, Existing code).
 
 Rules:
 

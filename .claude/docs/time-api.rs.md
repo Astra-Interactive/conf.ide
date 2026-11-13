@@ -53,10 +53,10 @@ already at the boundary. A call that takes a `Duration` (`tokio::time::sleep(del
   bring conversions between each other's types, which is what Kotlin avoids by using only `kotlin.time`.
 - The current moment comes from the project's `Clock` trait, `fn now(&self) -> SystemTime`. Kotlin takes
   `kotlin.time.Clock` from its standard library; Rust's has no clock trait, so the project declares one, as any
-  contract: in the `api` of the unit that first needs it, moved to `core` once a second unit needs it
-  (`arch-context.md`, `core`). Its production implementation, `SystemClock`, sits in the technology module
-  `system` of the same concept (`arch-package.rs.md`, Modules and directories) and is the one place that calls
-  `SystemTime::now()`; a test fake implements `Clock` too:
+  contract: in `core` when two or more units use it at creation, else in the `api` of the unit that needs it; a
+  later consumer uses it where it is (`arch-package.md`, Existing code). Its production implementation,
+  `SystemClock`, sits in the technology module `system` of the same concept (`arch-package.rs.md`, Modules and
+  directories) and is the one place that calls `SystemTime::now()`; a test fake implements `Clock` too:
 
   ```rust
   // clock/system/system_clock.rs

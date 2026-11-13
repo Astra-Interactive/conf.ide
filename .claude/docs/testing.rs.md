@@ -132,8 +132,8 @@ locks).
   test file is named after the file of the owner of the behaviour it checks (a use case, a repository
   implementation, a model rule, an entry point), with `_test`; a type with no behaviour of its own gets no test
   file.
-* The test tree is declared once, as the last item of the crate's root file (`src/lib.rs`, or `src/main.rs` in a
-  binary crate), with nested blocks exactly like the source tree. Its `#[path = "../test"]` and the fixture
+* The test tree is declared once, as the last item of the crate's root file (`arch-package.rs.md`), with nested blocks
+  exactly like the source tree. Its `#[path = "../test"]` and the fixture
   block's `#[path = "../fixture"]` are the only `#[path]`s of the crate, the test block is private, and `src/`
   holds no other `#[cfg(test)]` item.
 
@@ -163,22 +163,21 @@ locks).
   under test keeps it in an `Arc` and passes `fake_order_repository.clone()`: `Arc::clone(&fake_order_repository)`
   takes its type from the `Arc<dyn OrderRepository>` parameter and does not compile (E0308).
 * A fake scripts failures or records calls; a double that only stores values in memory is an in-memory
-  implementation, `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code or
-  another crate uses it, and in the test tree (`test/order/memory/in_memory_order_repository.rs`) when only the
-  crate's own tests construct it, because an item only tests use is dead code in the crate's normal build, and
-  `dead_code` under `-D warnings` stops it.
+  implementation, `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code uses it,
+  or another crate does within the limits of `arch-package.rs.md`, Tests, and in the test tree
+  (`test/order/memory/in_memory_order_repository.rs`) when only the crate's own tests construct it, because an
+  item only tests use is dead code in the crate's normal build, and `dead_code` under `-D warnings` stops it.
 * A fake that tests of other crates need lives in the fixture tree of the crate that owns the trait, Kotlin's
   `testFixtures` source set: `fixture/order/fake/fake_order_repository.rs` beside `src/` and `test/`, `pub`,
   compiled under `#[cfg(any(test, feature = "fake"))]`, and never copied into each consumer. The crate's own tests
   use it as `crate::fixture::order::fake::FakeOrderRepository`; another crate enables the `fake` feature only in
   its `[dev-dependencies]`, never in `[dependencies]`, and uses it from its test tree. The Rust package-layout rule
   gives the Cargo setup.
-* There is no `tests/` directory: the tests of the wired application sit in the entry-point crate's test tree,
-  and a published crate's public API is reached from its test tree through `crate::` paths, and from outside by
-  its `# Examples` doctests (`rustdoc.rs.md`). A procedural-macro crate tests its helper code in its `test/` tree
-  like any crate. Only the tests that expand its macros are the exception, since a macro cannot be used in the
-  crate that defines it: they are one integration-test crate, `tests/it/main.rs`, whose nested blocks mirror
-  `src/` the same way (`tests/it/order/derive_order_test.rs`).
+* Integration tests exist in two cases, each as one crate, `tests/it/main.rs`, whose nested blocks mirror `src/`
+  (`tests/it/order/derive_order_test.rs`): the public API of a published crate (one that declares `version`),
+  reached through the crate's name beside its `# Examples` doctests (`rustdoc.rs.md`), and the macro expansion of a
+  procedural-macro crate, since a macro cannot be used in the crate that defines it. Every other test of a crate is
+  in its `test/` tree, the tests of the wired application in the entry-point crate's.
 
 **Frameworks**: the built-in `#[test]` harness, `#[tokio::test]` with tokio's `test-util` feature in
 `[dev-dependencies]`.

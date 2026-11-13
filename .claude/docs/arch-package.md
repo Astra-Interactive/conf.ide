@@ -1,21 +1,22 @@
 ## Package layout
 
-**Before the first new file of a task, load the `package-layout` skill, record `BASE=$(git rev-parse HEAD)` and
-print the planned tree.** The skill holds the procedure, the decision tests, the checklist and the worked
-examples. This rule holds what the finished tree must look like; `arch-package.kt.md` and `arch-package.rs.md`
-add the language mechanics; `arch-domain.md` holds the domain building blocks; `arch-context.md` holds what
-crosses between units.
+This file says where a file goes. `arch-domain.md` says what a type is and what it holds. `arch-context.md`
+says what crosses a unit boundary. A `.kt.md` or `.rs.md` file says how the language writes a rule of its shared
+file and states no rule of its own. The skill is the order of steps and states no rule.
+
+**Load the `package-layout` skill before the first new file of a task.**
 
 Terms used below:
 
 - **unit**: a build unit, a Gradle module or a Cargo crate;
-- **context**: the business area a project or a part of it serves (`rating` in AstraRating, `jail` in AspeKt);
-- **sub-context**: a part of a context with its own reason to change: an entry mechanism (`command`,
-  `event`, `gui`), an integration with an external system (`integration-papi`), storage (`data`);
+- **context**: the business area a project or a part of it serves (`rating`, `jail`);
+- **sub-context**: a part of a context with its own reason to change: an entry mechanism (`command`, `event`,
+  `gui`), an integration with an external system (`integration-<system>`), storage (`data`), a capability with
+  data or operations of its own (`vote`);
 - **concept**: a package named for a thing in the project's words (`rating`, `jail`, `player`);
 - **kind**: a package named for what its files are (`api`, `model`, `usecase`, `util`, `di`, `command`, `menu`);
 - **entry point**: a class the platform calls (a command, a listener, a menu, a route, a screen, a task);
-- **core**: the project's common unit for what is not worth a unit of its own;
+- **core**: the common unit for what two or more units use and that no single unit's concept names (Units 1);
 - **feature**: another word for a sub-context (`gui`, `payment`); a feature unit is any unit of one.
 
 ### Units
@@ -26,67 +27,80 @@ Terms used below:
      plugin's main class; an Android `Application` and its `Activity`), `RootModule` and the `model` and `error`
      kinds of its framework failure type, nothing else. Nothing depends on it. An application may have several,
      one per platform or a debug instance;
-   - **`core`**: the common unit for what is not worth a unit of its own: config, translation and permission
-     models, shared helpers, shared coroutine scopes (Rust: a `TaskScope`, `async.rs.md`), small platform
-     pieces. It holds no use case and no repository, and depends on no feature unit. It may be split by
-     platform (`core/api`, `core/bukkit`) and, in an app with Compose, into a design-system unit (`core/ui`);
-   - a **`<context>/contract`** unit for the wire types a server and its client share;
+   - **`core`**: the product-wide configuration, translation and permission models (a configuration a single unit
+     loads from its own file is that unit's model), coroutine scopes (Rust: a `TaskScope`, `async.rs.md`), platform
+     pieces as packages named for what they are (`core/coroutine`), never as tiny units, generic classes (no model
+     type of the project in their signatures), `util` functions over platform and library types, framework
+     registration interfaces. It holds no use case and no repository, depends on no feature unit, and takes nothing
+     before its second consumer. It may be split by platform (`core/api`, `core/bukkit`) and, in an app with
+     Compose, into a design-system unit (`core/ui`);
+   - a **`<context>/contract`** unit for the wire types a server and its client share, and a **`<context>/server`**
+     unit beside it for what serves the routes;
    - a **tooling unit** with no product code: `build-logic`, an `xtask` crate, a Kotlin `<feature>/fake` unit.
-   A published library (AstraLibs) is a dependency of a project, not one of its units.
+   A published library is a project of its own: a capability in it is a package in the unit of its platform scope
+   (`core`, `core-bukkit`), and a unit only when it brings dependencies the others must not inherit; its units
+   switch explicit API mode on (`arch-package.kt.md`) and have no `api`/`impl` split.
 2. A context is cut into sub-context units. The author decides the cut; the sub-context kinds in Terms are
-   examples, not a closed list. An agent proposes the cut and asks the user (see the skill); without an
-   answer, new code goes as a package into an existing unit. An agent never proposes to merge an existing cut;
-   a merge the user asks for goes through the approval of Existing code.
-3. Paths: in a project with one context, `modules/<sub-context>` (AstraRating: `modules/command`,
-   `modules/gui`, `modules/data`); with several contexts, `modules/<context>`, and
-   `modules/<context>/<sub-context>` once the author cuts it. A unit's root package (in Rust, its crate name)
-   follows the unit path in the project's existing convention (the language companions give the mechanics).
-4. **Plugin** (a separate build per platform: Gradle JVM builds, or Rust crates per host framework): when
-   the author splits a sub-context by platform (the agent asks, as in 2), it becomes an `api` unit and one
-   unit per platform (`gui/api`, `gui/bukkit`, `gui/forge`). The `api` unit holds the platform-free code
-   other units call: models, use cases, contracts and their platform-free implementations. The platform unit
-   holds everything that imports the platform, and
-   platform-free code that only it uses (a local use case or `RatingSlotKey`). There is no `impl` unit: in a plugin it would add
-   modules and make nothing easier. A sub-context that is not split is one unit, platform imports included
-   (`modules/command`, `modules/event-bukkit`). Storage that several sub-contexts use, or a technology heavy
-   enough for its own build (Exposed, Room), is a contracts unit plus one unit per technology (`data/dao`,
-   `data/exposed`). Storage of one sub-context in files or in memory is a technology package of that
-   sub-context (`jail/file`).
-5. **App** (Kotlin Multiplatform, Android, and every Rust project that is not a plugin): a feature others
-   depend on is an `api` unit (contracts, the models in their signatures, the `util` rules of those models,
-   stubs) plus an `impl` unit (the implementation and its use cases); its UI lives in a UI unit (`impl-ui`) beside
-   `impl`. Platform code is a source set of the unit (in Rust, code under a target `cfg`), never a unit.
-6. A use case that several production units need lives in the `api` unit of the sub-context that owns the
-   operation (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an
-   app, the `usecase` package of the owner's `api` unit holds the use case's interface and the `usecase` package
-   of its `impl` unit the `Default…` implementation; the
-   others call the interface. When no owner can be named, the agent asks.
-   Placement follows responsibility and production consumers, not the absence of platform imports.
+   examples, not a closed list. New code is a new capability when no unit of the project names its concept yet and
+   it brings a stored concept or a use case; code for a concept the project has goes where that concept's code is.
+   A capability's entry points go to the unit that holds that mechanism's entry points and no use case
+   (`modules/command`, `gui/bukkit`), where the project has one, else stay in the capability; its storage goes where the project keeps storage
+   (`data/dao`), else into a technology package of the capability's platform-free unit; an integration with a
+   dependency of its own is `integration-<system>`. An agent never proposes to merge an existing cut; a merge the
+   user asks for goes through the approval of Existing code.
+3. Paths: in a project with one context, `modules/<sub-context>` (`modules/command`, `modules/gui`,
+   `modules/data`); with several contexts, `modules/<context>`, and `modules/<context>/<sub-context>` once the
+   author cuts it. In a plugin, a capability that other units call keeps its platform-free code in
+   `modules/<capability>/api` (other units may depend only on an `api` unit) and its own platform code, if any,
+   in `modules/<capability>/<platform>`; a capability nothing else calls is one unit, `modules/<capability>`,
+   split only as Units 4 says. In an app a new capability is a feature laid out by Units 5. A unit's root
+   package (in Rust, its crate name) follows the unit path in the project's existing convention (the language
+   companions give the mechanics).
+4. **Plugin** (a separate build per platform: Gradle JVM builds, or Rust crates per host framework): a sub-context
+   with code for two or more platforms, or with platform code beside platform-free code that other units call,
+   becomes an `api` unit and one unit per platform (`gui/api`, `gui/bukkit`, `gui/forge`). The `api` unit holds
+   the platform-free code other units call: models, use cases, contracts and their platform-free implementations.
+   The platform unit holds everything that imports the platform, and platform-free code that only it uses (a local
+   use case or a model of its own). There is no `impl` unit: in a plugin it would add modules and make nothing
+   easier. A sub-context that is not split is one unit, platform imports included (`modules/command`,
+   `modules/event-bukkit`). Storage that several sub-contexts use, or a technology heavy enough for its own build
+   (Exposed, Room), is a contracts unit plus one unit per technology (`data/dao`, `data/exposed`). Storage of one
+   sub-context in files or in memory is a technology package of that sub-context (`jail/file`).
+5. **App** (Kotlin Multiplatform, Android, a server or a bot, and every Rust project that is not a plugin): a
+   feature others depend on is an `api` unit (contracts, the models in their signatures, the `util` rules of those
+   models, stubs) plus an `impl` unit (the implementation and its use cases); its UI lives in a UI unit (`impl-ui`)
+   beside `impl`. Platform code is a source set of the unit (in Rust, code under a target `cfg`), never a unit.
+6. A use case that several production units need lives in the `api` unit of the sub-context that owns the operation
+   (rating a player is the rating menu's operation: `gui/api`); the others depend on that `api`. In an app, the
+   `usecase` package of the owner's `api` unit holds the use case's interface and the `usecase` package of its
+   `impl` unit the `Default…` implementation; the others call the interface. A new use case of a concept the
+   project already has goes beside that concept's use cases; a new capability's use cases live in its `api` unit.
+   Placement follows responsibility and production consumers, not the absence of platform imports or the name
+   `…UseCase`.
    A plugin use case used only by one platform unit stays in that unit's `usecase`; an app's implementation
    stays in `impl` or, when the feature has one, its `impl-ui` unit, including its UI implementation.
    An unsplit owner's use case stays in its unit.
-   Contracts, models, errors and functions used only by that implementation stay with it. The `api` package
-   of a concept is a place for contracts inside any unit; it does not require a separate `api` build unit.
-   Types exposed by a shared contract stay with that contract, including nested and generic signature types;
-   dependencies needed by shared API behaviour stay with that behaviour. Count actual calls, implementations
-   and signature dependencies, not just imports or declared Gradle dependencies. Tests, test fakes and
-   construction by the entry point's DI alone do not justify promoting production code to an API unit.
-   For published libraries, external consumers are part of the contract even when absent from this checkout.
-   A single observed consumer is a reason to review ownership, not sufficient evidence to move a type.
+   Contracts, models, errors and functions used only by that implementation stay with it. The `api` package of a
+   concept is a place for contracts inside any unit; it does not require an `api` unit. Types exposed by a shared
+   contract stay with that contract, including nested and generic signature types; dependencies needed by shared
+   API behaviour stay with that behaviour. Count actual calls, implementations and signature dependencies, not
+   imports or declared Gradle dependencies. Tests, test fakes and construction by the entry point's DI alone do
+   not justify promoting production code to an API unit. For published libraries, external consumers are part
+   of the contract even when absent from this checkout.
 7. A unit's directory never holds another unit: a split sub-context's directory is a container with no build
    file and no sources (`gui/api`, `gui/bukkit`).
 8. Every unit carries a `README.md` of one sentence stating its responsibility. A sentence that does not fit is
    the signal to split the unit.
-9. A small piece that does not deserve a unit lives in `core` as a package named for what it is
-   (`core/coroutine`), never as a tiny unit.
 
 ### Concepts and kinds
 
 Every source path reads `<unit root>[/<concept>[/<sub-concept>]]/<kind>[/<sub-kind>]/<File>`, the sub-kind for
-Compose's `composable` only (Concepts and kinds 1). A kind directly under the unit root holds what the whole
-unit shares: its DI module, a model or a helper several concepts use (`…command.model.UsageCommandException`).
-Two places hold files without a kind: the concept package of a unit that is wholly one technology (2), and the
-root package of the entry-point unit, which holds the classes the platform constructs beside its `di`.
+Compose's `composable` only (Concepts and kinds 1). A unit holds its kinds at its root. A task creates a concept
+package for a thing the unit does not yet name when it adds, for that thing, three or more files of two or more
+kinds; an aggregate (`arch-domain.md`) and a stored concept of the storage contracts unit always get one. Files
+already placed are never regrouped; only the files the task adds are counted. Two places hold files without a kind:
+the concept package of a unit that is wholly one technology (2), and the root package of the entry-point unit,
+which holds the classes the platform constructs beside its `di`.
 
 1. A package holds files or packages, never both: a concept holds packages, a kind holds files. A one-file
    kind package is normal. A kind package exists only when it has a file. Compose's `composable` may hold
@@ -114,9 +128,8 @@ root package of the entry-point unit, which holds the classes the platform const
    The platform unit of `core` (`core/bukkit`, `CorePlatform`) has the same placement exception: its
    implementations and their helpers may sit directly in a concept (`item/ItemStackSerializer`). Its root
    still holds packages only; explicit `api`, `model`, `util` and `di` packages keep their usual rules.
-   This placement exception does not grant feature-unit dependencies or platform imports in contracts and
-   models. The `core` dependency restrictions in `arch-context.md` still apply. Assembly of a configured
-   serializer format that registers concrete implementations belongs to `di`, not `util`.
+   The tables of `arch-context.md` apply to it unchanged. Assembly of a configured serializer format that
+   registers concrete implementations belongs to `di`, not `util`.
 
    ```
    …data.exposed.rating.ExposedRatingRepository
@@ -133,8 +146,8 @@ root package of the entry-point unit, which holds the classes the platform const
    |---|---|
    | `api` | contracts of the concept: interfaces other files or units call |
    | `model` | the level's own types: data classes, sealed results, error families (one file each), events, config models |
-   | `usecase` | operations named `<Verb><Object>UseCase` |
-   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; never a class or an `object` declaration (an anonymous `object :` of a bridge is allowed, `arch-package.kt.md`; in Rust an extension is a method of an `impl <Type>` block in `util/<type>_ext.rs`, or of a `<Type>Ext` trait when another crate declares the type, `arch-package.rs.md`) |
+   | `usecase` | operations (`arch-domain.md`, Use case) |
+   | `util` | the level's functions: extensions (`<Subject>Ext.kt`), the rules of the model among them (`arch-domain.md`), and top-level functions; none has a receiver or parameter whose type is a contract of the project (a function type that stands in for one included) or calls one; never a class or an `object` declaration (an anonymous `object :` of a bridge is allowed, `arch-package.kt.md`; in Rust an extension is a method of an `impl <Type>` block in `util/<type>_ext.rs`, or of a `<Type>Ext` trait when another crate declares the type, `arch-package.rs.md`) |
    | `di` | the DI modules of the level (see the DI rule) |
    | entry-point kinds | named in the project's and the framework's vocabulary: `command`, `event`, `route`, `job`, `service` (run on a timer or its own lifecycle); for UI, see below |
    | `theme` | Compose only: the values (timings, spacing, tokens) several composables of the level share, as an `object` of values; in the design-system unit also the theme itself, its `CompositionLocal`s and the `@Composable` theme function (`compose.kt.md`) |
@@ -145,37 +158,35 @@ root package of the entry-point unit, which holds the classes the platform const
    | `stub` | a stub or preview implementation of a contract that other units need |
    | `fake` | test implementations that script failures or record calls; in test sources or `testFixtures` (in Rust, the crate's `test/` tree, or its `fixture/` tree behind the `fake` feature), or in `commonMain` of a dedicated Kotlin `<feature>/fake` unit; consumed only by tests |
    | `table`, `entity`, `database` | only in a unit that is wholly one technology: its tables, its row entities, its connection |
+   | role kind | a class no row above fits (it does no I/O, keeps no state between calls, is not a pure computation that a `util` function would be, and the platform does not call it), in a kind named by the last word of its class name (`PacketCodec` → `codec`, `PacketRegistry` → `registry`, `PlaceholderParser` → `parser`); a last word that is a fixed kind, a technology, one of the project's entry-point or UI words, or one of `Manager`, `Helper`, `Controller`, `Util`, `Utils` renames the class; the word is added to the project's linter config in the same change (Kotlin `roleKinds`; Rust `role-kinds` in `[workspace.metadata.klibs-rules]` or `[package.metadata.klibs-rules]`) |
 
 4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose and are used only
    there (`theme` holds the values several composables of a level share; the Kotlin Compose rule says what
    else a Compose unit holds); `viewmodel` means an Android-style view model, with or without Compose. For any
    other UI framework the names come from the framework's own classes and from the words the project already
-   uses. AstraRating uses AstraLibs' `Menu` inside a `gui` sub-context, with its own words: `gui` (menus),
-   `slot` (menu parts), `context` (`SlotContext`), `component` (the holder of a menu's state), `model`
-   (`RatingSlotKey`). A router, the class through which the code opens a screen or a menu, is a contract like
-   any other: its interface in `api` of the unit that owns navigation (`gui/api/router/api/GuiRouter`), its
-   implementation beside the other implementations in the platform or `impl` unit
-   (`gui/bukkit/router/BukkitGuiRouter`).
+   uses (AstraLibs' `Menu`: `gui` for menus, `slot` for menu parts, `context`, `component` for the holder of a
+   menu's state). A router, the class through which the code opens a screen or a menu, is a contract like
+   any other: its interface in `api` of the unit that owns navigation (`gui/api/router/api/GuiRouter`, in a
+   `router` concept that also holds `model/GuiDestination` and `usecase/OpenGuiUseCase`), its implementation
+   beside the other implementations in the platform or `impl` unit (`gui/bukkit/router/BukkitGuiRouter`).
 5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
    state holder), new files of that kind use it, unless the word is forbidden below or plural (9).
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
-   seeds the rating cache at start, so it belongs to `data` (`warmup`) and reaches the server through
-   AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even when it only loads
-   a cache (AstraRating's `LoginEvent`, a name from before the `…Listener` rule); a failure handler sits with the mechanism that fails.
+   seeds the rating cache at start, so it belongs to `data` (`warmup`); in a plugin built on AstraLibs it reaches
+   the server through AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even
+   when it only loads a cache; a failure handler sits with the mechanism that fails.
 7. **`model` and `util` live at every level.** A model or a function lives in the `model` or `util` of the
-   level that uses it, even as one file (`integration/papi/placeholder/model/PapiConfig.kt`). A higher level's
-   `model` or `util` holds only what several lower levels share; a rule of a model that two units use lives in
-   the `util` of the model's own unit when its dependencies are allowed there and create no cycle. Otherwise,
-   follow the alternatives in `arch-domain.md`, Rules live in `util`. `core` has the same concept → kind shape (`core/settings/model`,
+   level that uses it, even as one file (`integration/<system>/placeholder/model/PlaceholderConfig.kt`). A higher level's
+   `model` or `util` holds only what several lower levels share; where a rule of a model that two units use
+   lives: `arch-domain.md`, Rules live in `util`. `core` has the same concept → kind shape (`core/settings/model`,
    `core/util`).
 8. **Before `util`, ask in order.** Does the file implement, wrap or narrow a contract? Beside the other
-   implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in
-   the unit it serves. Is it generic code that units of two sub-contexts need? `core`, in the technology
-   package of the library it is built on (`core/cache/cache4k/<Class>.kt`), moved there once a unit of a
-   second sub-context needs it; until then it sits beside its only user, and the `api` and platform units of
-   one sub-context share it through the `api` unit. Only when every answer is no and the file holds functions,
-   a rule of the model included, is it `util`. `util` and `model` are never the place for a class no kind
-   fits: the agent asks the user and proposes a word.
+   implementations. Does the platform run it at a moment (start, failure, tick)? The kind of that mechanism in the
+   unit it serves. Is it generic code that units of two sub-contexts need? `core`, in the technology package of the
+   library it is built on (`core/cache/cache4k/<Class>.kt`); the `api` and platform units of one sub-context share
+   it through the `api` unit. Only when every answer is no and the file holds functions, a rule of the model
+   included, is it `util`. `util` and `model` are never the place for a class no kind fits: it takes the role kind,
+   asked last.
 
    **Before `event`, ask the same way.** `event` holds listeners and platform event types, nothing else: a
    class a listener uses is not an entry point. Does the platform or the project's scheduler run it? The kind
@@ -188,9 +199,10 @@ root package of the entry-point unit, which holds the classes the platform const
    contract, applies a rule, acts on the outcome)? A use case: the listener turns platform values into model
    values before the call and applies the platform effect to the result after it (`KillEventListener` with
    `LowerKillerRatingUseCase`). Otherwise it is a platform effect or a conversion with no state: functions in
-   `util`, an extension of the platform type. When none fits, the agent asks the user.
+   `util`, an extension of the platform type. When none fits, the class takes the role kind.
 9. Naming: a concept is named in the project's words, singular, lowercase, one segment. Every package name is
-   singular, except an inherently plural concept (`news`); which concept is plural is the reviewer's call.
+   singular; the plural words a project keeps are in its linter configuration (`pluralConcepts`; Rust
+   `plural-concepts`).
 10. Never a package name: `domain`, `application`, `infrastructure`, `presentation`, `ui`, `controller`,
    `entrypoint`, `impl`, `internal`, `repository`, `valueobject`, `aggregate`, `factory`, `exception`, `dto`,
    `type`, `enum`, `dao`, `common`, `shared`, `helpers`, `misc`, `port`, `adapter`, `in`, `out`, `spi`,
@@ -202,13 +214,12 @@ root package of the entry-point unit, which holds the classes the platform const
 ### Contracts and implementations
 
 - An operation contract interface exists on five triggers and no other: another unit calls it; two or more
-  implementations exist or one is known to come; an inner part declares what it needs from an outer one; a test must replace it with
-  a fake, which is allowed only for a contract over I/O or the platform; an entry point or a use case needs
-  state that is kept between calls (a cache of what was sent, cooldowns, open sessions), which is storage
-  (Units 4): its contract in `api`, its implementation in `memory` (in an app, `memory` of the `impl` unit).
-  Pure logic, entities and use cases get
-  no interface, except an app's use case that another unit calls (Units 6). Whether one is known to come and
-  whether a test must replace it are the reviewer's call.
+  implementations exist, a second one written in the same task counting; an inner part declares what it needs
+  from an outer one; a test written in the same task replaces it with a fake, which is allowed only for a
+  contract over I/O or the platform; an entry point or a use case needs state that is kept between calls (a cache
+  of what was sent, cooldowns, open sessions), which is storage (Units 4): its contract in `api`, its
+  implementation in `memory` (in an app, `memory` of the `impl` unit). Pure logic, entities and use cases get
+  no interface, except an app's use case that another unit calls (Units 6).
 - A polymorphic serialization data shape may use an interface in `model` when it declares only read-only
   data properties, with no functions, property implementations or behaviour. Inherited members satisfy the
   same restrictions; a companion of constants is allowed. Its properties carry scalar or
@@ -217,10 +228,10 @@ root package of the entry-point unit, which holds the classes the platform const
 - A domain contract sits in the `api` package of its concept. Two kinds keep their interface with their
   implementation, named by what the class is: an app use case's interface sits in `usecase` (Units 6), and a
   state holder's interface in the project's state-holder kind (`component`, `viewmodel`), beside its
-  `Default…` implementation (`gui/api/rating/players/component/RatingPlayersComponent`, `players` an old
-  plural name); in an app, when another unit calls it, its interface sits in that kind of the owner's `api`
-  unit and `Default…` in `impl`, as a use case's (`payment/api/offer/component/OfferComponent`,
-  `payment/impl/offer/component/DefaultOfferComponent`). A contract's implementation sits in the technology's
+  `Default…` implementation (`gui/api/rating/list/component/RatingListComponent`); in an app, when another
+  unit calls it, its interface sits in that kind of the owner's `api` unit and `Default…` in `impl`, or in
+  `impl-ui` when the feature has one (Units 6) (`payment/api/offer/component/OfferComponent`,
+  `payment/impl-ui/offer/component/DefaultOfferComponent`). A contract's implementation sits in the technology's
   package or unit, under the same concept, and is named by its technology or variant
   (`ExposedRatingRepository`, `InMemoryJailRepository`, `CacheRefreshingRatingRepository`). Test fakes use
   the `fake` kind and the test-sharing layout of the language companion (`arch-package.kt.md`,
@@ -233,29 +244,14 @@ root package of the entry-point unit, which holds the classes the platform const
   to the framework during setup; it is not a domain operation. Its instance members are abstract,
   synchronous functions returning `Unit`, with framework context parameters and no domain data parameters,
   state properties or default behaviour. For example, `core/route/RouteRegistry.register(Routing)` may
-  name Ktor's routing context. Only those signature types gain a platform-import exception; other imports
-  in the file and other declarations in `core` keep their restrictions. Explicit `api`, `model`, `usecase`
-  packages and platform-free API/contract units do not gain this exception. Domain code must not depend on
-  a registration interface; entry mechanisms, implementations and DI may use it. The interface's name is
-  not evidence of this role. A checker recognises the signature shape and known framework types;
-  registration responsibility and unresolved types still require review.
-- A cache over storage is part of storage, never of its consumer. One that wraps the whole contract is
-  another implementation beside it (`CacheRefreshingRatingRepository`). One that caches part of it gets its own
-  contract in the storage concept's `api` and its implementation in the technology unit (`RatedUsersCache`,
-  `Cache4kRatedUsersCache`).
-- Dependency direction: the first table of `arch-context.md`. In short: implementations depend on contracts
-  and `model`; use cases on contracts, `model` and `util`; entry points on use cases, contracts, `model` and
-  `util`; an entry-point implementation is not exposed to other units. A state holder's public interface
-  in its owner's `api` unit is a contract other units may call, even though its kind is `component` or
-  `viewmodel`. Inside a unit UI kinds depend on each other as `arch-context.md` says; `di` depends on
-  everything, and only another `di` and the classes the platform
-  constructs in the entry-point unit depend on it: a DI module takes DI modules through its constructor. A use
-  case and a domain contract import no platform or framework type; a framework registration interface has
-  only the signature exception above. A state holder's interface may import its UI
-  framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
-- No pass-through: an entry point may call a contract directly. A use case exists only when the flow has more
-  than one step: it reads from a contract, applies a model rule and acts on the outcome, or it combines two or
-  more contracts. A use case never calls another use case.
+  name Ktor's routing context. Only those signature types gain a platform-import exception; other
+  imports in the file and other declarations in `core` keep their restrictions. Explicit `api`, `model`,
+  `usecase` packages and platform-free API/contract units do not gain this exception.
+- A cache over storage: `arch-domain.md`, Repository.
+- Dependency direction: the tables of `arch-context.md`. A use case and a domain contract import no platform or
+  framework type; a framework registration interface has only the signature exception above. A state holder's
+  interface may import its UI framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
+- No pass-through and no use case calling another: `arch-domain.md`, Use case.
 
 ### Files
 
@@ -267,35 +263,39 @@ root package of the entry-point unit, which holds the classes the platform const
   (`compose.kt.md`). These mandatory file boundaries apply regardless of length. Further splitting of an
   otherwise correctly organised file is allowed only above 400 lines and must preserve those boundaries:
   a sealed family and required nested types stay together. Passing 400 lines does not itself require a split.
-- A data class that is a property type of exactly one class is nested in it. A type that is a property of two
-  or more classes, or is returned to another class, is top-level in `model`.
+- A data class created as the property type of exactly one class is nested in it. A type created for two or more
+  classes, or returned to another class, is top-level in `model`.
 - Every error family is its own file in `model`, a sealed error with all its subclasses or a single error class
   (in Rust always one `enum`, of one variant when the family has one failure, `error-handling.rs.md`): an error
   a contract names in the `model` of the contract's level, any other in the `model` of the level that uses it,
   even one used by one class. There is no `exception` package.
-- Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), never in
-  the type's own file. A file that declares a class holds no top-level function; a Compose composable file
+- Extension functions live in `util/<Subject>Ext.kt` of the level that uses them (`KPlayerExt.kt`), even when
+  one file uses them, never in the type's own file. A file that declares a class holds no top-level function; a Compose composable file
   declares no class, so an extension of a type the project does not declare that only it uses is `private` in
   it (`compose.kt.md`). A function is never an `object` used as a namespace (a `theme` object holds values,
   not functions; Compose's two exceptions: the design-system theme object's `@Composable get()` of a
   `CompositionLocal`, Material's `MaterialTheme.colorScheme`, and a design-system component's public
   `<Component>Defaults`), and there is no `Helper`, `Util` or `Manager` class.
-- Wire types: a server and its client in one repository share them through the `<context>/contract` unit;
-  otherwise a route's types live with the route and a client's in its technology package.
-- A domain type carries no kind suffix (`Rating`, not `RatingModel`). A technology representation carries the
-  technology word (`UserRatingTable`, `RatingRow`). A use case carries `UseCase`; a contract carries the word
-  for what it is (`RatingRepository`).
+- Wire types without a `<context>/contract` unit: a route's types live with the route and a client's in its
+  technology package.
 
 ### Existing code
 
-- **Re-layout needs approval.** Merging, moving, renaming or deleting anything that exists (a unit, a package,
-  a file, a class name, DI wiring) happens only after the user approved a printed tree "before → after". A request such as "fix the issues" is not that
-  approval. Without it the rules apply to new files only.
+- **Re-layout needs approval.** Merging, moving, renaming or deleting anything that exists (a unit, a package, a
+  file, a class name, DI wiring) happens only after the user approved a printed tree "before → after". A request
+  such as "fix the issues" is not that approval. Without it the rules apply to new files only. A declaration's
+  place is decided when it is created; a later consumer uses it where it is when the dependency tables of
+  `arch-context.md` allow that edge; when they do not, the final message lists the move and the task stops short
+  of that consumer. Three changes are approved in advance, each printed in the task's planned tree: an app use
+  case's or state holder's interface that another unit calls moves to the owner's `api` unit (its class becomes
+  `Default…`, one DI line changes); an in-memory double that production code starts to construct moves from the
+  test tree to production code; a double that other units' tests need moves to `testFixtures` (KMP: the
+  `<feature>/fake` unit; Rust: `arch-package.rs.md`, Tests). Everything else waits for an approved tree.
 - **Re-layout does not change mechanisms.** A move changes packages, imports and the DI lines the move forces,
   nothing else. The project's mechanisms stay as they are: its `Lifecycle` objects, how listeners start
-  (`val job = flowEvent(...)`), its krates, its DI wiring. The DI rule applies to the DI modules a task
-  creates; existing wiring that breaks it (a flat `RootModule`) stays. Replacing a
-  mechanism is a separate task the user asks for.
+  (`val job = flowEvent(...)`), its krates, its DI wiring. The DI rule applies to the DI modules a task creates;
+  existing wiring that breaks it (a flat `RootModule`) stays. Replacing a mechanism is a separate task the user
+  asks for.
 - Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a
   new line of wiring, a new variant or property of an old type.
 - New files follow this rule next to old packages named otherwise, except that the project's own word for a
@@ -304,11 +304,8 @@ root package of the entry-point unit, which holds the classes the platform const
 
 ### Enforcement
 
-Every line of this rule that a tool can check is meant to be checked in the build: package names, the
-concept/kind shape, the naming of implementations, the dependencies between units. A checker checks what a rule
-states as a fixed name, number or shape; everything else in these rules is the reviewer's call, the platform and
-framework imports of `model`, `api` and `usecase` included. Run the checks configured in the project and
-answer the remaining skill checklist by hand, stating any missing coverage. An advisory ownership report
-provides references for review; it neither proves a type unnecessary nor authorizes a move.
-
-**Load the `package-layout` skill before the first new file of a task.**
+Run the project's configured linter: it checks the package names, the concept/kind shape, the naming of
+implementations and the dependencies between units. The platform and framework imports of `model`, `api` and
+`usecase` are those of the linter's built-in framework list and the project's technology words (Kotlin
+`technologyWords`; Rust `platform-words` and `technology-words`). Answer the skill's checklist for what no check
+covers.

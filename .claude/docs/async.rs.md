@@ -131,9 +131,9 @@ a Kotlin contract names `StateFlow`.
   self.task_scope.spawn(async move { reminder.run().await });
   ```
 
-- The scope is a small type written once. Until a unit of a second sub-context needs it, it sits beside its only
-  user; then it moves to `core`, as `arch-package.md` places generic code (Concepts and kinds 8) and as `core`
-  holds Kotlin's shared coroutine scopes (Units 1). A DI module whose types start tasks either builds a scope of
+- The scope is a small type written once, in `core` when two or more units use it at creation, else in the unit
+  that needs it, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1); a later consumer
+  uses it as `arch-package.md`, Existing code says. A DI module whose types start tasks either builds a scope of
   its own for them or hands them the shared scope that `CoreModule` holds; each such type receives an
   `Arc<TaskScope>`. The DI module that owns a scope calls its `abort` in its `on_disable`, which does nothing else
   for those tasks. `new` spawns the drain, so it runs inside the runtime: `main` constructs `RootModule` inside

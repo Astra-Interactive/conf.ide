@@ -56,22 +56,22 @@ impl InvoiceModule {
   of only the DI modules it owns, in order. It never starts, reloads or stops a DI module it received; it holds
   none. `RootModule` follows the same ownership rule. A DI module never replaces `Lifecycle` with its own
   `start()`, `reload()` or `stop()`, and never moves a child's work into its own `on_enable`. Kotlin takes
-  `Lifecycle` from AstraLibs; Rust has no such library, so the project declares the trait in the `api` of the unit
-  that first needs it and moves it to `core` once a second unit needs it, as every contract (`arch-context.md`,
-  `core`: nothing enters it before its second consumer).
+  `Lifecycle` from AstraLibs; Rust has no such library, so the project declares the trait in `core` when two or
+  more units use it at creation, else in the `api` of the unit that needs it; a later consumer uses it where it is
+  (`arch-package.md`, Units 1 and Existing code).
 - A DI module whose types start tasks either owns a `TaskScope` for them or hands them the shared scope that
   `CoreModule` holds, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1). The DI module
   that owns a scope calls its `abort` in its `on_disable` (`async.rs.md`, Tasks); `on_disable` waits for no task.
 
   ```rust
-  // instances/server: di/root_module.rs
-  pub(crate) struct RootModule {
+  // instances/server: di/root_module.rs, public because `main.rs` constructs it
+  pub struct RootModule {
       core_module: CoreModule,
       invoice_module: InvoiceModule,
   }
 
   impl RootModule {
-      pub(crate) fn new(config_path: PathBuf) -> Self {
+      pub fn new(config_path: PathBuf) -> Self {
           let core_module = CoreModule::new(config_path);
           let invoice_module = InvoiceModule::new(&core_module);
           Self {
@@ -106,7 +106,7 @@ impl InvoiceModule {
   returned. When `main` returns, the runtime is dropped with every task still in it.
 
   ```rust
-  // instances/server: src/main.rs, after the `use` lines and the module tree
+  // instances/server: src/main.rs, after the `use` lines
   fn main() -> ExitCode {
       let runtime = match Builder::new_multi_thread().enable_all().build() {
           Ok(runtime) => runtime,

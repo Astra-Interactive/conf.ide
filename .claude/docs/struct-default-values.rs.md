@@ -42,7 +42,8 @@ let input = PredictionInput {
 Allowed exceptions:
 
 * A type that derives `serde::Deserialize`, where defaults are required for serialization/backward
-  compatibility: it may implement or derive `Default` and carry `#[serde(default)]`.
+  compatibility: it may implement or derive `Default` and carry `#[serde(default)]`, except a model type with an
+  invariant (`arch-domain.rs.md`).
 
   ```rust
   // a config read from a file; the defaults keep old files readable

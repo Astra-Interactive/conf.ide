@@ -27,7 +27,7 @@ are a payload for `Result.failure`; your own code never throws them.
 sealed class OrderError(message: String, cause: Throwable?) : Exception(message, cause)
 
 class OrderParseError(message: String) : OrderError(message, null)
-class OrderValidationError(message: String) : OrderError(message, null)
+class OrderClosedError(message: String) : OrderError(message, null)
 class OrderLoadError(message: String, cause: Throwable) : OrderError(message, cause)
 ```
 
@@ -37,8 +37,9 @@ fun parseOrder(raw: String): Result<Order> {
     return Result.success(Order(/* ... */))
 }
 
-fun Order.validate(): Result<Order> {
-    if (items.isEmpty()) return Result.failure(OrderValidationError("Order must contain at least one item"))
+// util/OrderExt.kt
+fun Order.ensureOpen(): Result<Order> {
+    if (closed) return Result.failure(OrderClosedError("Order ${id.value} is closed"))
     return Result.success(this)
 }
 ```
@@ -117,8 +118,8 @@ flat and nothing is thrown.
 ```kotlin
 fun computeOrderTotal(raw: String): Result<Money> {
     val order = parseOrder(raw).getOrElse { error -> return Result.failure(error) }
-    val validOrder = order.validate().getOrElse { error -> return Result.failure(error) }
-    return Result.success(validOrder.total)
+    val openOrder = order.ensureOpen().getOrElse { error -> return Result.failure(error) }
+    return Result.success(openOrder.total)
 }
 ```
 
