@@ -237,7 +237,11 @@ keeps that order and those semantics. Only `std`'s locks differ: they poison.
    rule (`util`, as Kotlin's `update` lambda). Then it stores the value in one statement, the last one in the
    guard's scope: `*cache = next;`, or one `insert` or `remove` on the guarded collection. A panic before that
    statement leaves the old state, and no statement follows it. Two related values that must change together are
-   one value (one struct, or the entry of one map).
+   one value (one struct, or the entry of one map). A scope may end with the value it returns, when that
+   expression only names a value: a literal, a path (a local, a parameter, a constant, `None`, a unit variant)
+   or a field of such a value, also under unary minus or in parentheses (`let taken = compute(&cache);`, then
+   `taken` or `taken.evicted`), also after `return`. That is the scope's result, not a statement after the write. A call,
+   a method call, a macro, a block, an index or any other expression there is a statement.
 5. Nothing here hides the panic. It ends its task, and the task's scope logs it from the `JoinError` (Tasks).
 
 ```rust

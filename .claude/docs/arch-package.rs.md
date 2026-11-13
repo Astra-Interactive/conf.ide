@@ -274,7 +274,11 @@ lifecycle and what `RootModule` lists: `di-manual.rs.md`.
   trait `impl` included; a derive is not behaviour.
 - The type's file holds its derives, its `impl` blocks and its trait `impl`s; what a model's file may hold is in
   `arch-domain.rs.md`. A file that declares a type holds no free function: a helper is a private associated
-  function of the `impl`, or a function in the `util` of the level that uses it.
+  function of the `impl`, or a function in the `util` of the level that uses it. A `type` alias names a type
+  and forms no type family: a file that holds aliases and free functions and declares no struct, enum, union or
+  trait is a function file for this rule, and its functions stand there. Such a file is in practice a test file,
+  whose aliases name the types its test functions share; a `util` file still holds no `type` alias, so a helper
+  that needs a long type spells it or takes a model type.
 - A type that is a field type of exactly one type sits in that type's file, as does an enum used only through
   one type; any other type is its own file.
 - A `util` file holds functions. `<type>_ext.rs` holds the rules of one type: an `impl <Type>` block when the

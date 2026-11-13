@@ -64,7 +64,7 @@ This rule says how units relate: what one may depend on, what crosses between th
 | `api` (contracts) | `model`; runtime contract parameters of the `Factory` exception below (nested in Kotlin; a `<Type>Factory` trait in the contract's file in Rust) |
 | `usecase` | `api`, `model`, `util`, role kinds |
 | implementations (technology packages and units), `stub` | `api` (the contract they implement and the contracts they call), `model`, `util`, role kinds, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
-| `fake` (test implementations) | `api` (the contract it replaces; when that contract is a DI-module trait that exists by a trigger of `arch-package.md`, Contracts and implementations, that trait too), `model`, `util`, and the other fakes of its own unit's test sources and shared fakes that it hands out (in Rust, its crate's `test/` and `fixture/` trees) |
+| `fake` (test implementations) | `api` (the contract it replaces; when that contract is a DI-module trait that exists by a trigger of `arch-package.md`, Contracts and implementations, that trait too), `model`, `util`, and the other fakes of its own unit's test sources and shared fakes that it hands out (in Rust, its crate's `test/` and `fixture/` trees); in Rust, a fake of the crate's `test/` tree also the `memory` implementation of its own concept |
 | entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`, role kinds; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
 | `theme` (Compose) | `model`, `theme` (including the theme object's access to its `CompositionLocal`s) |
 | `util` | `model`, `util`, a data type nested in an `api` contract; `theme` in a Compose unit; `table`, `entity`, `database` in a unit that is wholly one technology |
@@ -78,7 +78,11 @@ listed kinds of any concept and any higher level of its unit, with no cycle betw
 references within the same kind; they do not grant that permission to every kind. A use case still never calls
 another use case. Only `di` and the platform-constructed root classes may depend on `di`; ordinary entry-point
 kinds do not gain that access. A fake that implements a DI-module trait names that trait: it replaces the
-contract and does not depend on `di`.
+contract and does not depend on `di`. A Rust fake of the crate's `test/` tree may name the `memory` implementation
+of its own concept, in `src/` or in the `test/` tree (`test/task/fake` with `task::memory` or `test/task/memory`),
+when the scenario needs the contract it replaces to call back into the unit under test. Every other non-fake
+implementation, the `memory` of another concept included, stays closed to a fake, and so does every
+implementation named by a shared fake of the `fixture/` tree; the other fakes stay open to it as the table says.
 
 Framework registration interfaces described in `arch-package.md` may be used by entry mechanisms,
 implementations and DI, including through a permitted dependency on mixed `core`. This allows a reference
