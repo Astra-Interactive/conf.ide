@@ -21,8 +21,9 @@ package of the entry-point unit (`instances/<name>`), whose root holds the class
   normal, and existing ones are never merged.
 - Declaring a constructible class or allocating its own state is not dependency assembly. Tests may
   construct fakes directly; a unit of fake declarations alone needs no DI module. A class named `…Module` in
-  the test or `testFixtures` sources is a fake of a DI-module interface, not wiring: the rule that a DI module
-  sits in a `di` package reads the main sources only.
+  the test or `testFixtures` sources, or in a `fake` package of a `<feature>/fake` unit (`arch-package.kt.md`,
+  Tests), is a fake of a DI-module interface, not wiring: the rule that a DI module sits in a `di` package
+  reads the main sources only, the `fake` packages of a `<feature>/fake` unit aside.
 - A DI module that starts or stops something exposes `val lifecycle: Lifecycle` (AstraLibs
   `Lifecycle.Lambda`), and collects the `lifecycle`s only of the DI modules it directly creates: its own
   `lifecycle` calls theirs in order. It never starts, reloads or stops a DI module received as a dependency.
