@@ -29,8 +29,10 @@ MODELS = {
 }
 
 READONLY_COMMANDS = (
-    "git status, log, diff, show, blame, rev-parse, ls-files, branch --show-current, symbolic-ref, "
-    "remote -v, worktree list; gh pr view|list|checks|diff, gh issue view|list, gh run view|list, gh api; "
+    "git [ -C path ] status, log, diff, show, blame, rev-parse, ls-files, branch --show-current, symbolic-ref, "
+    "remote -v, worktree list; a plain NAME=value variable assignment on its own (not before a command, not "
+    "PATH, IFS, HOME, SHELL, ENV, BASH_ENV, PAGER, EDITOR, VISUAL, PROMPT_COMMAND, PS4, BASHOPTS, SHELLOPTS, "
+    "GIT_*, LD_*, DYLD_*, CARGO*, RUST*); no $(...), backticks, <(...) or lone &; gh pr view|list|checks|diff, gh issue view|list, gh run view|list, gh api; "
     "ksrc; head, tail, wc, sort, uniq, cut, jq, tr, awk, sed -n, sed -E; ls, pwd, which, echo, date, true"
 )
 READONLY_MODES = {
