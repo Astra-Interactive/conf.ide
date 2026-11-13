@@ -25,7 +25,8 @@ it. The sections Repository, What the model may import and Validation apply to e
   as its identifier, and a factory (`create<Type>`, Factory) and `parse<Type>` (`arch-domain.kt.md`,
   `arch-domain.rs.md`) are top-level functions.
 - The `util` is that of the level that uses the rule, whichever unit the type comes from
-  (`fun PluginConfig.isRatingMessageLengthAllowed(message: String)` in `gui/api`, over a `core` model).
+  (`fun PluginConfig.isRatingMessageLengthAllowed(message: String)` in `gui/api`, over a `core` model); a rule
+  of a capability's concept is in the capability's unit (`arch-package.md`, Units 2).
   A rule of a model that two units use is written in the `util` of the model's own unit when its types and
   dependencies are allowed there, else in the `util` of the level that uses it. When no `util` may hold it,
   keep the operation with the owner of its meaning, or extract a rule over types allowed in the model's unit

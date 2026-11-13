@@ -32,8 +32,9 @@ The full procedure:
    for new packages.
 3. **List the sub-contexts the task touches**: entry mechanisms (commands, listeners, menus, routes,
    screens), integrations with external systems, storage. Place each by the test of `arch-package.md`,
-   Units 2: a concept no unit names yet that brings a stored concept or a use case is a new capability with
-   its own unit (`arch-package.md`, Units 3); any other code goes where its concept's code is.
+   Units 2: a concept no unit names yet that brings a stored concept, a use case or entry points of its own
+   is a new capability with its own unit (`arch-package.md`, Units 3); any other code goes where its concept's
+   code is.
 4. **If the task would merge, move, rename or delete anything that exists**, print the tree "before → after"
    for those units and packages and wait for the user's approval. "Fix the issues" or "follow the rules" is
    not approval. Without approval, apply the rules to new files only and list the moves you would make in the

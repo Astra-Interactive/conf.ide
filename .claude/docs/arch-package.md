@@ -42,11 +42,13 @@ Terms used below:
    switch explicit API mode on (`arch-package.kt.md`) and have no `api`/`impl` split.
 2. A context is cut into sub-context units. The author decides the cut; the sub-context kinds in Terms are
    examples, not a closed list. New code is a new capability when no unit of the project names its concept yet and
-   it brings a stored concept or a use case; code for a concept the project has goes where that concept's code is.
-   A capability's entry points go to the unit that holds that mechanism's entry points and no use case
-   (`modules/command`, `gui/bukkit`), where the project has one, else stay in the capability; its storage goes where the project keeps storage
-   (`data/dao`), else into a technology package of the capability's platform-free unit; an integration with a
-   dependency of its own is `integration-<system>`. An agent never proposes to merge an existing cut; a merge the
+   it brings a stored concept, a use case or entry points of its own; code for a concept the project has goes where
+   that concept's code is. The capability's unit holds its use cases, the rules of its concept (`util`) and
+   the models that storage does not hold; the units that show or trigger it take them from there. Its entry
+   points go to the unit that holds that mechanism's entry points and no use case (`modules/command`,
+   `gui/bukkit`), where the project has one, else stay in the capability; its storage goes where the project
+   keeps storage (`data/dao`), else into a technology package of the capability's platform-free unit; an
+   integration with a dependency of its own is `integration-<system>`. An agent never proposes to merge an existing cut; a merge the
    user asks for goes through the approval of Existing code.
 3. Paths: in a project with one context, `modules/<sub-context>` (`modules/command`, `modules/gui`,
    `modules/data`); with several contexts, `modules/<context>`, and `modules/<context>/<sub-context>` once the
