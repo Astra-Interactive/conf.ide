@@ -94,8 +94,8 @@ pub fn load_user(&self, user_id: UserId) -> Result<User, UserError>
 **Bad**:
 
 ```rust
-/// Function for computing a discount. Takes a price and a rate and returns the discount.
-pub fn compute_discount(price: Money, rate: f64) -> Money
+/// Method for computing a discount. Takes a rate and returns the discount.
+pub fn compute_discount(&self, rate: f64) -> Money
 ```
 
 **Good** (semantics and constraints not expressed by the types):
@@ -109,7 +109,7 @@ pub fn compute_discount(price: Money, rate: f64) -> Money
 /// # Panics
 ///
 /// Panics if `rate` is outside `0.0..=1.0`.
-pub fn compute_discount(price: Money, rate: f64) -> Money
+pub fn compute_discount(&self, rate: f64) -> Money
 ```
 
 **Good** (`unsafe` always gets `# Safety`, and nothing else is needed here):

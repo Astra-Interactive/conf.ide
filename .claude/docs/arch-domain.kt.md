@@ -3,9 +3,12 @@
 How the domain rule is written in Kotlin.
 
 - An entity and a value object are immutable `data class`es (a single-property value object a `value class`)
-  holding what the domain rule lists, no function. The constructor check of a
-  value object's invariant is an `init` block of `require` calls and nothing else. A rule is an extension in
-  the `util` of the level that uses it; a state transition returns a copy.
+  holding what the domain rule lists, no function. A type with an invariant checks it in an `init` block of
+  `require` calls and nothing else; `init` runs for the constructor, for `copy()` and for a `@Serializable`
+  type's decoder. It is the backstop: a rule that can fail checks first and returns the failure. Input from a
+  user goes through `parse<Type>(raw): Result<Type>` in `util`; a file or a payload is decoded inside the
+  `runCatching` that `error-handling.kt.md` allows around serialization, which maps the failure, an
+  `IllegalArgumentException`, to the domain error.
 
   ```kotlin
   // jail/model/JailInmate.kt
@@ -21,31 +24,20 @@ How the domain rule is written in Kotlin.
   ```
 
 - A typed identifier is a `@JvmInline value class` over the primitive (`value class PlayerId(val uuid: Uuid)`).
-  A single-property value object is a value class too; one with an invariant checks it in `init` with
-  `require` when a violation is a programmer error, or is built by `parse<Type>(raw)` returning `Result`, in
-  its `util`, when the input comes from a user.
-- A sealed hierarchy is one file in `model`: the per-use-case results (`sealed interface RenameResult`), the
-  error families of the error-handling rule, the events of an aggregate.
-- A use case is `<Verb><Object>UseCase` in the `usecase` package of its concept, with `operator fun invoke`
-  as its one public entry; it is constructed by its unit's DI module and takes its contracts through the
-  constructor. It imports no platform type: the server is reached through AstraLibs' `server/*` abstractions or
-  a contract of its sub-context.
-- A repository is an `interface` named `<Aggregate>Repository` in the `api` package of the concept it stores
-  (`data.dao.rating.api.RatingRepository`); its functions are `suspend` where they do I/O; implementations are
-  `internal` classes in the technology unit or package, under the same concept
-  (`data.exposed.rating.ExposedRatingRepository`). A `stub` or `memory` implementation another unit uses is
-  public; so is a fake exported to another unit's tests through `testFixtures` or `<feature>/fake`.
-  Fakes live in `fake/`, following `arch-package.kt.md`, Tests, rather than a technology package.
-- An aggregate factory with rules is a top-level function `create<Aggregate>(...): Result<Aggregate>` in the
-  aggregate's `util`, never a `companion object` function.
-- A domain event is a `data class` in `model`, published through a publisher contract in `api` (a `Flow`); a
-  Bukkit event type that carries it, declared only for other plugins, lives in the `event` kind of the
-  platform unit.
-- `@Serializable` on a model type is allowed; `org.jetbrains.exposed`, `org.bukkit`, `android.*` and the like
-  are never imported in `model`, in a use case or in a domain contract. Framework registration interfaces
-  follow the narrow signature exception in `arch-package.md`; a state holder's interface may import its UI
-  framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform. Two exceptions for
-  `model`: in a UI unit, one whose build already depends on Compose, `model` may import `androidx.compose.*`
-  and `org.jetbrains.compose.*` (`Painter`, `Dp`, `Color`), see `compose.kt.md`; in the unit of a framework's
-  entry point, `model` may hold that framework's exception subclasses (`arch-domain.md`). Which imports count
-  as a platform or framework type is the reviewer's call.
+- A sealed hierarchy (`sealed interface RenameResult`) is one file in `model` (`arch-package.md`, Files): a
+  per-use-case result, an error family, the events of an aggregate.
+- A use case's one public entry is `operator fun invoke`; its unit's DI module constructs it, and it takes its
+  contracts through the constructor. It imports no platform type, so the server is reached through a contract
+  (`arch-package.md`, Contracts and implementations); in a plugin built on AstraLibs, through its `server/*`
+  abstractions or a contract of its sub-context.
+- A repository's functions are `suspend` where they do I/O; its implementations are `internal` classes in the
+  technology unit or package, under the same concept (`data.exposed.rating.ExposedRatingRepository`); which
+  are public: `arch-package.kt.md`, Visibility.
+- A domain event is a `data class`.
+- `@Serializable` on a model type is allowed. The imports that count as platform or framework types are the
+  linter's built-in framework list (`org.jetbrains.exposed`, `org.bukkit`, `android.*` among them) and the
+  project's `technologyWords`; `model`, a use case and a domain contract import none. The exceptions
+  (`arch-package.md`, Contracts and implementations): a framework registration interface, and a state
+  holder's interface, which may import its UI framework (Decompose's `ComponentContext`, `Value`). In `model`: Compose types in a UI unit
+  (`androidx.compose.*`, `org.jetbrains.compose.*`; `compose.kt.md`) and a framework's exception subclasses in
+  its entry-point unit (`arch-domain.md`, What the model may import).

@@ -5,7 +5,9 @@ Never instantiate concrete dependencies inside a type's `new`, its other constru
 Kotlin's `= SomeImplementation()` default.
 
 A dependency is a value with behaviour the type calls and a test might replace (a repository, a client, a clock).
-The type's own state (a `Mutex<HashMap<…>>`, a channel, a `Vec`) is not one.
+The type's own state (a `Mutex<HashMap<…>>`, a channel, a `Vec`) is not one. A job scope (`async.rs.md`, Tasks)
+that a type builds in its `new` for its own jobs and holds by value is its own state too, like a channel; a scope
+the type was handed is a dependency and arrives through `new`.
 
 Dependencies must be created only at the composition root / DI module, then passed down from parent to child
 through `new`.

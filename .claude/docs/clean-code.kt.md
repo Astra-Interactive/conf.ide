@@ -72,7 +72,7 @@ these rules is the reviewer's call.
 * Open/Closed Principle: code should be extendable without modifying existing logic too much.
 * Liskov Substitution Principle: subclasses should be safely replaceable by their parent type.
 * Interface Segregation Principle: avoid large interfaces with unrelated methods.
-* Dependency Inversion Principle: depend on abstractions, not concrete implementations. An interface exists on the five triggers of the package-layout rule: another unit calls it, two or more implementations exist or one is known to come, an inner part declares what it needs from an outer one, a test must replace a contract over I/O or the platform with a fake, or an entry point or a use case needs state that is kept between calls.
+* Dependency Inversion Principle: depend on abstractions, not concrete implementations. When an interface exists: `arch-package.md`, Contracts and implementations.
 
 ### 3. Use design patterns when appropriate
 
@@ -94,7 +94,7 @@ Before using a pattern, briefly explain why it fits the problem.
 
 ### 4. Separate responsibilities
 
-Keep each responsibility in its own class and each class in the kind package of its concept: domain contracts in `api/`, data in `model/`, operations in `usecase/`, extensions in `util/`, wiring in `di/`, implementations where the package-layout rule places them. Interface exceptions, including framework registration interfaces beside their mechanism, follow `arch-package.md`. The package-layout rule and skill decide the packages and when a sub-context gets its own build unit.
+Keep each responsibility in its own class and each class in the kind package of its concept: domain contracts in `api/`, data in `model/`, operations in `usecase/`, functions in `util/`, wiring in `di/`, implementations where the package-layout rule places them. Interface exceptions, including framework registration interfaces beside their mechanism, follow `arch-package.md`. The package-layout rule and skill decide the packages and when a sub-context gets its own build unit.
 
 Do not mix unrelated responsibilities in one class or function.
 

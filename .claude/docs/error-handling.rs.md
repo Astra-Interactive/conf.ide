@@ -27,8 +27,8 @@ names its error type, so `E` is the error family of the contract. Model domain e
 deriving `Debug` and `thiserror::Error`: a variant per failure, its `#[error("…")]` text the message, its fields
 the values the message names. A cause from code you do not own is the `#[source]` field
 `source: Box<dyn Error + Send + Sync>`, Rust's form of Kotlin's `cause: Throwable`, so the family names no foreign
-error type and stays `Send + Sync` (API Guidelines C-GOOD-ERR). Your own code never panics with an error of a
-family.
+error type and stays `Send + Sync` (API Guidelines C-GOOD-ERR). An error of a family reaches a panic only in the
+`new` of a model type with an invariant (`arch-domain.rs.md`); everywhere else your own code returns it.
 
 ```rust
 // model/order_error.rs: the enum and every variant, one file
@@ -36,8 +36,8 @@ family.
 pub(crate) enum OrderError {
     #[error("order payload is blank")]
     Parse,
-    #[error("order {} must contain at least one item", .id.0)]
-    Validation { id: OrderId },
+    #[error("order {} is closed", .id.0)]
+    Closed { id: OrderId },
     #[error("could not load order {}", .id.0)]
     Load {
         id: OrderId,
@@ -57,9 +57,9 @@ pub(crate) fn parse_order(raw: &str) -> Result<Order, OrderError> {
 
 // util/order_ext.rs
 impl Order {
-    pub(crate) fn validate(self) -> Result<Order, OrderError> {
-        if self.items.is_empty() {
-            return Err(OrderError::Validation { id: self.id });
+    pub(crate) fn ensure_open(self) -> Result<Order, OrderError> {
+        if self.closed {
+            return Err(OrderError::Closed { id: self.id });
         }
         Ok(self)
     }
@@ -113,8 +113,8 @@ flat.
 ```rust
 fn compute_order_total(raw: &str) -> Result<Money, OrderError> {
     let order = parse_order(raw)?;
-    let valid_order = order.validate()?;
-    Ok(valid_order.total)
+    let open_order = order.ensure_open()?;
+    Ok(open_order.total)
 }
 ```
 

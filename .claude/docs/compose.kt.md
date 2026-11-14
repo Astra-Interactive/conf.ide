@@ -29,8 +29,8 @@ design-system unit (`core/ui`: a unit path, which may keep its word, not a packa
 - `composable` is the one kind that may hold sub-packages, named from Compose's vocabulary and the project's
   existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a
   parent composable calls, and the screen content it delegates to), `component` (a reusable part with content:
-  a button, a card, an app bar, an icon; a UI part, not the state-holder `component` of AstraRating or a
-  Decompose app), `layout` (a container that arranges or frames its children and has no content of its own: a
+  a button, a card, an app bar, an icon; a UI part, not the state-holder `component` of a Decompose app),
+  `layout` (a container that arranges or frames its children and has no content of its own: a
   scaffold, a grid, a fade frame), and a project's own words such as `sheet`, `dialog`, `appbar`; never
   `components`. `composable` holds either files only or sub-packages only, never both. When a new file would
   make it hold a second screen or an eighth file, the agent proposes the split; moving the old files needs the
@@ -60,8 +60,8 @@ design-system unit (`core/ui`: a unit path, which may keep its word, not a packa
   second exception. A `DrawScope` extension one composable file uses stays `private` there, like any extension
   of a library type.
 - The file rule has no exception for `private` types of a composable file. A `data class` goes to `model` as
-  data (`arch-domain.md`), its formulas to `util/<Type>Ext.kt`; an `enum` used only through one model type is
-  nested in it, otherwise it is its own file.
+  data (`arch-domain.md`), its formulas to `util` (`arch-domain.md`, Rules live in `util`); an `enum` created for
+  one model type is nested in it, otherwise it is its own file.
 
   ```
   // Bad: ScrollFadeComposable.kt holds FadeSide, SoftEdge with opacityAt(), ScrollFadeDefaults and six previews
@@ -96,9 +96,10 @@ design-system unit (`core/ui`: a unit path, which may keep its word, not a packa
 
 A composable reads a resource through `DrawableResource.asPainter()` and `StringResource.asComposableString(…)`,
 never through `painterResource(…)` or `stringResource(…)` directly. The extensions come from mikro when the
-project's mikro has them; otherwise the project declares them once, in the `util` of the one UI unit that uses them, moved to the
-design-system unit's `util` once a second UI unit needs them (`util/DrawableResourceExt.kt`,
-`util/StringResourceExt.kt`). The string key itself, its file and its placeholders follow the
+project's mikro has them; otherwise the project declares them once (`util/DrawableResourceExt.kt`,
+`util/StringResourceExt.kt`), in the design-system unit's `util` when two or more UI units use them at creation,
+else in the `util` of the one UI unit that uses them; a later UI unit uses them as `arch-package.md`, Existing
+code says. The string key itself, its file and its placeholders follow the
 `string-resources` skill (`.claude/skills/string-resources/SKILL.md`).
 
 ### Constants of a composable

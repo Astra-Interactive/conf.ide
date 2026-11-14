@@ -31,7 +31,7 @@ behaviour. Generated code and trivial field storage are outside this denominator
 that merely repeat language or framework behaviour. An uncovered line of that excluded code is not, by
 itself, dead code.
 
-An invariant check in a value object is project behaviour and needs valid and invalid input scenarios;
+The check of a type's invariant is project behaviour and needs valid and invalid input scenarios;
 checking that a data class stored its constructor argument is not. The exclusion is by what the code does,
 never by its package: `model`, `di` and UI may all contain behaviour that must be covered. Meaningful
 integration tests can cover wiring and lifecycle ordering without a dedicated test file for each class.

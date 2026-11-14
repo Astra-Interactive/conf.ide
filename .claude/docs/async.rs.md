@@ -131,13 +131,29 @@ a Kotlin contract names `StateFlow`.
   self.task_scope.spawn(async move { reminder.run().await });
   ```
 
-- The scope is a small type written once. Until a unit of a second sub-context needs it, it sits beside its only
-  user; then it moves to `core`, as `arch-package.md` places generic code (Concepts and kinds 8) and as `core`
-  holds Kotlin's shared coroutine scopes (Units 1). A DI module whose types start tasks either builds a scope of
-  its own for them or hands them the shared scope that `CoreModule` holds; each such type receives an
-  `Arc<TaskScope>`. The DI module that owns a scope calls its `abort` in its `on_disable`, which does nothing else
-  for those tasks. `new` spawns the drain, so it runs inside the runtime: `main` constructs `RootModule` inside
-  `block_on` (`di-manual.rs.md`).
+- The scope is a small type written once, in `core` when two or more units use it at creation, else in the unit
+  that needs it, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1); a later consumer
+  uses it as `arch-package.md`, Existing code says. The type is named `TaskScope`, and one product (the crates
+  linked by path dependencies) has no second type of that name, counted in their `src/` trees. A product's
+  `TaskScope` is one of two kinds, never both: the futures scope of a crate that runs an async runtime (the first
+  sketch below), or the job scope of a synchronous host with no runtime (the second). A DI module whose types
+  start tasks either builds a scope of its own for them or hands them the shared scope that `CoreModule` holds;
+  each such type receives an `Arc<TaskScope>`. Such a type calls `spawn` and nothing else on it, from code that
+  itself runs between the `on_enable` and the `on_disable` of the scope's owner (a job of a scope, an entry point
+  a job has bound); `abort` and `reload` would stop or reload the tasks of every other holder. A DI module calls
+  `spawn` in its `on_enable` onto a scope it owns or was handed; the one that owns the scope also calls its
+  `abort` in its `on_disable` and its `reload` in its `on_reload`, which hands the reloaded configuration to the
+  scope's running tasks; a lifecycle method does nothing else for those tasks. A job that switches other jobs on
+  and off while its module stays enabled (a feature switch read from a configuration file) owns a scope of its own
+  for them, in one shape: a type that owns the scope (the feature's parts) builds it in its `new` and holds it by
+  value, so no other type can reach it, and calls the scope's `spawn`, `reload` and `abort`. The job holds that
+  type behind an `Arc`, and the guard its `start` returns holds a clone of that `Arc` and aborts the scope through
+  it when it is dropped, so the `abort` of the DI module's scope, which drops that guard, stops both. A scope
+  whose tasks read a configuration declares `reload`, which hands the reloaded configuration to each of its
+  running tasks: in a tokio runtime through a `watch` channel the tasks observe (Shared state and locks, item 1),
+  where the tasks are synchronous jobs (below) by calling each job's `reload`. The first sketch below has no
+  `reload`, its tasks read none. `new` spawns the drain, so it runs inside the runtime: `main` constructs
+  `RootModule` inside `block_on` (`di-manual.rs.md`).
 
   ```rust
   // reminder/service/task_scope.rs, beside its only user, reminder/service/invoice_reminder.rs
@@ -191,6 +207,98 @@ a Kotlin contract names `StateFlow`.
   }
   ```
 
+- The job scope, the other kind of `TaskScope`, serves a synchronous host with no runtime. Its tasks are jobs, types
+  that implement `ScopedJob`. `spawn` takes an `Arc<dyn ScopedJob>`, calls its `start` and keeps the `TaskGuard`
+  that `start` returns; `reload` calls each job's `reload` with its running guard; `abort` drops every guard. A
+  `TaskGuard` is the value `start` returns: a `Vec` of what `start` began (a subscription, a handle, a flag), which
+  stops them when it is dropped, since the drop drops what it holds (`no-callbacks.rs.md`, Cleanup); `reload` may
+  push or replace entries through the `&mut` it receives. The scope holds no lock while it calls a job's `start` or
+  `reload`, so a job may call `spawn` on, or abort, a scope it owns, from either.
+
+  ```rust
+  // task/api/scoped_job.rs, in the crate that declares TaskScope
+  pub trait ScopedJob: Send + Sync {
+      fn start(&self) -> TaskGuard;
+      fn reload(&self, running: &mut TaskGuard);
+  }
+
+  // task/model/task_guard.rs
+  pub type TaskGuard = Vec<Box<dyn Send>>;
+
+  // task/memory/task_scope.rs, the job scope
+  pub struct TaskScope {
+      running: Mutex<Vec<RunningJob>>,
+  }
+
+  impl TaskScope {
+      pub fn new() -> Self {
+          Self {
+              running: Mutex::new(Vec::new()),
+          }
+      }
+
+      fn take_guard(&self, job: &Arc<dyn ScopedJob>) -> Option<TaskGuard> {
+          let mut running = self.running.lock();
+          running
+              .iter_mut()
+              .find(|entry| Arc::ptr_eq(&entry.job, job))?
+              .guard
+              .take()
+      }
+
+      fn store_guard(&self, job: &Arc<dyn ScopedJob>, guard: TaskGuard) {
+          let mut running = self.running.lock();
+          let Some(entry) = running
+              .iter_mut()
+              .find(|entry| Arc::ptr_eq(&entry.job, job))
+          else {
+              return;
+          };
+          entry.guard = Some(guard);
+      }
+
+      pub fn spawn(&self, job: Arc<dyn ScopedJob>) {
+          let guard = job.start();
+          self.running.lock().push(RunningJob {
+              job,
+              guard: Some(guard),
+          });
+      }
+
+      pub fn reload(&self) {
+          let jobs: Vec<Arc<dyn ScopedJob>> = self
+              .running
+              .lock()
+              .iter()
+              .map(|running| Arc::clone(&running.job))
+              .collect();
+          for job in jobs {
+              let Some(mut guard) = self.take_guard(&job) else {
+                  continue;
+              };
+              job.reload(&mut guard);
+              self.store_guard(&job, guard);
+          }
+      }
+
+      pub fn abort(&self) {
+          let running = std::mem::take(&mut *self.running.lock());
+          drop(running);
+      }
+  }
+
+  impl Default for TaskScope {
+      fn default() -> Self {
+          Self::new()
+      }
+  }
+
+  struct RunningJob {
+      job: Arc<dyn ScopedJob>,
+      guard: Option<TaskGuard>,
+  }
+  ```
+
 - A `JoinHandle` that code awaits itself (the one of `spawn_blocking`, one in a test) gives a
   `Result<T, JoinError>`, which is consumed like any `Result` (`error-handling.rs.md`), never dropped.
 - A future is cancelled by being dropped, at any `.await`; there is no exception to rethrow. Cleanup that must
@@ -233,7 +341,11 @@ keeps that order and those semantics. Only `std`'s locks differ: they poison.
    rule (`util`, as Kotlin's `update` lambda). Then it stores the value in one statement, the last one in the
    guard's scope: `*cache = next;`, or one `insert` or `remove` on the guarded collection. A panic before that
    statement leaves the old state, and no statement follows it. Two related values that must change together are
-   one value (one struct, or the entry of one map).
+   one value (one struct, or the entry of one map). A scope may end with the value it returns, when that
+   expression only names a value: a literal, a path (a local, a parameter, a constant, `None`, a unit variant)
+   or a field of such a value, also under unary minus or in parentheses (`let taken = compute(&cache);`, then
+   `taken` or `taken.evicted`), also after `return`. That is the scope's result, not a statement after the write. A call,
+   a method call, a macro, a block, an index or any other expression there is a statement.
 5. Nothing here hides the panic. It ends its task, and the task's scope logs it from the `JoinError` (Tasks).
 
 ```rust

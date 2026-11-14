@@ -293,6 +293,7 @@ outcome, `Option` when absence is the only failure.
   timer is `tokio::time::interval` in a task of a `TaskScope`.
 - A runtime is built and blocked on only in `main` of the entry-point crate, with `tokio::runtime::Builder` and
   never `#[tokio::main]` (`di-manual.rs.md`), and inside a technology module, where a library calls a synchronous
-  callback on a thread of its own, or the synchronous `on_disable` runs after `main`'s `block_on`, and that code
-  must wait for async work (`Handle::block_on`, which panics on a runtime thread). A test runs async code under
-  `#[tokio::test]` (`testing.rs.md`).
+  callback on a thread of its own and that code must wait for async work, and in the `on_disable` of the DI module
+  of a technology module, which runs after `main`'s `block_on` and waits for the shutdown of its own resource
+  (`self.handle.block_on(self.<resource>.<shutdown>())`, `di-manual.rs.md`). `Handle::block_on` panics on a runtime
+  thread. A test runs async code under `#[tokio::test]` (`testing.rs.md`).

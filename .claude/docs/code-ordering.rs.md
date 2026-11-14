@@ -17,7 +17,8 @@ When writing or modifying code, order declarations by dependency, not by call-si
    - private helpers sit above the functions that use them;
    - lower-level utilities come before higher-level orchestration functions.
 
-   This order holds inside one `impl` block and among the free functions of a file that declares no type.
+   This order holds inside one `impl` block and among the free functions of a file that declares no type (a
+   `type` alias is no type declaration here).
    A constructor is never a caller here: it stays first by rule 2 and may call a helper declared below it, as
    `TaskScope::new` calls `drain` (`async.rs.md`, Tasks), the way a Kotlin secondary constructor precedes the
    functions whatever it calls. Between `impl` blocks rule 2 wins: an inherent method may call a trait method
