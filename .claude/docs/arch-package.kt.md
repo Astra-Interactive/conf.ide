@@ -102,12 +102,13 @@ The file rules are in `arch-package.md`, Files; Kotlin adds:
   platform test source set mirrors its main source set. A test file is named after the owner of the behaviour
   it checks (a use case, a repository implementation, a model rule, an entry point); a class with no behaviour
   of its own gets no test file.
-- A `Fake…` scripts failures or records calls. A same-unit fake lives in the test tree in `fake/` inside the
-  concept of the contract it replaces (`src/test/kotlin/…/data/dao/rating/fake/FakeRatingRepository.kt`). A double that only
+- A `Fake…` scripts failures or records calls. A file of a `fake` package declares a `Fake…` class, and a double
+  under another name is not written. A same-unit fake lives in the test tree in `fake/` inside the concept of the
+  contract it replaces (`src/test/kotlin/…/data/dao/rating/fake/FakeRatingRepository.kt`). A double that only
   stores values in memory is not a fake but an in-memory implementation, `InMemory<Contract>` in a `memory`
-  package of its concept: in production code when production code constructs it (a DI module, a demo
-  instance), in the test tree at the same path when only the unit's own tests do, in `testFixtures` (KMP:
-  `<feature>/fake`) when other units' tests do.
+  package of its concept: in production code when production code constructs it (a DI module, a demo instance),
+  in the test tree at the same path when only the unit's own tests do, in `testFixtures` (KMP: `<feature>/fake`)
+  when other units' tests do.
 - A fake that tests of other units need lives in the `testFixtures` source set of the owning unit at the same
   path (`java-test-fixtures` for JVM units, `android { testFixtures { enable = true } }` for Android units),
   consumed with `testImplementation(testFixtures(projects.modules.jail.api))`. A Multiplatform unit has no

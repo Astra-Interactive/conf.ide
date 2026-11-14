@@ -34,7 +34,8 @@ behaviour. Generated code and trivial field storage are outside this denominator
 that merely repeat language or library behaviour. Generated code is what a derive or a macro writes
 (`#[derive(Debug, Clone, PartialEq)]`, a `thiserror` `Display`); rustc gives the impls of the standard derives
 no coverage counter, so they are outside the measured lines too. An uncovered line of that excluded code is
-not, by itself, dead code.
+not, by itself, dead code. Host glue, as `testing.rs.md` defines it, is outside the denominator too, by what it
+does: it only hands values to and from the host.
 
 The check of a type's invariant is project behaviour and needs valid and invalid input scenarios
 (`Money::try_from` with a negative amount, `parse_money` with text that is not a number); checking that a struct

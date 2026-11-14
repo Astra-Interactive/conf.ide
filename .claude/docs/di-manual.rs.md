@@ -57,15 +57,35 @@ impl InvoiceModule {
   `on_disable`, `on_reload`, all synchronous, as AstraLibs' `Lifecycle` is), and its methods call the same method
   of only the DI modules it owns, in order. It never starts, reloads or stops a DI module it received; it holds
   none. `RootModule` follows the same ownership rule. A DI module never replaces `Lifecycle` with its own
-  `start()`, `reload()` or `stop()`, and never moves a child's work into its own `on_enable`. Kotlin takes
-  `Lifecycle` from AstraLibs; Rust has no such library, so the project declares the trait in `core` when two or
-  more units use it at creation, else in the `api` of the unit that needs it; a later consumer uses it where it is
-  (`arch-package.md`, Units 1 and Existing code).
+  `start()`, `reload()` or `stop()`, and never moves a child's work into its own `on_enable`. A lifecycle method
+  holds no work of its own and calls no other method of its module: beside the forwards it calls only `spawn` of
+  a scope the module owns or was handed, in `on_enable`, and `reload` and `abort` of the scope it owns (next item).
+  The one exception is the `on_disable` of the DI module of a technology module (a DI module in a technology
+  crate or technology module), which may block on the shutdown of an async resource it owns through the
+  `tokio::runtime::Handle` it stored: `self.handle.block_on(self.<resource>.<shutdown>())`, one call and nothing
+  else (`no-callbacks.rs.md`, Threads).
+  What a Kotlin module writes inside `Lifecycle.Lambda` (`onReload = { configKrate.getValue() }`) is in Rust, in a
+  crate with the job scope, the `start` or the `reload` of a `ScopedJob` on that scope; in a crate with an async
+  runtime it is a task that observes a `watch` channel (`async.rs.md`, Tasks). A Rust call that can fail returns a
+  `Result`, handling it is behaviour, and behaviour has a type and a test of its own. Whoever drives the lifecycle
+  (`main`, a host's plugin type) calls its methods one at a time; a reload request that arrives elsewhere is
+  handed to that driver. So a module, and what its lifecycle starts, guards nothing against two lifecycle calls at
+  once. Kotlin takes `Lifecycle` from AstraLibs; Rust has no such library, so the project declares the trait in
+  `core` when two or more units use it at creation, else in the `api` of the unit that needs it; a later consumer
+  uses it where it is (`arch-package.md`, Units 1 and Existing code).
 - A DI module whose types start tasks either owns a `TaskScope` for them or hands them the shared scope that
-  `CoreModule` holds, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1). The DI module
-  that owns a scope calls its `spawn` in its `on_enable`, its `abort` in its `on_disable` and its `reload` in its
-  `on_reload`, which hands the reloaded configuration to the scope's running tasks (`async.rs.md`, Tasks); a
-  lifecycle method does nothing else for those tasks, and `on_disable` waits for no task.
+  `CoreModule` holds, as `core` holds Kotlin's shared coroutine scopes (`arch-package.md`, Units 1). A scope has
+  one owner, the module that constructs it, which holds it by value, or as the `Arc<TaskScope>` it constructed
+  itself when it hands clones out; only the owner calls its `abort` and `reload`. The owner constructs it
+  directly in its constructor, as `TaskScope::new()` or `TaskScope::default()` (by value) or as
+  `Arc::new(TaskScope::new())`, `Arc::new(TaskScope::default())` or `Arc::default()`, or through
+  `#[derive(Default)]` on the owning type (a `TaskScope` or `Arc<TaskScope>` field); a local bound to one of these
+  counts, and a scope reached through a helper function or another module is handed. A holder of a handed clone
+  only spawns onto it (`async.rs.md`, Tasks). A DI module calls `spawn` in its `on_enable` onto a scope it owns or
+  was handed; the one that owns the scope also calls its `abort` in its `on_disable` and its `reload` in its
+  `on_reload`, which hands the reloaded configuration to the scope's running tasks. A lifecycle method does
+  nothing else for those tasks, and `on_disable` waits for no task of a scope; the shutdown of a resource is not
+  such a task (the exception above).
 
   ```rust
   // instances/server: di/root_module.rs, public because `main.rs` constructs it
@@ -104,8 +124,9 @@ impl InvoiceModule {
 - `main` builds the runtime with `tokio::runtime::Builder`, never with `#[tokio::main]`. Inside `block_on` it
   constructs `RootModule` (a `TaskScope` spawns its drain in `new`), calls `on_enable` and waits for the shutdown
   signal; `block_on` returns `RootModule`, and `main` calls `on_disable` after it, while the runtime is still alive.
-  This is Kotlin's shape: the platform calls `onDisable` on a thread that is not a coroutine. A technology module
-  may block there on async work through the `tokio::runtime::Handle` it stored (`Handle::block_on`), which panics
+  This is Kotlin's shape: the platform calls `onDisable` on a thread that is not a coroutine. The DI module of a
+  technology module may block there on the shutdown of its own async resource through the
+  `tokio::runtime::Handle` it stored (`self.handle.block_on(self.<resource>.<shutdown>())`, above), which panics
   inside `#[tokio::main]` ("Cannot start a runtime from within a runtime") and works after `block_on` has
   returned. When `main` returns, the runtime is dropped with every task still in it.
 
@@ -143,7 +164,7 @@ impl InvoiceModule {
   it needs as a parameter of `new` (`InvoiceModule::new(core_module: &CoreModule, invoice_cache: Arc<dyn
   InvoiceCache>)`).
 - A task that seeds or migrates a resource (`warmup`, `migration`) is built by the DI module of that resource
-  and started by its `on_enable`.
+  and started by its `on_enable`, through `spawn` of a scope the module owns or was handed.
 - Never a service locator or a global singleton: no `static` holding a service or shared state (a `static` of
   `OnceLock`, `LazyLock`, `Mutex` or `RwLock`, `lazy_static!`). State shared between tasks is an `Arc<T>` passed
   down. A `static` holds only constant data. The one global is the logging subscriber, which `main` installs once:

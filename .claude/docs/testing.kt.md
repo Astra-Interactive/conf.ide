@@ -86,6 +86,7 @@ internal class FakeUserRepository : UserRepository {
 ### Where tests live
 
 * `src/test/kotlin` mirrors `src/main/kotlin` package for package: `…data.exposed.rating.ExposedRatingRepository` is tested by `src/test/kotlin/…/data/exposed/rating/ExposedRatingRepositoryTest.kt`. In Kotlin Multiplatform, `commonTest` mirrors `commonMain`.
+* A constant or a builder function of a test is a private member of the test class (a constant in its companion object); two test files that need the same literal each declare it. What tests share has behaviour: a fake or an in-memory implementation.
 * A same-unit fake lives in `fake/` inside the concept of the contract it replaces, in the test tree: `src/test/kotlin/…/data/dao/rating/fake/FakeRatingRepository.kt` fakes `…data.dao.rating.api.RatingRepository`. A fake scripts failures or records calls; a double that only stores values in memory is an in-memory implementation, placed by `arch-package.kt.md`, Tests.
 * A fake that tests of other build units need lives in the `testFixtures` source set of the unit that owns the contract, at the same path, and is never copied into each consumer. In Kotlin Multiplatform, shared fakes instead live in `commonMain` of a sibling `<feature>/fake` unit, under `<unit root>/<concept>/fake/`. Shared fakes are public and consumed only by test source sets; ordinary same-unit fakes are `internal`. The Kotlin package-layout rule gives the Gradle setup.
 

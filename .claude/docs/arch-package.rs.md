@@ -112,6 +112,12 @@ under a target `#[cfg]`. Where Rust needs a form of its own, the reason stands n
   implementations built on the standard library's files and memory, `system` names one built on its access to
   the operating system, such as the system clock (`time-api.rs.md`). Kotlin needs no such word, since its
   standard library ships `Clock.System`; the module is not named `std` (above).
+- In a crate that is wholly one technology (`arch-package.md`, Concepts and kinds 2) an implementation is a type
+  with an `impl` of a contract: a trait of an `api` module of the workspace, or a trait that the technology's or
+  the host's library declares for the code it calls (`CommandHandler`). An `impl` of a standard trait (`Drop`,
+  `Default`, `Display`, `From`) makes no implementation: a type that has only those sits directly in the concept
+  when an implementation of that concept uses it, and otherwise in the kind that `arch-package.md`, Concepts and
+  kinds 8 gives it: the role kind when no other kind fits (Concepts and kinds 3).
 - `composable`, `theme` and `viewmodel` are Compose and Android words and are not used in Rust; a Rust UI crate
   takes its kind words from its UI framework and the project (`arch-package.md`, Concepts and kinds 4).
 
@@ -281,6 +287,17 @@ lifecycle and what `RootModule` lists: `di-manual.rs.md`.
   that needs a long type spells it or takes a model type.
 - A type that is a field type of exactly one type sits in that type's file, as does an enum used only through
   one type; any other type is its own file.
+- A contract of this crate implemented for a type another crate declares (`impl InvoiceScreen for Window`; the
+  orphan rule allows it because the trait is local) is Rust's form of a Kotlin adapter class that would hold only
+  that value. The `impl` stands alone in a file of the technology module named after the type's crate, named
+  `<type>_<contract>.rs` (`toolkit/window_invoice_screen.rs`); in a crate that is wholly that technology, directly
+  in the concept. The file declares no type. An adapter that needs a field of its own is a struct named by its
+  technology, like every implementation. A contract implemented for a standard-library type
+  (`impl Clock for SystemTime`) gets no file in a module named `std`, `core` or `alloc` (above): the implementation
+  is a wrapper type in the technology module named after what it reads (`system`, `file`, `memory`), as
+  `SystemClock` in `time-api.rs.md`. A blanket impl that only forwards a contract through a standard pointer
+  (`impl<T: Contract + ?Sized> Contract for Arc<T>`, also `Box`, `Rc` and `&T`) is not an implementation for a
+  standard-library type: it stays beside the contract.
 - A `util` file holds functions. `<type>_ext.rs` holds the rules of one type: an `impl <Type>` block when the
   type is declared in this crate, or a trait `<Type>Ext` with its one `impl` when another crate declares the
   type (an inherent `impl` of another crate's type does not compile, E0116). A file of free functions is named
@@ -306,16 +323,17 @@ lifecycle and what `RootModule` lists: `di-manual.rs.md`.
   (Modules and directories). It is part of the crate, sees `pub(crate)`, and imports through the kind modules
   (`use crate::invoice::usecase::IssueInvoiceUseCase;`). Apart from that block and the fixture block, no
   `#[cfg(test)]` code sits in `src/`.
-- A `Fake…` scripts failures or records calls. A same-crate fake lives in the test tree, in `fake/` inside the
-  concept of the trait it replaces (`test/invoice/fake/fake_invoice_repository.rs`), `pub(crate)`, re-exported by
-  the test tree's `fake` block. A double that only stores values in memory is not a fake but an in-memory
-  implementation, `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code uses it or,
-  from a plugin's `api` crate or the storage contracts crate only, another crate does (an app's other crates take a
-  `stub` in `api` or the `fake` feature), and in the test tree
-  (`test/invoice/memory/in_memory_invoice_repository.rs`) when only the crate's own tests construct it. Kotlin
-  follows the same rule for its own unit. The reason for the test tree is Rust's: an item that only tests use is
-  dead code in the crate's normal build, which `dead_code` under `-D warnings` stops, and the `#[cfg(test)]` that
-  would exempt it is kept out of `src/` (above).
+- A `Fake…` scripts failures or records calls. A file of a `fake` module declares a `Fake…` type, and a double
+  under another name is not written: one that scripts or records is named `Fake…`, one that only stores is the
+  `InMemory…` below. A same-crate fake lives in the test tree, in `fake/` inside the concept of the trait it
+  replaces (`test/invoice/fake/fake_invoice_repository.rs`), `pub(crate)`, re-exported by the test tree's `fake`
+  block. A double that only stores values in memory is not a fake but an in-memory implementation,
+  `InMemory<Trait>` in the `memory` module of the concept: in `src/` when production code uses it or, from a
+  plugin's `api` crate or the storage contracts crate only, another crate does (an app's other crates take a
+  `stub` in `api` or the `fake` feature), and in the test tree (`test/invoice/memory/in_memory_invoice_repository.rs`)
+  when only the crate's own tests construct it. Kotlin follows the same rule for its own unit. The reason for the
+  test tree is Rust's: an item that only tests use is dead code in the crate's normal build, which `dead_code`
+  under `-D warnings` stops, and the `#[cfg(test)]` that would exempt it is kept out of `src/` (above).
 - A fake that tests of other crates need lives in the fixture tree of the crate that owns the trait, Kotlin's
   `testFixtures`: a `fixture/` directory beside `src/` and `test/` that mirrors `src/`
   (`fixture/invoice/fake/fake_invoice_repository.rs`), `pub`, and never copied into each consumer. The crate

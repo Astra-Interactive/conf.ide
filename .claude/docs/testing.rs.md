@@ -7,6 +7,15 @@ When writing a test, make sure that:
 * Test technology modules with integration tests where appropriate: against the real technology where it runs
   in a test (a database crate on a temporary database, a file store on a temporary directory, a client and a
   server joined by `tokio::io::duplex` in one process).
+* A platform that runs in no test (a host that loads the crate as a plugin and hands it handles no test can build)
+  is reached only by glue: the body of the method the host calls with the private functions only it calls, and the
+  implementation of a contract over that platform. Glue converts host values to model values, makes single contract
+  calls, logs a failure where it catches it and hands the result to the host. A decision it needs is a `util`
+  function, a use case, a job (`ScopedJob`) generic over the host handle, or a method of a contract that is
+  generic over the host handle (`InvoiceProjector<Host>`, where `Host` is a plain type parameter for the host's
+  handle type, not a contract trait), and is tested there; a branch a test could decide is moved out of the glue.
+  Glue is outside the coverage denominator and is checked on the running host. Kotlin needs no such line: its
+  platform types are interfaces a test can fake.
 * Avoid mocking value objects and simple data structs.
 * Prefer fakes over mocks for repositories and gateways when behavior matters.
 * Tests should verify expected behavior, not implementation details.
@@ -18,10 +27,11 @@ When writing a test, make sure that:
 * You are testing the expected business logic, not the actual one.
 * Prefer splitting code into testable functions if that doesn't affect the public API.
 * New code that implements project behaviour MUST have 100% line coverage and 100% branch coverage through
-  meaningful behaviour tests. Generated code and trivial field storage are outside this denominator;
-  `testing-no-useless.rs.md` describes the distinction. There is no blanket exclusion for `model`, `di` or entry
-  points: their own validation, transformations, lifecycle ordering and other project behaviour must be covered.
-  Integration tests may cover wiring; a separate test file for every type is not required.
+  meaningful behaviour tests. Generated code, trivial field storage and host glue (the bullet above) are outside
+  this denominator; `testing-no-useless.rs.md` describes the distinction. There is no blanket exclusion for
+  `model`, `di` or entry points: their own validation, transformations, lifecycle ordering and other project
+  behaviour must be covered. Integration tests may cover wiring; a separate test file for every type is not
+  required.
 * The aim of the tests is to validate the intended behavior/contract and reveal bugs, not to lock in incidental
   current behavior or implementation details.
 * If you're not sure what the business logic of the type is, ask the user.
@@ -156,6 +166,9 @@ locks).
 * The test tree is part of the crate: it sees `pub(crate)`, the analog of Kotlin `internal`, and imports through
   the kind modules (`use crate::order::usecase::CreateOrderUseCase;`). Nothing in `src/` is widened for a test: a
   private function is tested through the item that calls it.
+* A constant and a `build_…` function of a test are private items of its test file. Two test files that need the
+  same literal each declare it: the test tree has no module for shared test data. What tests share has behaviour:
+  a fake or an in-memory implementation (below).
 * A same-crate fake lives in `fake/` inside the concept of the trait it replaces, in the test tree:
   `test/order/fake/fake_order_repository.rs` fakes `crate::order::api::OrderRepository`. It is `pub(crate)`, and
   the `fake` block re-exports it with `pub(crate) use`; tests import it as
