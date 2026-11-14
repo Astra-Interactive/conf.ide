@@ -202,7 +202,7 @@ Dependencies: `shop/impl` → `payment/api` (calls `CheckSubscriptionUseCase`); 
 ### A Rust workspace
 
 `arch-package.rs.md` translates the kinds: a unit is a crate under `modules/` (an entry point under
-`instances/`, tooling in `xtask`), a package is a module block of the root file, a source set is code under a
+`instances/`), a package is a module block of the root file, a source set is code under a
 target `cfg`, shared test fakes are the `fixture/` tree of the crate that owns the trait behind its `fake`
 feature, and procedural macros are a `proc-macro` crate.
 
@@ -212,7 +212,6 @@ modules/billing/api       shop-billing-api: src/invoice/{api,model,usecase,util,
 modules/billing/command   shop-billing-command: [dev-dependencies] shop-billing-api with features = ["fake"]
 instances/cli             shop-cli: src/lib.rs (the module tree: di/root_module.rs, RootModule),
                           src/main.rs (`use` lines, the runtime, `fn main`)
-xtask                     cargo xtask <task>
 ```
 
 Dependencies: `shop-billing-command` → `shop-billing-api`; `shop-cli` → both; nothing depends on `shop-cli`.

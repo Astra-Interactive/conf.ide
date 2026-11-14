@@ -161,6 +161,9 @@ Do not mix unrelated responsibilities in one type or function.
   2. a named `let` per remaining clause, named for what it means, so that the condition itself reads as a
      sentence.
 
+  A `while` evaluates its condition on every turn, so its clauses move into the loop, never before it:
+  `loop { let …; if !… { break; } … }`.
+
   When the named values still do not fit on one line, rustfmt breaks the condition before each `&&` or `||`,
   and that layout stays: `bool` has no `and` or `or` method to chain.
 
@@ -192,6 +195,24 @@ Do not mix unrelated responsibilities in one type or function.
       });
   }
   current
+  ```
+
+  ```rust
+  // Bad: the call is evaluated once, before the loop
+  let is_item_valid = queue.poll(timeout).await.is_ok_and(|item| item.is_valid());
+  while is_item_valid {
+      record_item(&queue);
+  }
+
+  // Good: the clauses are evaluated on every turn, inside the loop
+  loop {
+      let polled = queue.poll(timeout).await;
+      let is_item_valid = polled.is_ok_and(|item| item.is_valid());
+      if !is_item_valid {
+          break;
+      }
+      record_item(&queue);
+  }
   ```
 
 * `=` never ends a line. The initializer of a `let`, a `const` or a `static`, and the type of a type alias,

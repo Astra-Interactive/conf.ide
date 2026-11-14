@@ -12,6 +12,8 @@ In a plugin, an application or a service the code is understandable without doc 
 - a reason that points outside the code (a platform quirk, a workaround for a bug in a crate); whether a reason points outside the code is the reviewer's call;
 - the safety contract of `unsafe`: an `unsafe fn` or `unsafe trait` carries `# Safety` with every invariant its caller must uphold, and every `unsafe` block a `// SAFETY:` comment that says why those invariants hold. Breaking them is undefined behaviour that no type and no test shows.
 
+A line that is kept links the items it names (`[`DictionaryError::NotFound`]`), as in a library (What to write).
+
 A doc comment that says what an item does, why a module exists, or repeats a rule the body shows is not written; in an old file it is removed only in a refactoring the user asked for, never by a task that plugs new code in.
 
 ```rust
@@ -53,7 +55,7 @@ If the answer is "no" — the element is **not written**. A partially documented
 - Units and ranges always explicit: `distance_meters`, "in the range `0.0..=1.0`", "UTC"; a time value carries its unit in its type (the time rule).
 - rustdoc has no parameter tag. A parameter is described in prose only when it has semantics or constraints its type does not express, never one line per parameter.
 - `# Errors`, `# Panics`, `# Safety` and `# Examples` are headed sections, not free text.
-- Items are linked with intra-doc links (`[`OrderError`]`, `[`Self::place_order`]`), never named in plain backticks where a link resolves.
+- Items are linked with intra-doc links (`[`OrderError`]`, `[`Self::place_order`]`), never named in plain backticks where a link to another item resolves; a comment does not link the item it documents.
 - An `# Examples` block is a doctest: `cargo test` compiles and runs it, so it is minimal and passes.
 - A `//!` comment says what the module or crate is for, not which items it holds: rustdoc lists them.
 

@@ -26,7 +26,7 @@ if let Err(error) = load_order(order_id) {
 }
 ```
 
-The one exception is a command-line entry point whose product is the console output, such as an `xtask`
-report: the function that writes carries `#[expect(clippy::print_stdout, reason = "…")]`, or
+The one exception is a command-line entry point whose product is the console output (a report, a table):
+the function that writes carries `#[expect(clippy::print_stdout, reason = "…")]`, or
 `#[expect(clippy::disallowed_methods, reason = "…")]` when it writes through `std::io::stdout()`, with the
 reason written in it.
