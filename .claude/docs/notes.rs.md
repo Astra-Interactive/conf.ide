@@ -2,11 +2,11 @@
 
 - Stay on stable Rust: no nightly-only language feature and no nightly-only `rustfmt` or `clippy` option. If the
   project pins a toolchain in `rust-toolchain.toml`, use that one; the pin is a stable release at or above
-  1.93, the `rust-version` of the `klibs-rules` crate that the project's tests build.
+  1.93, the `rust-version` of the `klibs-rules` crate.
 - `cargo clippy --workspace --all-targets -- -D warnings` runs in CI: a finding is fixed, not silenced. Where a
   rule prescribes an exception, it is `#[expect(<lint>, reason = "<why>")]` on the smallest item that needs it,
   never `#[allow(…)]`.
-- A finding of the architecture linter, the `klibs-rules` crate that `cargo test --workspace` runs, is fixed by
+- A finding of the architecture linter, the `klibs-rules` crate, run as `cargo klibs-rules`, is fixed by
   the documents too. Its exception is `#[cfg_attr(klibs_rules, expect(<RuleId>, reason = "<why>"))]` on the
   smallest item that needs it, in three cases only, and the user approves each one before it is written:
   - `Unanalysable`: a limit of the linter, not of the code (a macro it cannot see through);

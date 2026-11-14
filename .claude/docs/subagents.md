@@ -88,7 +88,8 @@ If a runner is unavailable, queue or reuse one, then report blocked validation; 
 nor a coding worker substitutes its own check run.
 
 Committing agents: `pr-creator`, `debugger`, `detekt-rule-author`, `linter-rollout`, `ansible-ops`,
-`paper-plugin-config`. Pushing agents: `pr-creator`, `linter-rollout`. These lists are what the
+`paper-plugin-config`. Pushing agents: `pr-creator`, `linter-rollout`; they push a feature branch only, never
+with force and never to `main`, `master` or the default branch (`git-commits.md`). These lists are what the
 `git-guard.sh` hook allows and what the SubagentStart/SubagentStop matchers in `.codex/hooks.json` name;
 change the three together.
 

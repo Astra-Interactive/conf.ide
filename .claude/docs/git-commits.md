@@ -3,7 +3,8 @@
 **A task that changes files ends with a commit, without being asked.** This rule overrides any
 generic harness or tool defaults about whether to commit, branching, pushing, pull requests, and
 commit trailers. The user's answers to the `new-feature` skill's questions override the "When to
-commit" and "Where commits go" sections for that task.
+commit" and "Where commits go" sections for that task, except the ban on forced pushes, pushes to
+`main`, `master` or the default branch, and merges of a pull request, which holds in every task.
 
 The main thread never runs `git commit`. When the task's last edit is done it calls the `pr-creator`
 agent once, with the list of logical changes, and `pr-creator` makes one commit per change; the
@@ -30,6 +31,9 @@ committing agents commit by this rule themselves.
   switch, or rename a branch.
 * Never push, and never open a pull request: the user pushes. When the user asks for a pull
   request, the `pull-request` skill says how to push and how to write it.
+* No agent, a pushing agent included, force-pushes, pushes to `main`, `master` or the remote's
+  default branch, or merges a pull request: the user does these. The `git-guard.sh` hook denies
+  them to every caller; it knows the default branch from `refs/remotes/<remote>/HEAD`.
 * Never amend, rebase or reset a commit that existed before the task, unless asked. A commit the
   task made may be amended while it is the last one and not pushed.
 

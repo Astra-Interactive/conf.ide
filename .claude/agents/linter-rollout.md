@@ -99,15 +99,18 @@ A repository with `Cargo.toml` at its root takes the Rust linter, the `klibs-rul
 Forbidden list and the output above hold, with these differences:
 
 - Step 2: "latest" is the newest `klibs-rules` version on crates.io.
-- Step 3: the pin is the exact version in the `[dependencies]` of the `xtask` crate, `klibs-rules = "=X.Y.Z"`.
-  Commit: `[CHORE] Bump klibs-rules to X.Y.Z`. The wiring copied from the reference repository is that
-  dependency, the `xtask` architecture test, the `check-cfg` line of `notes.rs.md` and the CI steps.
-  Hand the architecture test's copy/adaptation to the parent's test writer with its expected findings,
-  an existing example and exclusive test-file ownership; return the request instead of editing it here.
-- Step 4: the project version is `[workspace.package] version`, or the `version` of each published crate; a
-  workspace that declares none has nothing to bump.
-- Step 5: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings` and
-  `cargo test --workspace`, whose `xtask` architecture test prints the linter's findings.
+- Step 3: the pin is the version in the `cargo install klibs-rules --version X.Y.Z --locked` line of the CI
+  workflow. Commit: `[CHORE] Bump klibs-rules to X.Y.Z`. The wiring copied from the reference repository is that
+  line, the `check-cfg` line of `notes.rs.md` and the CI steps.
+- Step 4: the project version is the `version` of each published crate; an application declares none and keeps
+  its release version as a constant of the project (in the entry-point crate when the program reports it,
+  else under `[workspace.metadata.<project>]`), which is what gets bumped. An application that still declares
+  `[workspace.package] version` with `version.workspace = true` before the re-layout gets the bump on that value;
+  the re-layout moves it to the application's constant.
+- Step 5: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace` and `cargo klibs-rules`, which prints the linter's findings.
+- Step 7: request `cargo test --workspace` and `cargo build --workspace` (or the project's build command) for the
+  crates touched, in place of `./gradlew test assemble`.
 - Before step 6, the re-layout: every merge, move, rename or deletion the findings need (a crate, a module, a
   file, a type) goes into one "before → after" tree for the whole repository, which the user approves
   (`arch-package.md`, Existing code); findings that need none skip this step. The approved tree comes in the

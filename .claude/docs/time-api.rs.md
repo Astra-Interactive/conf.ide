@@ -75,7 +75,9 @@ already at the boundary. A call that takes a `Duration` (`tokio::time::sleep(del
 
   An elapsed time comes from `std::time::Instant::now()`. No other clock read is called: not `SystemTime::now()`
   elsewhere, not `chrono::Utc::now()`, not `jiff::Timestamp::now()`. A struct takes the `Clock` through its
-  constructor, and the DI module passes `SystemClock` (`di-manual-constructors.rs.md`).
+  constructor, and the DI module passes `SystemClock` (`di-manual-constructors.rs.md`). What is kept between
+  calls is the elapsed `Duration`, or a `SystemTime` from the `Clock`; the `Instant` it is measured from stays a
+  local of the function that owns that state.
 - `clippy.toml` lists the clock reads under `disallowed-methods`: `std::time::SystemTime::now` and
   `std::time::SystemTime::elapsed`, which reads the wall clock too (`UNIX_EPOCH.elapsed()`), and the time crates'
   `chrono::Utc::now`, `chrono::Local::now`, `jiff::Timestamp::now`, `jiff::Zoned::now`,

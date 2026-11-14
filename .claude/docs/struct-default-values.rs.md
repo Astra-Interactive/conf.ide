@@ -41,7 +41,7 @@ let input = PredictionInput {
 
 Allowed exceptions:
 
-* A type that derives `serde::Deserialize`, where defaults are required for serialization/backward
+* A type that derives or implements `serde::Deserialize`, where defaults are required for serialization/backward
   compatibility: it may implement or derive `Default` and carry `#[serde(default)]`, except a model type with an
   invariant (`arch-domain.rs.md`).
 

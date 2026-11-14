@@ -36,7 +36,8 @@ Terms used below:
      Compose, into a design-system unit (`core/ui`);
    - a **`<context>/contract`** unit for the wire types a server and its client share, and a **`<context>/server`**
      unit beside it for what serves the routes;
-   - a **tooling unit** with no product code: `build-logic`, an `xtask` crate, a Kotlin `<feature>/fake` unit.
+   - a **tooling unit** with no product code: Kotlin's `build-logic` and `<feature>/fake` unit. A Rust
+     workspace has none (`arch-package.rs.md`, Units and Cargo).
    A published library is a project of its own: a capability in it is a package in the unit of its platform scope
    (`core`, `core-bukkit`), and a unit only when it brings dependencies the others must not inherit; its units
    switch explicit API mode on (`arch-package.kt.md`) and have no `api`/`impl` split.

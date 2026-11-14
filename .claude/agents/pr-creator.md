@@ -41,9 +41,11 @@ Steps:
 
 Hard limits:
 
-- Never push the base branch, never `--force`, never create, switch, merge into, rebase or reset a branch.
-  When a PR is wanted and the work sits on the base branch, stop and ask where it should go. When the
-  branch has to be brought up to date with its base, stop and say so: the user picks merge or rebase.
+- Never push the base branch, `main`, `master` or the default branch, never `--force`, never merge a pull
+  request, never create, switch, merge into, rebase or reset a branch.
+  When a PR is wanted and the work sits on the base branch, `main` or `master`, stop and ask where it
+  should go. When the branch has to be brought up to date with its base, stop and say so: the user picks
+  merge or rebase.
 - Never commit when the user said not to, or when files with pre-existing changes would be dragged in.
 - Description length: most fit on one screen. No test results, no "not done" section, no file list,
   no story of the task, no emoji, no "Generated with" line.

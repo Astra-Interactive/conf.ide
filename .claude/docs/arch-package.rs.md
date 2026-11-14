@@ -6,9 +6,9 @@ under a target `#[cfg]`. Where Rust needs a form of its own, the reason stands n
 
 ### Modules and directories
 
-- The directory is the module. The crate's root file, `src/lib.rs` (`src/main.rs` in a tooling crate), declares the
-  whole module tree as nested inline blocks, one block per concept and per kind, and each kind block declares its
-  files with `mod <file>;`. The compiler loads `mod issue_invoice_use_case;` inside `invoice { usecase { … } }` from
+- The directory is the module. The crate's root file, `src/lib.rs`, declares the whole module tree as nested
+  inline blocks, one block per concept and per kind, and each kind block declares its files with `mod <file>;`.
+  The compiler loads `mod issue_invoice_use_case;` inside `invoice { usecase { … } }` from
   `src/invoice/usecase/issue_invoice_use_case.rs`, so the directory tree is the module tree, as in Kotlin.
 
   ```rust
@@ -157,6 +157,9 @@ item is its tier. Decide it while writing the declaration:
 - Unsafe code sits in the technology module of the library or system interface it calls, behind a safe
   implementation of a contract. Kotlin has no `unsafe`; the kind rules place it, since what `unsafe` calls (a C
   library, a system call) is the technology that module wraps, and every other module then stays safe code.
+  The one other place is a host item of an entry-point crate (Entry points): a function the host calls through the
+  C ABI takes raw pointers, so it is `pub unsafe extern "C" fn` in the root file, its `unsafe` blocks only turn the
+  host's pointers into safe values before the call into safe code, and its test calls it in an `unsafe` block.
 
 ```rust
 // modules/billing/api: invoice/file/file_invoice_repository.rs, used by InvoiceModule in the same crate
@@ -175,8 +178,8 @@ pub(crate) struct FileInvoiceRepository {
 - `members` lists each crate's path (`"modules/billing/api"`), as `settings.gradle.kts` includes each unit. A
   glob is not used: `modules/*` also matches the container `modules/billing`, and Cargo stops with
   `failed to load manifest for workspace member`.
-- Product crates sit under `modules/` (`arch-package.md`, Units 3), entry-point crates under `instances/<name>`,
-  and `xtask/` at the root. A container directory (`arch-package.md`, Units 7) holds crate directories and nothing else, an optional
+- Product crates sit under `modules/` (`arch-package.md`, Units 3) and entry-point crates under `instances/<name>`.
+  A container directory (`arch-package.md`, Units 7) holds crate directories and nothing else, an optional
   `README.md` aside.
 - A crate's `name` is the project prefix followed by its path without the container, `/` replaced by `-`:
   `modules/billing/api` → `shop-billing-api`, `modules/event-host` → `shop-event-host`, `instances/cli` →
@@ -184,8 +187,8 @@ pub(crate) struct FileInvoiceRepository {
   it. `[lib] name` is never set, so the import path is the name with `_` (`shop_billing_api`). The prefix also
   keeps a crate from hiding a standard crate: a dependency named `core` makes `core::fmt` unresolvable (E0433).
 - A library crate is `src/lib.rs`. A binary entry-point crate is `src/lib.rs`, which declares the module tree and the
-  test block, plus `src/main.rs`, which holds `use` lines and `fn main` and declares no module. A tooling crate
-  (`xtask`) is `src/main.rs` alone. `src/bin/` is not used: several binaries are several entry-point crates.
+  test block, plus `src/main.rs`, which holds `use` lines and `fn main` and declares no module. `src/bin/` is not
+  used: several binaries are several entry-point crates.
 - The project declares its product kind once, `[workspace.metadata.klibs-rules] product-kind = "platform-plugin"`
   when it is built once per host framework (a plugin loaded by several hosts), `"app"` otherwise; every crate
   inherits it. Beside it, `platform-words` lists the project's host frameworks (`platform-words = ["bukkit",
@@ -197,7 +200,6 @@ pub(crate) struct FileInvoiceRepository {
 
   | Role | The crate |
   |---|---|
-  | `tooling` | build automation, no product code |
   | `proc-macro` | the procedural macros of a sub-context |
   | `entry-point` | the items the platform calls and `RootModule` |
   | `core-ui` | the design system |
@@ -217,11 +219,10 @@ pub(crate) struct FileInvoiceRepository {
   warns that it "provides no linkable target", a `use` of it fails with E0432 and a path into it with E0433), so
   only a host loads it.
 
-  `tooling` and `proc-macro` are Rust's own: Cargo has no included build, so `xtask` is a workspace member, and a
-  procedural macro is a `pub fn` at the root of a crate of its own (Reference, Procedural macros). A
-  `proc-macro` crate depends on no crate of the project, and any production crate may depend on it, since the
-  crates that expand its macros need it in their normal build. There is no fake role: shared fakes are a feature
-  of the crate they fake (Tests).
+  `proc-macro` is Rust's own: a procedural macro is a `pub fn` at the root of a crate of its own (Reference,
+  Procedural macros). A `proc-macro` crate depends on no crate of the project, and any production crate may
+  depend on it, since the crates that expand its macros need it in their normal build. There is no fake role:
+  shared fakes are a feature of the crate they fake (Tests).
 - Shared settings are declared once in the root: `[workspace.package]`, `[workspace.dependencies]` and
   `[workspace.lints]`, which a member takes with `….workspace = true` and `[lints] workspace = true`, the way a
   unit applies a convention plugin. Every member takes the lints. `[profile.*]`, `[patch]` and `[replace]` stay
@@ -239,12 +240,14 @@ pub(crate) struct FileInvoiceRepository {
 - The types of a `contract` crate derive `serde`'s `Serialize` and `Deserialize` (`arch-package.md`, Units 1).
 - A published crate declares `version`. Every other crate omits it: Cargo then treats the crate as `0.0.0` and
   refuses to publish it (`publish` is `[]` in `cargo metadata`), which is how Kotlin's unpublished unit lacks
-  `maven-publish`.
-- Build automation (code generation, release steps, the architecture check) is a subcommand of the `xtask`
-  crate, run as `cargo xtask <task>` through `[alias] xtask = "run --package xtask --"` in
-  `.cargo/config.toml`, never a shell script. It holds no product code, depends on no crate of the project, and
-  nothing depends on it, as Kotlin's `build-logic` is an included build that no unit depends on and that depends on
-  no unit.
+  `maven-publish`. An application's release version is not a crate's `version`: it is one constant of the project,
+  in the entry-point crate when the program reports it, else under `[workspace.metadata.<project>]`.
+- A workspace has no build-automation crate. What Kotlin keeps in `build-logic` is the root manifest's shared
+  tables (above). Code generated at build time is the `build.rs` of the crate that uses it; a check is an
+  installed Cargo subcommand (the architecture check is `cargo klibs-rules`); a release step is a step of the
+  CI workflow. A program the project keeps for its developers (a load generator, a migration command) is an
+  application like any other: an entry-point crate under `instances/`, with its own code in a sub-context
+  crate.
 - The `README.md` of a crate (`arch-package.md`, Units 8) is the package readme Cargo takes.
 
 ### Entry points, use cases and the platform
@@ -300,7 +303,9 @@ lifecycle and what `RootModule` lists: `di-manual.rs.md`.
   standard-library type: it stays beside the contract.
 - A `util` file holds functions. `<type>_ext.rs` holds the rules of one type: an `impl <Type>` block when the
   type is declared in this crate, or a trait `<Type>Ext` with its one `impl` when another crate declares the
-  type (an inherent `impl` of another crate's type does not compile, E0116). A file of free functions is named
+  type (an inherent `impl` of another crate's type does not compile, E0116). When another crate's item is a
+  trait, the one `impl` is the blanket impl over its implementors (`trait BufExt: Buf`,
+  `impl<B: Buf + ?Sized> BufExt for B`). A file of free functions is named
   after what they do (`duration_format.rs`, `transfer_limit.rs` for a rule over several types); never
   `utils.rs`, `helpers.rs` or `extensions.rs`. A `const` or `static` that the functions of a `util` file use, or
   that the `impl` of its `<Type>Ext` trait uses, may stay in that file; a file with no function and no `impl`
@@ -378,5 +383,5 @@ lifecycle and what `RootModule` lists: `di-manual.rs.md`.
 - Three suites: in each sub-context's crate, model rules tested directly, use cases with fakes or in-memory
   implementations, technology modules against the real technology where it runs in a test (a database crate on
   a temporary database, a file store on a temporary directory); in the entry-point crate, tests of the wired
-  application; architecture tests as their own suite.
+  application; the architecture check, `cargo klibs-rules`, as its own run.
 - `benches/`, `examples/` and `build.rs` keep their Cargo meaning.
