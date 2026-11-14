@@ -48,9 +48,9 @@ The recommended option goes first, marked "(Recommended)":
   or carry unrelated commits. The second option is the current branch as it is locally, for a feature built on
   another feature or on commits not pushed yet.
 - "Yes" for commits. The pull request has no recommendation.
-- A pull request needs commits and a branch other than the default one. When the answers ask for a pull request
-  without commits, or from the current branch while it is the default branch, name the conflict and ask that
-  question again.
+- A pull request needs commits and a branch other than the default one, `main` and `master`. When the answers ask
+  for a pull request without commits, or from the current branch while it is one of these, name the conflict and
+  ask that question again.
 - A base the user names is checked before the setup: `git ls-remote --exit-code --heads origin <name>` for a
   remote branch, `git rev-parse --verify --quiet <name>` for a local one. When neither finds it, say so and ask
   the Base question again.

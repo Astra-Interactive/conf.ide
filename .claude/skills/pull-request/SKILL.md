@@ -21,8 +21,8 @@ gh pr view --json number,url,baseRefName 2>/dev/null
   default branch. Its name differs between repositories, so it is read, never assumed: from the command above,
   from `git remote show origin` when `origin/HEAD` is not set, from the user when neither names it. When the user
   names a base that `git ls-remote --exit-code --heads origin <name>` does not find, say so and ask again.
-- A pull request needs its own branch. When the work is on the base branch, stop and ask the user where to move it;
-  never move commits off a branch yourself.
+- A pull request needs its own branch. When the work is on the base branch, `main` or `master`, stop and ask the
+  user where to move it; never move commits off a branch yourself.
 - The task's uncommitted changes are committed first, by the git-commits rule; files that carried the user's work
   before the task stay out.
 - When the branch already has a pull request, update that one (step 4) instead of opening a second.
@@ -35,9 +35,11 @@ Read the whole change before writing, not only the last commit: `git log --oneli
 
 ## 2. Push
 
-Push the feature branch and nothing else: `git push -u origin <branch>`. Never push the base branch, never
-`--force`. Only a pushing agent pushes (the list in `subagents.md`, enforced by the `git-guard.sh` hook); in the
-main thread, the whole skill, commits included, is one call to the `pr-creator` agent.
+Push the feature branch and nothing else, as a Bash call of its own: `git push -u origin <branch>`. Never push the
+base branch, never `--force`, never merge the pull request. The `git-guard.sh` hook denies every caller a forced
+push, a push to `main`, `master` or the default branch (as `refs/remotes/<remote>/HEAD` names it), and a merge of
+the pull request. Only a pushing agent pushes (the list in `subagents.md`, enforced by the same hook); in the main
+thread, the whole skill, commits included, is one call to the `pr-creator` agent.
 
 When the push is blocked (a hook, a permission denial, an authentication error), the block is the user's to lift:
 stop at the first refusal and leave the hooks, the permissions and the git state as they are. A way around it is
@@ -46,6 +48,9 @@ The user chooses (a subagent returns the refusal and the command, and the main t
 
 - they push the branch themselves: give the exact command, `git push -u origin <branch>` with the name filled in;
 - they lift the block: then the pushing agent runs that command once.
+
+A forced push, a push to `main`, `master` or the default branch, and a merge of the pull request are never
+lifted for an agent: the user runs them.
 
 Go on to step 3 once the branch is on the remote: `git ls-remote origin refs/heads/<branch>` prints the hash
 `git rev-parse <branch>` prints.
