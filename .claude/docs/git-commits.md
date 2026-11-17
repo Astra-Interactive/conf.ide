@@ -6,10 +6,12 @@ commit trailers. The user's answers to the `new-feature` skill's questions overr
 commit" and "Where commits go" sections for that task, except the ban on forced pushes, pushes to
 `main`, `master` or the default branch, and merges of a pull request, which holds in every task.
 
-The main thread never runs `git commit`. When the task's last edit is done it calls the `pr-creator`
-agent once, with the list of logical changes, and `pr-creator` makes one commit per change; the
-prompt says `no pull request` unless the user asked for one. The agents that `subagents.md` lists as
-committing agents commit by this rule themselves.
+The main thread never runs `git commit`. It gives a completed, validated batch of logical changes to
+`pr-creator`, which makes one commit per change; further batches may follow as they become ready. The
+prompt says `no pull request` unless the user asked for one. Listed committing specialists retain their
+authority when assigned Git ownership. Exactly one authorized agent owns Git mutations at a time, under
+the handoff rules in `subagents.md`; check actual HEAD/index and any running command before retrying an
+interrupted operation.
 
 ### When to commit
 
@@ -19,6 +21,8 @@ committing agents commit by this rule themselves.
 * Do not commit when the user said not to, or when the build or the tests the change touches fail.
 * Never stage a file that had uncommitted changes before the task: the user's edits would go in
   with yours. When the change cannot be committed without such a file, commit nothing.
+* Stage only the reviewed product or instruction changes. Task progress, audit transcripts and working
+  reports stay outside the repository unless the user explicitly requests them as committed deliverables.
 * When the task's files stay uncommitted for one of these reasons, write the reason into the
   `no-commit` marker before the final message, or the Stop hook keeps the turn open:
   `echo "<reason>" > "$("$(git rev-parse --show-toplevel)/.claude/hooks/scratch.sh")/no-commit"`.

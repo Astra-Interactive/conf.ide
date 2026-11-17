@@ -31,7 +31,8 @@ Inputs from the prompt:
 Scope: documents with no language suffix, skills, agents and `AGENTS.md` are always in scope; `.kt.md`
 documents only with Kotlin, `.rs.md` documents only with Rust, and the same for a skill's language
 sections. A Kotlin text and a Rust text that differ are two languages, not a conflict. With both languages
-in scope, each conflict belongs to one of them.
+in scope, each conflict belongs to one of them. The Linter-enforced documents of `AGENTS.md` are in scope
+with their language and are read like the others, although no path rule loads them.
 
 Steps:
 
@@ -52,18 +53,25 @@ Steps:
    rule checks with what the sentence now says.
 6. The changed text itself:
    - examples are generic: no real project, product, company or sample application, and no real library
-     shown with an API it does not have;
+     shown with an API it does not have. An explicitly scoped `AGENTS.project.md` may name its project's
+     libraries and verified source examples; those conventions are not shared defaults;
    - it is English;
    - every path, link, document, skill, agent and heading it names exists (`ls`, `git ls-files`, Read),
-     and a new document is listed in `AGENTS.md` in the group whose suffix it carries.
+     and a new document is listed in `AGENTS.md` in the group whose suffix it carries, or under
+     Linter-enforced.
+     An explicitly optional consumer-relative pointer is checked in that consumer's root. The absence of
+     `AGENTS.project.md` in another consumer is allowed; its conditional pointer is its registration.
    - every reference to a numbered item or a section resolves: `python3 .claude/hooks/check-refs.py`
      exits 0 (pass the linter READMEs and the decision record as arguments when they are in scope). An
      item's number is the rule's id: a change that shifts or reuses a number is reported, a removed item
      leaves its number unused;
    - a new rule sentence states a case that two projects have; a word or a mechanism of one project
-     belongs in that project's linter configuration, and is reported when it is written as a general rule;
+     belongs in that project's configuration or `AGENTS.project.md`, and is reported when it is written
+     as a general rule;
    - a sentence that leaves a decision to a reviewer or tells the agent to ask the user is reported,
-     except the approval before existing code moves (`arch-package.md`, Existing code).
+     except the approval before existing code moves (`arch-package.md`, Existing code), and evidence-based
+     assessment of compliance with an existing architectural requirement. That assessment may not invent
+     requirements or decide the user's intent.
 
 Rules:
 

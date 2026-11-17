@@ -23,8 +23,8 @@ Steps:
 
 1. Size first: `wc -l <log>`. A log up to 2000 lines is read whole with `Read`. A bigger one is never
    printed whole: list the lines that matter, then `Read` with offset and limit, 200 lines at most,
-   around them. No command prints more than 200 lines. The guard splits commands on every `|`, so the
-   patterns are joined with `index` instead of a regex alternation:
+   around them. No command prints more than 200 lines. The guard allows `awk` programs without `|`,
+   so the patterns are joined with `index` instead of a regex alternation:
 
    ```
    awk 'index($0, "ERROR") + index($0, "Exception") + index($0, "Caused by") + index($0, "Mixin apply failed") + index($0, "Missing or unsupported mandatory dependencies") + index($0, "Incompatible") {print NR ": " substr($0, 1, 200)}' <log> | head -n 60

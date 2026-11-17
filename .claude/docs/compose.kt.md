@@ -4,7 +4,7 @@ How a UI unit built on Compose is laid out and written. The package-layout rule 
 path of Concepts and kinds); the `compose-hoisting` skill gives state hoisting, `Render()` and previews; this
 rule fills what is specific to Compose. The verb table of `clean-code.kt.md` and the flow rules of
 `coroutines.kt.md` apply unchanged. A UI unit is one whose build already depends on Compose: the `impl` unit
-of a screen feature or its `impl-ui` unit, an `api` unit whose state holder declares `Render()`, the
+of a screen feature or its `impl-ui` unit, an `api` unit whose component declares `Render()`, the
 design-system unit (`core/ui`: a unit path, which may keep its word, not a package created inside a unit).
 
 ### Packages of a UI unit
@@ -29,7 +29,7 @@ design-system unit (`core/ui`: a unit path, which may keep its word, not a packa
 - `composable` is the one kind that may hold sub-packages, named from Compose's vocabulary and the project's
   existing words, in the singular: `screen` (the screen-level composables: what a component's `Render()` or a
   parent composable calls, and the screen content it delegates to), `component` (a reusable part with content:
-  a button, a card, an app bar, an icon; a UI part, not the state-holder `component` of a Decompose app),
+  a button, a card, an app bar, an icon; a UI part, not the Decompose `component` of an app),
   `layout` (a container that arranges or frames its children and has no content of its own: a
   scaffold, a grid, a fade frame), and a project's own words such as `sheet`, `dialog`, `appbar`; never
   `components`. `composable` holds either files only or sub-packages only, never both. When a new file would
@@ -73,12 +73,14 @@ design-system unit (`core/ui`: a unit path, which may keep its word, not a packa
   ```
 
 - Values that several composables of one level must share (the timings and easings of one screen's animation,
-  the spacing of one feature) live in the kind `theme` of that level, as an `internal object` (public in the
-  design-system unit, whose theme other units read) named for what it is:
-  `impl/checkout/theme/CheckoutMotion.kt`. The object holds values only, no function, so it is not a namespace
-  of helpers; the design-system unit's theme object may read its `CompositionLocal`s through
-  `@Composable get()` (Material's `MaterialTheme.colorScheme`), nothing else. A timing is a `Duration`
-  (`val CardIn = 400.milliseconds`), never an `Int` or `Long` under an `_MS` name;
+  the spacing of one feature) live in the kind `theme` of that level, as an object named for what it is:
+  `impl/checkout/theme/CheckoutMotion.kt`. A `theme` object is public in the design-system unit, whether or
+  not another unit reads it yet, since its theme is the surface other units build on, and `internal` in every
+  other unit (a published library unit aside); the linter's `ThemeVisibility` check enforces both. The
+  object holds values only, no function, so it is not a namespace of helpers; the design-system unit's
+  theme object may read its `CompositionLocal`s through `@Composable get()` (Material's
+  `MaterialTheme.colorScheme`), nothing else. A timing is a `Duration` (`val CardIn = 400.milliseconds`),
+  never an `Int` or `Long` under an `_MS` name;
   `.inWholeMilliseconds.toInt()` is written only at the Compose call that demands milliseconds, and a
   `tween(duration: Duration, …)` wrapper goes to the design-system unit once two units convert:
 

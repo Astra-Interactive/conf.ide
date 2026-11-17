@@ -29,18 +29,41 @@ MODELS = {
 }
 
 READONLY_COMMANDS = (
-    "git [ -C path ] status, log, diff, show, blame, rev-parse, ls-files, branch --show-current, symbolic-ref, "
-    "remote -v, worktree list; a plain NAME=value variable assignment on its own (not before a command, not "
-    "PATH, IFS, HOME, SHELL, ENV, BASH_ENV, PAGER, EDITOR, VISUAL, PROMPT_COMMAND, PS4, BASHOPTS, SHELLOPTS, "
-    "GIT_*, LD_*, DYLD_*, CARGO*, RUST*); no $(...), backticks, <(...) or lone &; gh pr view|list|checks|diff, gh issue view|list, gh run view|list, gh api; "
-    "ksrc; head, tail, wc, sort, uniq, cut, jq, tr, awk, sed -n, sed -E; ls, pwd, which, echo, date, true"
+    "git [ -C path ] status|log|diff|show|blame|rev-parse|ls-files without --output, git branch --show-current, "
+    "git symbolic-ref [--short] [one ref], git remote -v, git worktree list [--porcelain|-v|-z]; "
+    "gh pr view|list|checks|diff, gh issue view|list, gh run view|list, gh api with GET only (no -X or --method "
+    "other than GET, no -f, -F, --field, --raw-field or --input); ksrc; head, tail, wc, cut, jq, tr; sort without "
+    "-o, --output or --compress-program; uniq with at most one file; sed -n '<N>p' or '<N>,<M>p' [files]; "
+    "awk [-F sep] [-v var=value] '<program>' [files], the program without system, getline, close, fflush, |, > "
+    "or @; ls, pwd, which, echo, true; date [+format] [-u] without -s or --set"
+)
+READONLY_SYNTAX = (
+    "Options are checked after quote removal. A $NAME or ${NAME} parameter or an unquoted *, ?, [ or leading ^ "
+    "appears only in the arguments of echo, ls, head, tail, wc, grep, cut, tr, jq and which; other ${...} forms "
+    "and variable assignments are not allowed. |, ||, &&, ; and newlines inside quotes do not separate commands. "
+    "No $(...), backticks, <(...), >(...), =(...), unquoted ( ) { }, # comment, here-document (<<) or lone &. "
+    "No output redirection except 2>&1 and >&2 as whole words, no tee, nothing else."
+)
+PROJECT_ROOT_CD = (
+    "cd <project root> only directly before && {command}, the root being the git top level of this repository, "
+    "a worktree or another repository, written out as git -C <directory> rev-parse --show-toplevel prints it, "
+    "quoted when it holds spaces or glob characters; no other cd"
 )
 READONLY_MODES = {
     "research": "",
-    "gradle": "; ./gradlew, rg (without --pre) and grep",
-    "cargo": "; cargo [ +toolchain ] build|check|test|clippy, cargo [ +toolchain ] fmt --check (all Cargo commands reject arguments containing --fix, including --fix=...); rg (without --pre) and grep",
-    "docker": "; docker compose config|ps, docker ps|logs|inspect, docker network ls|inspect",
-    "docs": "; rg (without --pre), grep, and find without -exec, -execdir, -ok, -okdir, -delete, -fprint or -fls",
+    "gradle": "; ./gradlew, and <project root>/gradlew from a directory of that root's working tree, without -I, "
+    "--init-script, -p, --project-dir, -c, --settings-file, -b, --build-file, -g, --gradle-user-home, "
+    "--include-build or --project-cache-dir; "
+    + PROJECT_ROOT_CD.format(command="./gradlew")
+    + "; rg (without --pre or --hostname-bin) and grep",
+    "cargo": "; cargo [ +toolchain ] build|check|test|clippy|klibs-rules, cargo [ +toolchain ] fmt --check, with no "
+    "argument starting with --fix, --config, --manifest-path, --target-dir, --artifact-dir, --out-dir or -Z; "
+    + PROJECT_ROOT_CD.format(command="cargo")
+    + "; rg (without --pre or --hostname-bin) and grep",
+    "docker": "; docker compose config (without -o or --output), docker compose ps, docker ps|logs|inspect, "
+    "docker network ls|inspect",
+    "docs": "; rg (without --pre or --hostname-bin), grep, and find without -exec, -execdir, -ok, -okdir, "
+    "-delete, -fprint, -fprint0, -fprintf or -fls",
 }
 
 TOOL_NAMES = {
@@ -52,6 +75,10 @@ TOOL_NAMES = {
     "LSP": "the lsp MCP server",
     "WebSearch": "web search",
     "WebFetch": "web fetch",
+    "Agent": "the multi-agent tools (spawn_agent, wait_agent, send_message, followup_task, list_agents, "
+             "interrupt_agent), for the helpers the Helpers paragraph of subagents.md "
+             "gives this agent and no other role",
+    "SendMessage": "messages to its helpers",
 }
 MCP_SERVERS = {
     "codebase-memory-mcp": "codebase-memory-mcp",
@@ -109,7 +136,7 @@ def guards(fields: dict[str, str], frontmatter: str) -> list[str]:
         extra = READONLY_MODES.get(mode.group(1), "")
         lines.append(
             "- The shell is for inspection only. Allowed commands: "
-            f"{READONLY_COMMANDS}{extra}. No output redirection except 2>&1, no tee, nothing else."
+            f"{READONLY_COMMANDS}{extra}. {READONLY_SYNTAX}"
         )
     if "tools" in fields:
         lines.append(

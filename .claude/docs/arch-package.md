@@ -17,7 +17,8 @@ Terms used below:
 - **kind**: a package named for what its files are (`api`, `model`, `usecase`, `util`, `di`, `command`, `menu`);
 - **entry point**: a class the platform calls (a command, a listener, a menu, a route, a screen, a task);
 - **core**: the common unit for what two or more units use and that no single unit's concept names (Units 1);
-- **feature**: another word for a sub-context (`gui`, `payment`); a feature unit is any unit of one.
+- **feature**: another word for a sub-context (`gui`, `payment`); a feature unit is any unit of one. The same word
+  names the state-holder kind of Concepts and kinds 4, whose package is `feature/`.
 
 ### Units
 
@@ -165,15 +166,16 @@ which holds the classes the platform constructs beside its `di`.
 
 4. **UI vocabulary is derived, not fixed.** `composable` and `theme` mean Kotlin Compose and are used only
    there (`theme` holds the values several composables of a level share; the Kotlin Compose rule says what
-   else a Compose unit holds); `viewmodel` means an Android-style view model, with or without Compose. For any
+   else a Compose unit holds); `viewmodel` means an Android-style view model, with or without Compose, `feature` a
+   mikro `CoroutineFeature`, and `component` the Decompose proxy. For any
    other UI framework the names come from the framework's own classes and from the words the project already
-   uses (AstraLibs' `Menu`: `gui` for menus, `slot` for menu parts, `context`, `component` for the holder of a
-   menu's state). A router, the class through which the code opens a screen or a menu, is a contract like
+   uses (AstraLibs' `Menu`: `gui` for menus, `slot` for menu parts, `context`, and `component` for the holder of
+   a menu's state there — the framework's word, not the Decompose proxy). A router, the class through which the code opens a screen or a menu, is a contract like
    any other: its interface in `api` of the unit that owns navigation (`gui/api/router/api/GuiRouter`, in a
    `router` concept that also holds `model/GuiDestination` and `usecase/OpenGuiUseCase`), its implementation
    beside the other implementations in the platform or `impl` unit (`gui/bukkit/router/BukkitGuiRouter`).
 5. **The project's word wins.** When a project already names a kind with its own word (`component` for a
-   state holder), new files of that kind use it, unless the word is forbidden below or plural (9).
+   Decompose component), new files of that kind use it, unless the word is forbidden below or plural (9).
 6. **A file belongs to the sub-context of what it does, then to a kind by mechanism.** `RatingCacheWarmUp`
    seeds the rating cache at start, so it belongs to `data` (`warmup`); in a plugin built on AstraLibs it reaches
    the server through AstraLibs' `PlatformServer`. A listener of a platform event stays in its event unit even
@@ -230,8 +232,9 @@ which holds the classes the platform constructs beside its `di`.
   dependencies on `api`.
 - A domain contract sits in the `api` package of its concept. Two kinds keep their interface with their
   implementation, named by what the class is: an app use case's interface sits in `usecase` (Units 6), and a
-  state holder's interface in the project's state-holder kind (`component`, `viewmodel`), beside its
-  `Default…` implementation (`gui/api/rating/list/component/RatingListComponent`); in an app, when another
+  state holder's or a component's interface in its kind (`viewmodel` or `feature` for a state holder, `component`
+  for a Decompose component), beside its `Default…` implementation
+  (`gui/api/rating/list/component/RatingListComponent`); in an app, when another
   unit calls it, its interface sits in that kind of the owner's `api` unit and `Default…` in `impl`, or in
   `impl-ui` when the feature has one (Units 6) (`payment/api/offer/component/OfferComponent`,
   `payment/impl-ui/offer/component/DefaultOfferComponent`). A contract's implementation sits in the technology's
@@ -255,8 +258,9 @@ which holds the classes the platform constructs beside its `di`.
   `usecase` packages and platform-free API/contract units do not gain this exception.
 - A cache over storage: `arch-domain.md`, Repository.
 - Dependency direction: the tables of `arch-context.md`. A use case and a domain contract import no platform or
-  framework type; a framework registration interface has only the signature exception above. A state holder's
-  interface may import its UI framework (Decompose's `ComponentContext`, `Value`), nothing else of the platform.
+  framework type; a framework registration interface has only the signature exception above. A Decompose
+  component's interface may import its UI framework (Decompose's `ComponentContext`, `Value`), nothing else of
+  the platform; a state holder imports no UI framework type.
 - No pass-through and no use case calling another: `arch-domain.md`, Use case.
 
 ### Files
@@ -293,14 +297,16 @@ which holds the classes the platform constructs beside its `di`.
   place is decided when it is created; a later consumer uses it where it is when the dependency tables of
   `arch-context.md` allow that edge; when they do not, the final message lists the move and the task stops short
   of that consumer. Three changes are approved in advance, each printed in the task's planned tree: an app use
-  case's or state holder's interface that another unit calls moves to the owner's `api` unit (its class becomes
-  `Default…`, one DI line changes); an in-memory double that production code starts to construct moves from the
-  test tree to production code; a double that other units' tests need moves to `testFixtures` (KMP: the
+  case's, state holder's or component's interface that another unit calls moves to the owner's `api` unit (its
+  class becomes `Default…`, one DI line changes); an in-memory double that production code starts to construct
+  moves from the test tree to production code; a double that other units' tests need moves to `testFixtures`
+  (KMP: the
   `<feature>/fake` unit; Rust: `arch-package.rs.md`, Tests). Everything else waits for an approved tree.
 - **Re-layout does not change mechanisms.** A move changes packages, imports and the DI lines the move forces,
   nothing else. The project's mechanisms stay as they are: its `Lifecycle` objects, how listeners start
-  (`val job = flowEvent(...)`), its krates, its DI wiring. The DI rule applies to the DI modules a task creates;
-  existing wiring that breaks it (a flat `RootModule`) stays. Replacing a mechanism is a separate task the user
+  (`val job = flowEvent(...)`), its krates, its DI wiring. The applicable language's DI rule defines which
+  conventions govern a new module; creating a module does not bypass that rule's applicability conditions.
+  Existing wiring that breaks it (a flat `RootModule`) stays. Replacing a mechanism is a separate task the user
   asks for.
 - Edit an old file only where the new code plugs in: a new call, a new branch, a new constructor argument, a
   new line of wiring, a new variant or property of an old type.

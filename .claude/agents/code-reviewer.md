@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Reviews a diff for correctness with fresh context (bugs, races, lifecycle and run-twice idempotency, cancellation, concurrency that holds on every multiplatform target, error paths, regressions in callers). Use before every pull request and after an implementing agent reports done. Read-only; every finding is a failing scenario with file:line and how to reproduce it. Not for style or rule compliance (agents-md-reviewer) or task coverage (task-vs-diff-verifier).
+description: Reviews a diff for correctness with fresh context (bugs, races, lifecycle and run-twice idempotency, cancellation, concurrency that holds on every multiplatform target, error paths, regressions in callers). Use before every pull request, after an implementing agent finishes and the main thread's final validation reports build and lint green. Read-only; every finding is a failing scenario with file:line and how to reproduce it. Not for style or rule compliance (agents-md-reviewer) or task coverage (task-vs-diff-verifier).
 tools: Read, LSP, Bash, WebSearch, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__query_graph, mcp__codebase-memory-mcp__get_architecture, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__list_projects, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository, mcp__codebase-memory-mcp__check_index_coverage
 model: opus
 color: yellow
@@ -28,8 +28,9 @@ fetches before calling you; you name the SHAs you reviewed.
 
 Steps:
 
-1. Read `AGENTS.md` and the documents it lists for the language of the changed files. They tell you the
-   project's own mechanisms for scopes, errors and concurrency, which is what correct code here uses.
+1. Read `AGENTS.md` and the documents it lists for the language of the changed files, the Linter-enforced
+   ones included. They tell you the project's own mechanisms for scopes, errors and concurrency, which is
+   what correct code here uses.
 2. `codebase-memory-mcp`: `index_status`, then `detect_changes`; re-index when it reports changes.
 3. Read the change: `git rev-parse <base> HEAD`, `git log -1 --format='%h %cI' <base>`,
    `git log --oneline <base>..HEAD`, `git diff <base>...HEAD`. When the prompt says the work is

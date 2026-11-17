@@ -37,7 +37,7 @@ How the domain rule is written in Kotlin.
 - `@Serializable` on a model type is allowed. The imports that count as platform or framework types are the
   linter's built-in framework list (`org.jetbrains.exposed`, `org.bukkit`, `android.*` among them) and the
   project's `technologyWords`; `model`, a use case and a domain contract import none. The exceptions
-  (`arch-package.md`, Contracts and implementations): a framework registration interface, and a state
-  holder's interface, which may import its UI framework (Decompose's `ComponentContext`, `Value`). In `model`: Compose types in a UI unit
+  (`arch-package.md`, Contracts and implementations): a framework registration interface, and a component's
+  interface, which may import its UI framework (Decompose's `ComponentContext`, `Value`). In `model`: Compose types in a UI unit
   (`androidx.compose.*`, `org.jetbrains.compose.*`; `compose.kt.md`) and a framework's exception subclasses in
   its entry-point unit (`arch-domain.md`, What the model may import).

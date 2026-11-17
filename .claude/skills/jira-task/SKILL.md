@@ -95,8 +95,8 @@ text), say so and ask, with the fact that blocks it; do not build a different ta
 
 ## 6. Pull request
 
-When the new-feature answers asked for one, the one `pr-creator` call that makes the commits also opens it, by
-the `pull-request` skill. The title's
+When the new-feature answers asked for one and the work is ready for review, ask `pr-creator` to open it by
+the `pull-request` skill, either with the final commit batch or after earlier batches. The title's
 `<ref>` is the issue key (`[FEAT] [PROJ-123] Add the export button`) and Related Issue holds the issue's link.
 Overview and Motivation and Context take what the brief says, in the pull request's words; the brief itself, the
 comment history and the list of sources stay out of it.

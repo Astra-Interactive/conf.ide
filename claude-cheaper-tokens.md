@@ -73,6 +73,15 @@ export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
 
 Without `--hidden`, searches inside `.claude/` find nothing and cost extra turns.
 
+### codebase-memory hook on Read removed (2026-11-21)
+
+`codebase-memory-mcp install` writes a `PostToolUse` hook with matcher `Read`
+(`codebase-memory-mcp hook-augment`) into `~/.claude/settings.json`. It ran for 0.5 s
+after every read; across 10 sessions 35 of 20,804 reads got a note an agent could act
+on. The entry is removed and the tool's other hooks stay; graph freshness stays with
+the steps of `.claude/docs/codebase-memory.md`. `codebase-memory-mcp install` or
+`update` may write the entry back.
+
 ## Subagent status summaries (unofficial preload)
 
 Source: Flamerix AI, `no-agent-summary.js`
@@ -131,4 +140,5 @@ To remove it, delete the `BUN_OPTIONS` line from `~/.zshrc` and the folder.
 
 ## Rollback
 
-The previous settings are in `~/.claude/settings.json.bak-2026-10-30`.
+The previous settings are in `~/.claude/settings.json.bak-2026-10-30`; the settings
+before the Read hook was removed are in `~/.claude/settings.json.bak-2026-11-21`.

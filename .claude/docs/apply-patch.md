@@ -9,5 +9,4 @@ marker file outside the repository are not edits.
 - Codex: `apply_patch`.
 
 A one-off Python or shell script that reads a file and replaces text in it (`read_text().replace(...)`,
-`sed -i`, a heredoc that rewrites the file) is the pattern this replaces. XML is read and changed with
-`xmlstarlet` (xmlstarlet.md).
+`sed -i`, a heredoc that rewrites the file) is the pattern this replaces (XML: xmlstarlet.md).

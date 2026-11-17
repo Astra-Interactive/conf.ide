@@ -4,8 +4,8 @@
 The documents in .claude/docs are the source of truth; the generated directory is not in git.
 Each rules file is a `paths:` frontmatter followed by its group's documents, concatenated in
 alphabetical order under a heading with the file name. Claude Code loads a file when a matching
-path is read or edited; the Codex docs-context.sh hook serves the same file with the frontmatter
-stripped. generate.sh runs this at session start; a write is a temp file renamed over the target.
+path is read or edited; Codex has no path rules. generate.sh runs this at session start; a write
+is a temp file renamed over the target.
 """
 
 import os
@@ -19,6 +19,14 @@ RULES = ROOT / ".claude" / "rules"
 HEADER = "# Generated from .claude/docs by .claude/hooks/generate-rules.py; edit the docs and rerun.\n"
 
 CODE_DOCS = ("arch-package.md", "arch-domain.md", "arch-context.md", "codebase-memory.md", "region.md")
+# The linter checks these completely, so AGENTS.md lists them as Linter-enforced instead of path rules.
+LINTER_DOCS = (
+    "data-class-default-values.kt.md",
+    "imports.kt.md",
+    "no-it.kt.md",
+    "closure-naming.rs.md",
+    "imports.rs.md",
+)
 
 GROUPS = {
     "kotlin": (["**/*.{kt,kts}"], lambda p: p.name.endswith(".kt.md")),
@@ -55,7 +63,7 @@ def write_atomic(target: Path, content: str) -> bool:
 def main() -> int:
     RULES.mkdir(parents=True, exist_ok=True)
     for name, (paths, belongs) in GROUPS.items():
-        docs = sorted(p for p in DOCS.glob("*.md") if belongs(p))
+        docs = sorted(p for p in DOCS.glob("*.md") if belongs(p) and p.name not in LINTER_DOCS)
         if not docs:
             print(f"no documents for group {name}", file=sys.stderr)
             return 1

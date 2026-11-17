@@ -1,6 +1,11 @@
 ## Dependency Injection
 
-Manual constructor injection — no Koin, Dagger, or other DI frameworks.
+Use the project's existing dependency-injection mechanism for new dependencies and new feature modules.
+When a DI framework is already in use, extend its graph and follow its construction and lifecycle patterns;
+do not introduce a parallel manual graph. The constructor-injection rule still applies.
+
+The manual-module conventions below apply only when the project uses no DI framework and the user has not
+selected another mechanism. In that case use manual constructor injection without adding a DI framework.
 
 A DI module is a Kotlin `class` (e.g. `LinkModule`) that declares its services as properties, constructs their
 concrete instances, and receives other DI modules as constructor parameters. Use a class by default. Make a DI

@@ -127,7 +127,7 @@ Russian has three forms, Arabic has six, and the one-vs-many check silently prod
    Android `src/main/res/values/strings.xml`, Compose Multiplatform
    `src/commonMain/composeResources/values/strings.xml`. Other locales come from Tolgee; do not hand-write
    translations.
-4. Edit the XML with `xmlstarlet` (`.claude/docs/xmlstarlet.md`), keep the file's key order
+4. Edit the XML with the harness edit tool (`.claude/docs/xmlstarlet.md`), keep the file's key order
    (alphabetical if it already is), and escape `'`, `&`, `<` as the platform requires.
 5. For a placeholder or plural, write the Tolgee key description in the same change.
 6. Renaming a key: rename every locale file and every call site in one commit; a key with two spellings

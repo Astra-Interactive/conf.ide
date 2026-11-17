@@ -7,7 +7,7 @@ version: 1.0.0
 # New feature
 
 Where a feature lives and who sees it (a branch, a worktree, commits, a pull request) is the user's decision.
-This skill asks once, before the first edit, and follows the answers to the end of the task. For this task the
+This skill asks at most once, before the first edit, and follows the answers to the end of the task. For this task the
 answers replace the defaults of the git-commits rule (commit without being asked, stay on the current branch, never
 push, never open a pull request); its message format still holds.
 
@@ -29,9 +29,10 @@ recommended.
 
 ## 2. Ask
 
-Ask in one `AskUserQuestion` call, so the user answers once. Leave out a question the user's message already
-answers ("в отдельной ветке от develop" answers 1 and 2, "без коммитов" answers 3 and 4), and skip the call when
-it answers all four.
+Ask in one `AskUserQuestion` call, so the user answers once. A default the consumer's `AGENTS.project.md`
+sets for a question counts as its answer, and the user's message overrides it ("в отдельной ветке от
+develop" answers 1 and 2, "без коммитов" answers 3 and 4). Ask only the questions both leave open, and skip
+the call when none is left.
 
 | Header | Question | Options |
 |---|---|---|
@@ -98,7 +99,8 @@ The current branch needs no setup.
 ## 4. Build
 
 The feature follows the project rules like any other task. With commits, commit by the git-commits rule: one
-commit per logical change, made by `pr-creator` when the last edit is done. Without them, commit nothing, and
+commit per logical change, made by `pr-creator` for each completed, validated batch. Serialize Git ownership
+as required by `subagents.md`; a batch does not need to wait for unrelated work. Without commits, commit nothing, and
 record the answer for the Stop hook right away, before the first edit:
 
 ```bash
@@ -112,6 +114,7 @@ user asks), ask the user each time whether to merge the base in or rebase onto i
 
 ## 5. Pull request
 
-When the user said yes, the one `pr-creator` call that makes the commits (step 4) also opens the pull request,
-by the `pull-request` skill; only a pushing agent may push. Its base is the branch the feature started from;
+When the user said yes and the work is ready for review, ask `pr-creator` to open the pull request by the
+`pull-request` skill. This may accompany the final commit batch or follow earlier batches; only a pushing
+agent may push. Its base is the branch the feature started from;
 the default branch when the work stayed on the current branch.

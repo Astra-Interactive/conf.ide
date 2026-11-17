@@ -11,12 +11,13 @@ This rule says how units relate: what one may depend on, what crosses between th
   context's `contract` unit; a unit implementing a contract of a unit it may depend on (a technology unit the
   storage contracts or its own `api`, a platform unit its own `api`, a `<feature>/fake` the `api` it fakes); a DI module taking
   the DI module of a unit it may depend on; the entry-point unit building the product units' DI modules.
-  A state holder's public interface in an `api` unit is a contract, even in `component` or `viewmodel`.
+  A public interface in an `api` unit of a state-holder or component kind (`viewmodel`, `feature`, `component`)
+  is a contract.
   Test source sets (in Rust, a crate's `test/` tree) may also use exported fake implementations
   (`arch-package.kt.md`, `arch-package.rs.md`, Tests).
   Nothing else crosses: no other implementation is called across units, no table, and no platform type into
   a platform-free unit (a plugin's `api` unit, `core/api`, the storage contracts unit). An app's UI `api`
-  may expose its state holder's UI framework and the Compose model types allowed by `compose.kt.md`;
+  may expose its component's UI framework and the Compose model types allowed by `compose.kt.md`;
   this does not permit unrelated platform, ORM or network types in its contracts or models.
 - A sub-context depends on another through that one's `api` unit (`command` → `gui/api` to call
   `AddRatingUseCase`, `command` → `vote/api` for a new capability). Only the entry-point unit depends on a
@@ -43,8 +44,8 @@ This rule says how units relate: what one may depend on, what crosses between th
   inside one. It declares in its own words what it needs, translates at its
   edge, and holds both what it calls on that system and what it exposes to it (`RatingPlaceholderExpansion`).
 - A framework type that leaks into a contract (a paging type, a platform location) is the violation to look
-  for: it is replaced by a model type and mapped in the implementation. A state holder's UI contract is the
-  exception: it may use its own UI framework (Decompose's `ComponentContext`, `Value`, `Render()`), as
+  for: it is replaced by a model type and mapped in the implementation. A component's UI contract is the
+  exception: it may use its own UI framework (Decompose's `ComponentContext`, `Value`) and its own `Render()`, as
   `arch-package.md`, Contracts and implementations, allows; a UI unit's models may carry Compose types as
   `compose.kt.md` allows.
 
@@ -65,7 +66,7 @@ This rule says how units relate: what one may depend on, what crosses between th
 | `usecase` | `api`, `model`, `util`, role kinds |
 | implementations (technology packages and units), `stub` | `api` (the contract they implement and the contracts they call), `model`, `util`, role kinds, and what sits in their own technology package or unit (`table`, `entity`, `database`, a helper class beside them); a router's implementation also the UI kinds it opens |
 | `fake` (test implementations) | `api` (the contract it replaces; when that contract is a DI-module trait that exists by a trigger of `arch-package.md`, Contracts and implementations, that trait too), `model`, `util`, and the other fakes of its own unit's test sources and shared fakes that it hands out (in Rust, its crate's `test/` and `fixture/` trees); in Rust, a fake of the crate's `test/` tree also the `memory` implementation of its own concept |
-| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`, role kinds; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
+| entry-point and UI kinds, the project's own words for them included (`command`, `event`, `gui`, `slot`, `component`, `context`, `route`, `composable` and its sub-packages, `viewmodel`, `feature`, …), and `warmup`, `migration`, `error` | `usecase`, `api`, `model`, `util`, role kinds; `theme` for the Compose kinds; the other UI kinds of the same unit, with no cycle between them: a whole depends on its parts (a screen on its components and layouts, a menu on its slots), and a whole is used only by what hosts or opens it (a parent composable, a component's `Render()`, a router's implementation) |
 | `theme` (Compose) | `model`, `theme` (including the theme object's access to its `CompositionLocal`s) |
 | `util` | `model`, `util`, a data type nested in an `api` contract; `theme` in a Compose unit; `table`, `entity`, `database` in a unit that is wholly one technology |
 | role kinds | `model`, `util`, role kinds |
@@ -126,8 +127,9 @@ The fixed kinds are `api`, `model`, `usecase`, `util`, `di`, `theme`, `stub`, `w
 project's own word) and `fake` (in a test tree, `testFixtures` or a `<feature>/fake` unit; Rust: `test/` or
 `fixture/`). A technology package is named after a library the unit depends on, or `file`, `memory` (Rust also
 `system`). Entry-point, UI and role-kind words are those in the project's linter configuration (Kotlin
-`entryPointWords`, `roleKinds`; Rust `entry-point-words`, `role-kinds`). Any other package that holds files fails
-the build.
+`entryPointWords`, `roleKinds`; Rust `entry-point-words`, `role-kinds`); the Kotlin linter's built-in entry-point
+and UI words include `component`, `viewmodel` and `feature`, and `entryPointWords` adds the project's own. Any
+other package that holds files fails the build.
 
 Run the project's configured linter: it checks every row of these tables, the package names and the naming of
 implementations. The platform and framework imports of `model`, `api` and `usecase` are those of the linter's

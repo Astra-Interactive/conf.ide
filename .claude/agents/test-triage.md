@@ -3,7 +3,7 @@ name: test-triage
 description: Diagnoses Gradle/Cargo test, compiler and lint failures and red CI and returns a fix per failure. Use after gradle-check, cargo-check or red CI. Never edits or runs checks; fixes and rerun requests go to the parent.
 tools: Bash, Read, LSP, WebFetch, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: sonnet
-effort: low
+effort: medium
 color: blue
 hooks:
   PreToolUse:

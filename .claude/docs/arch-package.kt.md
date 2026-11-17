@@ -31,6 +31,7 @@ Decide the tier while writing the declaration:
 | used only inside the file that declares it | `private` in that file |
 | used by other files of the same unit, such as an implementation its DI module constructs | `internal` |
 | used by another unit: the contracts, models, model rules and use cases of an `api` unit, the `stub` and `memory` implementations another unit uses, shared fakes exported to another unit's tests, a DI module another unit constructs, the classes the platform constructs in an entry-point unit | none (public) |
+| a `theme` object of the design-system unit, whether or not another unit reads it (`compose.kt.md`, Packages of a UI unit) | none (public) |
 
 Public is Kotlin's default, so a public declaration carries no modifier. The keyword `public` is written
 only in a library unit with explicit API mode on, where the compiler demands it, and nowhere else. Class
@@ -61,22 +62,27 @@ internal class FileJailRepository(
 - The build file of a plugin's `api` unit (`gui/api`) declares no platform dependency (no Paper, no Bukkit);
   the platform unit (`gui/bukkit`) depends on it (`arch-package.md`, Units 4).
 - The types of a `<context>/contract` unit are `@Serializable` (`arch-package.md`, Units 1).
+- In a version catalog, no `[libraries]`, `[plugins]` or `[bundles]` alias is a prefix of another alias of the
+  same table at a separator (`-`, `_` and `.` are one separator). Next to `a-b`, a new alias `a-b-c` turns
+  `libs.a.b` into a group, and every build script that uses `libs.a.b` as a dependency stops compiling. The
+  distinguishing segment comes before the shared prefix ends: `a-c-b` (the linter's `CatalogAliasPrefix`).
 
 ### Entry points, use cases and the platform
 
 - The kinds of `arch-package.md`, Concepts and kinds 3 and 4, take their Kotlin words from the framework:
-  `service` (a periodic task), `route` (a Ktor route), `composable` only with Compose, and the state holder by
-  its class: `viewmodel` for an Android-style view model, `component` for a Decompose component; when a
-  component holds a view model, each has its kind beside the other in the concept: `component` for the
-  component (the state holder, with its interface when another unit opens it), `viewmodel` for the view model
-  it holds (`offer/component/DefaultOfferComponent`, `offer/viewmodel/OfferViewModel`).
+  `service` (a periodic task), `route` (a Ktor route), `composable` only with Compose, the state holder by its
+  class (`viewmodel` for an Android-style view model, `feature` for a mikro `CoroutineFeature`), and the Decompose
+  proxy by its class (`component`); when a component holds a view model, each has its kind beside the other in
+  the concept: `component` for the component (with its interface when another unit opens it), `viewmodel` for the
+  view model it holds (`offer/component/DefaultOfferComponent`, `offer/viewmodel/OfferViewModel`), and `feature`
+  for a `CoroutineFeature` state holder (`offer/feature/DefaultOfferFeature`).
 - A framework registration interface: `fun interface RouteRegistry { fun register(routing: Routing) }` may stay
   in `core/route` (`arch-package.md`, Contracts and implementations).
 - In a plugin built on AstraLibs, a use case, and a `warmup` or `migration` in a platform-free unit, reach the
   server through AstraLibs' `PlatformServer` and its `server/*` abstractions (`server/player`,
   `server/location`, `server/permission`) or the sub-context's own contract.
-- A state holder of a menu or screen (`component`, or `viewmodel` for a view model) holds no rule and calls use
-  cases and contracts.
+- A state holder or a component of a menu or screen (`viewmodel` or `feature` for a state holder, `component`
+  for a Decompose component) holds no rule and calls use cases and contracts.
 
 ### DI modules
 

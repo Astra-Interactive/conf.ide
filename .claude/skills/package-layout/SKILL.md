@@ -27,7 +27,8 @@ The full procedure:
 
 1. Record `BASE=$(git rev-parse HEAD)`. The review at the end lists the files added since it.
 2. Read the project's tree and the one-sentence `README.md` of every unit you are about to touch. Note the
-   project's own words for kinds (`feature`, `component`, `slot`) and its mechanisms (`Lifecycle` objects, how
+   words for kinds (`feature`, `component`, `slot`, and any `entryPointWords` additions such as `router`) and its
+   mechanisms (`Lifecycle` objects, how
    listeners start, its DI wiring). They are kept; a word on the forbidden list (`presentation`) is not used
    for new packages.
 3. **List the sub-contexts the task touches**: entry mechanisms (commands, listeners, menus, routes,
@@ -156,7 +157,8 @@ Dependencies: `command` → `vote/api`; `gui/bukkit` → `vote/api`; `vote/api` 
 Where a new file goes: the `<concept>` paths apply when the sub-concept exists or the task adds three or more
 files of two or more kinds for it, and a single new file goes to the kind of the level that has it
 (`arch-package.md`, Concepts and kinds). A new menu → `gui/bukkit/rating/<concept>/gui/`; its state holder →
-`gui/api/rating/<concept>/component/`; a new use case of the rating concept →
+`gui/api/rating/<concept>/component/` (AstraLibs' word for it; a Compose app uses `viewmodel/` or `feature/`); a
+new use case of the rating concept →
 `gui/api/rating/<concept>/usecase/`; a new storage query → `data/dao/rating/api/RatingRepository` plus
 `data/exposed/rating/ExposedRatingRepository`; a start-up seed → `data/exposed/rating/warmup/`; a config format
 change → `core/settings/migration/`; a listener → `event-bukkit/event/`.
