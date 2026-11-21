@@ -11,17 +11,18 @@
 # aliases from .claude/agents/*.md (`model: opus`, `model: sonnet`, `model: haiku`) to Ollama
 # tags. CLAUDE_CODE_SUBAGENT_MODEL is removed: set, it would override every agent's model.
 #
-# Defaults come from ANTHROPIC_MODEL, ANTHROPIC_DEFAULT_OPUS_MODEL, ANTHROPIC_DEFAULT_SONNET_MODEL
-# and ANTHROPIC_DEFAULT_HAIKU_MODEL, and an unset alias falls back to the session model, so the
-# script without flags behaves like the session this one started from. Written for bash 3.2.
+# Defaults are the chosen analogues of the Claude models: deepseek-v4.1-flash:cloud for the
+# session, kimi-k3.1-pro:cloud for opus, glm-5.3-flash:cloud for sonnet and gemma4:31b-cloud for
+# haiku. Environment variables from a parent session are ignored, so the defaults hold wherever the
+# script starts; a flag is the way to change one. Written for bash 3.2.
 
 set -u
 
 BASE_URL="http://127.0.0.1:11434"
-MODEL="${ANTHROPIC_MODEL:-deepseek-v4.1-flash:cloud}"
-OPUS_MODEL="${ANTHROPIC_DEFAULT_OPUS_MODEL:-$MODEL}"
-SONNET_MODEL="${ANTHROPIC_DEFAULT_SONNET_MODEL:-$MODEL}"
-HAIKU_MODEL="${ANTHROPIC_DEFAULT_HAIKU_MODEL:-$MODEL}"
+MODEL="deepseek-v4.1-flash:cloud"
+OPUS_MODEL="kimi-k3.1-pro:cloud"
+SONNET_MODEL="glm-5.3-flash:cloud"
+HAIKU_MODEL="gemma4:31b-cloud"
 DRY_RUN=0
 CLAUDE_ARGS=()
 
