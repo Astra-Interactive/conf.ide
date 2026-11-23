@@ -24,6 +24,7 @@ LINTER_DOCS = (
     "data-class-default-values.kt.md",
     "imports.kt.md",
     "no-it.kt.md",
+    "serial-name.kt.md",
     "closure-naming.rs.md",
     "imports.rs.md",
 )

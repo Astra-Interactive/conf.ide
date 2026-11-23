@@ -103,5 +103,6 @@ the reviewers read the ones of the change's languages.
 - [.claude/docs/data-class-default-values.kt.md](.claude/docs/data-class-default-values.kt.md)
 - [.claude/docs/imports.kt.md](.claude/docs/imports.kt.md)
 - [.claude/docs/no-it.kt.md](.claude/docs/no-it.kt.md)
+- [.claude/docs/serial-name.kt.md](.claude/docs/serial-name.kt.md)
 - [.claude/docs/closure-naming.rs.md](.claude/docs/closure-naming.rs.md)
 - [.claude/docs/imports.rs.md](.claude/docs/imports.rs.md)

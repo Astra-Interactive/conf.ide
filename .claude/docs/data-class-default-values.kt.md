@@ -30,9 +30,9 @@ Allowed exception: data classes marked with `@Serializable`, where defaults are 
 // a config read from a file; the defaults keep old files readable
 @Serializable
 data class PredictionConfig(
-    val symbol: String = "",
-    val window: Int = 100,
-    val features: List<Double> = emptyList()
+    @SerialName("symbol") val symbol: String = "",
+    @SerialName("window") val window: Int = 100,
+    @SerialName("features") val features: List<Double> = emptyList()
 )
 ```
 
