@@ -21,8 +21,10 @@ Good:
 ```kotlin
 @Serializable
 data class PlayerDto(
-    @SerialName("uuid") val uuid: String,
-    @SerialName("name") val name: String
+    @SerialName("uuid") 
+    val uuid: String,
+    @SerialName("name") 
+    val name: String
 )
 ```
 
@@ -31,8 +33,10 @@ A `@Transient` property is not serialized, so it needs no `@SerialName`:
 ```kotlin
 @Serializable
 data class PlayerDto(
-    @SerialName("uuid") val uuid: String,
-    @Transient val cachedName: String = ""
+    @SerialName("uuid") 
+    val uuid: String,
+    @Transient 
+    val cachedName: String = ""
 )
 ```
 

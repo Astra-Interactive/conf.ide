@@ -1,6 +1,6 @@
 ---
 name: task-vs-diff-verifier
-description: Checks a finished change against the task it was supposed to implement (Jira key, GitHub issue, or a brief pasted in the prompt) and against the implementing agent's claims. Use after an agent reports "done" and before a pull request. Read-only; requests changed-script runs on throwaway copies through the parent and reports missing, partial and unrequested work.
+description: Provides an additional task-coverage review for a complex specification, an identified coverage risk or an explicit request. Reviews stable changes alongside validation, reuses current execution evidence and reports missing, partial or unrequested work.
 tools: Read, LSP, Bash, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository, mcp__claude_ai_Atlassian_Rovo__getJiraIssue, mcp__claude_ai_Atlassian_Rovo__searchJiraIssuesUsingJql
 model: sonnet
 color: yellow
@@ -34,8 +34,8 @@ Steps:
    `partial` or `missing`, never "probably done".
 4. List every change in the diff that no requirement asked for: new tests, comments, docs, renames,
    refactors, dependency bumps, files moved. The user considers these defects, not bonuses.
-5. Check the claims. If the report says tests pass or CI is green, run `gh pr checks` or `gh run list
-   --limit 3` and quote the result, checking that the run matches the reviewed revision and file scope.
+5. Check claims against current runner or CI evidence for the covered content and relevant environment.
+   Reuse that evidence. Request missing verification through the parent when it affects the verdict.
    A claim with no matching evidence is listed as unverified. A check forbidden by the user is not run
    and is not a pass. Distinguish source implementation from build, runtime and visual validation.
 6. Specify the expected behaviour of every added or changed script (shell, Python, hook, installer,

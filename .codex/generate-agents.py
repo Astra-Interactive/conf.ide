@@ -76,7 +76,7 @@ TOOL_NAMES = {
     "WebSearch": "web search",
     "WebFetch": "web fetch",
     "Agent": "the multi-agent tools (spawn_agent, wait_agent, send_message, followup_task, list_agents, "
-             "interrupt_agent), for the helpers the Helpers paragraph of subagents.md "
+             "interrupt_agent), for the helpers the helper ownership policy in subagents.md "
              "gives this agent and no other role",
     "SendMessage": "messages to its helpers",
 }

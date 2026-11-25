@@ -16,7 +16,7 @@
 # the Python check or a python3 that cannot run on a call that needs its verdict.
 # Written for bash 3.2.
 
-# Change together with the Helpers paragraph of subagents.md (Budget) and the tools: line (Agent, SendMessage) of each starter's agent file.
+# Change together with the helper ownership rules in subagents.md (Assignment and context) and each starter's Agent/SendMessage tools.
 STARTERS="implementer debugger detekt-rule-author linter-rollout"
 HELPERS="gradle-check cargo-check lookup test-triage test-writer"
 

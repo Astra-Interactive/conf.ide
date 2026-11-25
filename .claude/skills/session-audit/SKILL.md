@@ -91,7 +91,8 @@ shard for each shard in turn.
 3. Write `<audit>/BRIEF.md`: the question the audit answers (by default, which agents, skills, docs or
    hooks would have prevented the problems seen), the configuration it is about, and any change to the
    entry or report format below.
-4. Spawn one `session-auditor` per shard, in waves of two (`subagents.md`, Budget). Its
+4. Assign one `session-auditor` per shard within the capacity and ownership rules in
+   `subagents.md`, Assignment and context. Its
    prompt: the audit folder, the shard id, the brief's path.
 5. Check coverage: for each shard, the rows with a done entry,
    `awk '/^### n=/ {n = $2} /^- done/ {print n}' <audit>/progress/<id>.md | sort -u | wc -l`, equal its

@@ -1,14 +1,15 @@
 ---
 name: code-review
-description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
+description: Independently review changes since a fixed point or working state for task coverage, correctness and applicable standards. Reuse current evidence and add specialist review for identified risks or explicit requests.
 ---
 
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Independent review of the diff between `HEAD` and the supplied fixed point, plus requested working changes:
 
 - **Standards**: does the code conform to this repo's documented coding standards?
 - **Spec**: does the code faithfully implement the originating issue / spec?
+- **Correctness**: do changed paths and affected callers preserve their runtime contracts?
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+One independent reviewer covers the criteria together under `subagents.md`.
 
 Use the supplied task text, document or issue as the spec. A local brief does not require an issue tracker.
 
@@ -38,11 +39,11 @@ subsequent user corrections and approved scope changes; an older document or age
 1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.), fetched via the workflow in the tracker doc.
 2. A path the user passed as an argument.
 3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
-4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+4. If the task provides no intent and none can be established from those sources, report the missing criterion and ask only when it prevents the requested verdict.
 
 ### 3. Identify the standards sources
 
-Search the repo for every file that documents how code should be written. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list.
+Use the repository entry point and applicable rules. Include relevant `CODING_STANDARDS.md` and `CONTRIBUTING.md` when present.
 
 Include the applicable `AGENTS.project.md`. Standards covers architectural requirements as well as syntax:
 state ownership, responsibilities, existing mechanisms and necessity of abstractions. A finding against a
@@ -71,50 +72,27 @@ dependency bundle, polymorphic hierarchy or file move. Check the project's rules
 - **Middle Man**: is delegation the framework's intended boundary, or an unnecessary extra layer?
 - **Refused Bequest**: does the implementation satisfy the contract its callers actually rely on?
 
-### 4. Spawn both sub-agents in parallel
+### 4. Assign independent review
 
-Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
+Use one `code-reviewer` for task coverage, correctness and applicable standards. For instruction-only
+changes use `docs-consistency-reviewer`, covering those criteria and dependent document consistency.
+Give the reviewer the pinned revision/working-tree scope, current requirements, applicable source
+pointers, exclusions and available evidence. The review may start alongside validation once the diff
+is stable. The reviewer incorporates current outcomes before its verdict.
 
-Use the existing `agents-md-reviewer` and `task-vs-diff-verifier` roles, subject to `subagents.md`'s
-capacity and current user instructions. Send both the exact revision/working-tree scope, current
-requirements and exclusions. This two-axis review does not replace correctness review required elsewhere.
-Both get the runner's lint output for the reviewed revision; when there is none, request a runner pass
-first (`subagents.md`, Tests and validation).
+Assign additional `agents-md-reviewer` or `task-vs-diff-verifier` only for an identified risk or the
+user's explicit request. An existing independent review counts when it covered the same content,
+criteria and relevant environment. Re-check affected findings after an edit.
 
-**Standards sub-agent prompt** should include:
+### 5. Report
 
-- The full diff command and commit list.
-- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
-- The brief: "Report every documented-standard violation with its rule and source evidence, including
-  architectural requirements. Separate heuristic smells from violations. Omit duplicate manual checks
-  only where current evidence establishes enabled tooling coverage of these files; otherwise inspect
-  manually or mark validation missing. Keep findings concise without dropping them for a word limit."
+Report findings by severity with their criterion: task coverage, correctness or standards. A finding
+cites the changed code and the failing scenario or violated requirement. Keep heuristic smells
+separate from violations. State the reviewed content and missing evidence. An empty result within
+that scope is a complete answer. Keep full logs at their existing paths.
 
-**Spec sub-agent prompt** should include:
+## Review criteria
 
-- The diff command and commit list.
-- The path or fetched contents of the spec.
-- The brief: "Report missing/partial requirements, unrequested behaviour and apparently implemented but
-  incorrect requirements. Include explicit architecture constraints and later user corrections. Quote
-  the requirement and its evidence. Keep findings concise without dropping them for a word limit."
-
-If the spec is missing, skip the Spec sub-agent and note this in the final report.
-
-### 5. Aggregate
-
-Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the two axes are deliberately separate (see _Why two axes_).
-
-End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
-
-State the reviewed revision, working-tree scope and missing validation. A narrow or severity-filtered
-result is not a full approval. Read-only workers return complete findings inline; the parent may archive
-them separately rather than asking a worker to write outside its permissions.
-
-## Why two axes
-
-A change can pass one axis and fail the other:
-
-- Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
-- Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
-
-Reporting them separately stops one axis from masking the other.
+A change can follow the rules and implement the wrong behaviour, or meet the task while violating a
+documented constraint. Check both and runtime correctness. Each finding identifies the failed criterion
+so a clean result in one area cannot hide a problem in another.

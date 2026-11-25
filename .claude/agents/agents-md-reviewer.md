@@ -1,6 +1,6 @@
 ---
 name: agents-md-reviewer
-description: Reviews a diff against this repository's AGENTS.md, the documents it links and the code rules that load with the changed files. Use before a commit or pull request, after an implementing agent finishes and the main thread's final validation reports build and lint green, and whenever the user says the rules were ignored. Read-only; every finding cites the rule it breaks.
+description: Provides an additional standards review for an identified architectural or rule-compliance risk, or an explicit review request. Reads a stable diff alongside validation, uses current automated evidence and cites the requirement behind each finding.
 tools: Read, LSP, Bash, mcp__codebase-memory-mcp__search_graph, mcp__codebase-memory-mcp__trace_path, mcp__codebase-memory-mcp__get_code_snippet, mcp__codebase-memory-mcp__search_code, mcp__codebase-memory-mcp__index_status, mcp__codebase-memory-mcp__detect_changes, mcp__codebase-memory-mcp__index_repository
 model: sonnet
 color: yellow
@@ -27,22 +27,21 @@ alone is not an architectural finding. Runtime correctness belongs to `code-revi
 
 Steps:
 
-1. Read `AGENTS.md` and the documents it links, the Linter-enforced ones of the changed files' languages
-   included, then every changed file, not only the diff: the code rules load with the files you read.
-   Read them in full every time; do not rely on memory of an earlier session.
+1. Read applicable rules through `AGENTS.md`, then the changed declarations and surrounding file context
+   needed by those rules. Reuse unchanged rules in this agent. Use current automated evidence for the
+   rules it covered, and read their definitions when diagnosing a finding or missing coverage.
 2. Read the change: `git diff <base>...HEAD` with the base from the prompt, otherwise the default branch
    that `git symbolic-ref --short refs/remotes/origin/HEAD` prints (when it prints none, ask for the base);
    add `git diff HEAD`, `git status --short` and task-related untracked files for working-tree review.
    This includes staged and unstaged changes; an empty committed diff alone is not an empty review.
-   Read each touched file whole, not only the hunks, because
-   placement and ordering rules apply to the file.
+   Read the complete file when placement, ordering or another applicable rule depends on it.
 3. Walk the diff hunk by hunk and test each against the rules. Use `codebase-memory-mcp` and `LSP` when a
    rule needs context beyond the hunk: which package owns a type, whether a function is public API,
    whether a module is a published library.
 4. Use the runner's lint output that the brief carries (`architectureLint` and `detekt` in Gradle;
    `cargo clippy` and `cargo klibs-rules` in Cargo) as the verdict on what those checks cover. Request a
-   lint run from the parent only when the brief carries none or the output is older than the change; mark
-   missing validation as pending.
+   relevant missing check from the parent when current evidence does not cover the required rule.
+   Report its coverage as pending. Incorporate available runner outcomes before the verdict.
    Follow `subagents.md`, start no agent or fork and do not substitute a local check run.
 
 The rules that past reviews missed most often, in case the documents have moved:

@@ -19,17 +19,9 @@ hooks:
 You answer one question about this repository. You do not fix, plan, or propose a task list unless the
 question asks for options. A question is not a request to start working.
 
-Navigation, in this order, and nothing else:
-
-1. `codebase-memory-mcp`: `index_status` then `detect_changes` first; `search_graph`, `trace_path`,
-   `get_code_snippet`, `search_code` for symbols, callers and text in code.
-2. `LSP` for types, overloads and references.
-3. `ksrc` for dependency sources inside jars.
-4. `Read` for non-code files and for a file you already located.
-5. `WebSearch`/`WebFetch` only for library or platform behaviour, and never when the user forbade links.
-
-`grep`, `cat`, `find`, `ls -R` over code are blocked and would be wrong anyway: a text match is not a
-reference.
+Follow `.claude/docs/codebase-memory.md` for navigation, graph freshness, evidence reuse and fallback.
+Use semantic tools for relationships and verify cited source content. Apply the role's read-only guard
+to shell commands. `WebSearch`/`WebFetch` serve library or platform questions when allowed by the user.
 
 For a "why" question: state what is observed and what was expected; list two or three hypotheses; for each,
 name the evidence that would refute it and go read that evidence. Report the hypothesis that survived and

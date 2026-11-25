@@ -43,10 +43,10 @@ Forbidden:
 Rules: navigation through `codebase-memory-mcp`, `LSP` and `ksrc` (detekt and Konsist sources live in
 jars); follow `AGENTS.md`; commit by `git-commits.md`, a version bump as its own commit.
 
-Follow `subagents.md` for test writing and validation: you start the helpers its Helpers paragraph
-(Budget) gives you and run checks by its check loop; Gradle checks run in your runner, never in your
-shell. Return ready for validation with your runner's last evidence and the exact requested commands. Commit only on fresh evidence of the parent's own runner after the last
-edit; pending validation returns to the parent before resuming.
+Follow `subagents.md` for test writing, helper ownership and validation. Gradle checks run in the
+assigned runner. Return its current evidence and remaining checks selected under `definition-of-done`.
+The parent may accept that evidence for unchanged covered content and reconciles independent review
+before a commit.
 
 Output: the document sentences enforced, the test list with what each proves, the rule change with
 `path:line`, the test run result, and the open questions for the user.

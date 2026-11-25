@@ -1,26 +1,18 @@
 # Codebase Navigation
 
-To navigate the codebase and project files you must use `codebase-memory-mcp`.
+Use the installed `codebase-memory` skill for structural exploration, callers and impact analysis.
+Prefer graph and LSP tools for relationships. Use direct reads for known files and text search for
+literals, resources, configuration and graph coverage gaps, within the agent's tool permissions.
 
 ## Make sure the server is connected
 
-The `mcp__codebase-memory-mcp__*` tools must be available before any code exploration. If they are not:
-
-1. Check whether the server is registered: `claude mcp list`.
-2. If it is missing, register the `codebase-memory-mcp` binary at user scope and reconnect:
-
-   ```
-   claude mcp add --scope user codebase-memory-mcp <path-to>/codebase-memory-mcp
-   ```
-
-   Then reload MCP servers in the current session (`/mcp`) or restart Claude Code.
-3. If the tools are still unavailable after steps 1 and 2, or the binary itself is not installed, tell the
-   user at once what failed and what you tried, and stop. Do not fall back to `ls`/`grep`/`find` for code
-   exploration while the server is unavailable.
+When graph tools are unavailable, use permitted LSP, reads and search for the task's question. Report
+any resulting coverage limit. Configure or reconnect a server when that is requested or when the answer
+depends on graph capabilities unavailable elsewhere.
 
 ## Keep the index up-to-date
 
-Before navigating the codebase you must update the project index so the knowledge graph reflects the current state of the code:
+The investigation owner establishes graph freshness for the repository and relevant revision once:
 
 1. Check the project with `index_status` (run `list_projects` if you are not sure the project is registered).
 2. If the project is not registered or not indexed yet, run `index_repository` on the repository root.
@@ -28,11 +20,13 @@ Before navigating the codebase you must update the project index so the knowledg
    the last indexing (new branch, fresh pull, local edits). Re-index with `index_repository` only when it
    reports changes; do not re-index a large repository unconditionally.
 
-Never explore stale graph data — re-index first, then navigate.
+Pass the project ID, root and indexed revision to other agents using that evidence. Recheck after changes
+that affect the relationship being queried. A known current source file can be read directly while an
+index is updating. Confirm graph findings against the current source before changing behavior.
 
 ## Navigation tools
 
-Always prefer `codebase-memory-mcp` tools over plain `ls`/`grep`/`find` for code exploration:
+For structural questions prefer:
 
 - `search_graph` — find functions, classes, and routes by name pattern, label, or qualified-name pattern.
 - `trace_path` — trace call chains and data flow (`mode=calls|data_flow|cross_service`).
@@ -41,7 +35,6 @@ Always prefer `codebase-memory-mcp` tools over plain `ls`/`grep`/`find` for code
 - `get_architecture` — project structure overview.
 - `search_code` — graph-augmented text search across the codebase.
 
-File reads and shell search (`rg`, `grep`, `find`) are acceptable only for non-code files (configs, docs,
-resources) and for reading a file before editing it. A read-only agent's shell guard
+Respect the agent's available tools. A read-only agent's shell guard
 (`.claude/hooks/readonly-guard.sh`) allows shell search only in its `docs` and `gradle` modes; in the others
 the agent reads non-code files with its file-read tool.
