@@ -1,0 +1,95 @@
+{
+  "raw": "raw-en",
+  "title_px": 58,
+  "brand": "AppName",
+  "frames": [
+    {
+      "slug": "feature-graphic/feature-graphic",
+      "type": "feature",
+      "img": [
+        "list-wide",
+        "home-narrow"
+      ],
+      "icon": "icon-512.png",
+      "title": "Your words.<br>Your rules.",
+      "sub": "One line on what the app does."
+    },
+    {
+      "slug": "desktop/01-list",
+      "type": "desktop",
+      "img": [
+        "list-wide"
+      ],
+      "eyebrow": "APP NAME",
+      "title": "Headline",
+      "sub": "Subtitle.",
+      "chips": [
+        [
+          "水",
+          "water",
+          "left:22px;top:330px"
+        ]
+      ],
+      "win_w": 1040,
+      "light": false
+    },
+    {
+      "slug": "desktop/05-theme",
+      "type": "desktop-duo",
+      "img": [
+        "list-wide",
+        "list-wide-light"
+      ],
+      "eyebrow": "DAY & NIGHT",
+      "title": "Light and dark themes",
+      "sub": "Subtitle."
+    },
+    {
+      "slug": "phone/01-home",
+      "type": "phone",
+      "img": [
+        "home-phone"
+      ],
+      "eyebrow": "APP NAME",
+      "title": "Two-line<br>headline",
+      "sub": "Subtitle<br>in two lines.",
+      "chips": [
+        [
+          "山",
+          "mountain",
+          "right:22px;top:900px"
+        ]
+      ]
+    },
+    {
+      "slug": "foldable/01-unfolded-1x1",
+      "type": "fold-1x1",
+      "img": [
+        "setup-43"
+      ],
+      "eyebrow": "UNFOLD",
+      "title": "Headline",
+      "sub": "Subtitle."
+    },
+    {
+      "slug": "foldable/02-unfolded-4x3",
+      "type": "fold-4x3",
+      "img": [
+        "list-43"
+      ],
+      "eyebrow": "EVERY ITEM",
+      "title": "Two-line<br>headline",
+      "sub": "Subtitle."
+    },
+    {
+      "slug": "foldable/03-folded-10x16",
+      "type": "fold-10x16",
+      "img": [
+        "home-narrow"
+      ],
+      "eyebrow": "APP NAME",
+      "title": "Two-line<br>headline",
+      "sub": "Subtitle."
+    }
+  ]
+}
