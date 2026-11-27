@@ -46,6 +46,12 @@
             "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/git-guard.sh\"",
             "timeout": 5,
             "statusMessage": "Checking git command"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/capture-guard.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking capture command"
           }
         ]
       }
