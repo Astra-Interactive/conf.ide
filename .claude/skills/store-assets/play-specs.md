@@ -15,4 +15,4 @@ Canvas sizes that `make_frames.py` renders and the slot each one fills.
 One 2560×1440 set satisfies the 7", 10" and desktop slots at once.
 
 Google advises screenshots that show the app itself with little text; frames and overlay text pass upload but
-can count against featuring. Say so when delivering.
+can count against featuring.

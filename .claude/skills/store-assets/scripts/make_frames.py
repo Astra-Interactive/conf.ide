@@ -2,19 +2,23 @@
 """Render store listing frames from raw app captures, one HTML page per frame, through headless Chrome.
 
 Usage: python3 -I make_frames.py <spec.json> <out-dir> [slug-filter]
-The spec names the raw-capture directory (relative to the spec), the title-bar height to crop, the brand
-wordmark for the feature graphic and the frames. See spec.example.json beside this script for every field.
-Each frame renders at 2x and is checked against its exact size; frames with a "final" size are downscaled.
+The spec names the raw-capture directory (relative to the spec), the bar height to crop from the top of each
+capture (title_px, overridable per frame), the brand wordmark for the feature graphic and the frames. See
+spec.example.json beside this script for every field. Each frame renders at 2x and is checked against its exact
+size. Intermediate files go to _build/ beside the spec; out-dir receives only the final PNGs plus nothing else,
+and _build/sheet-<out-dir name>.png is a contact sheet of the run. Needs Pillow for this interpreter and Google
+Chrome (CHROME overrides its path).
 """
 import html
 import json
+import os
 import pathlib
 import subprocess
 import sys
 
 from PIL import Image
 
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 SCALE = 2
 
 BASE_CSS = """
@@ -158,8 +162,7 @@ def feature(f, img, brand):
 FINAL = {"feature": (1024, 500), "phone": (1080, 1920)}
 
 
-def render(slug, w, h, doc, out: pathlib.Path, final_size):
-    tmp = out / "_build"
+def render(slug, w, h, doc, out: pathlib.Path, final_size, tmp: pathlib.Path):
     tmp.mkdir(parents=True, exist_ok=True)
     name = slug.replace("/", "__")
     html_path = tmp / f"{name}.html"
@@ -188,20 +191,21 @@ def main():
     only = sys.argv[3] if len(sys.argv) > 3 else None
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     raw = (spec_path.parent / spec["raw"]).resolve()
-    crops = raw.parent / f"crops-{raw.name}"
-    crops.mkdir(exist_ok=True)
-    title_px = spec.get("title_px", 0)
+    tmp = spec_path.parent / "_build" / out.name
+    crops = tmp / "crops"
+    crops.mkdir(parents=True, exist_ok=True)
 
-    def crop(name):
-        dest = crops / f"{name}.png"
+    def crop(name, title_px):
+        dest = crops / f"{name}-{title_px}.png"
         src = Image.open(raw / f"{name}.png").convert("RGB")
         src.crop((0, title_px, src.width, src.height)).save(dest)
         return dest
 
+    rendered = []
     for f in spec["frames"]:
         if only and only not in f["slug"]:
             continue
-        img = [crop(n) for n in f["img"]]
+        img = [crop(n, f.get("title_px", spec.get("title_px", 0))) for n in f["img"]]
         if f.get("icon"):
             f["icon"] = (spec_path.parent / f["icon"]).resolve()
         kind = f["type"]
@@ -217,7 +221,23 @@ def main():
             w, h, doc = feature(f, img, spec["brand"])
         else:
             raise SystemExit(f"{f['slug']}: unknown frame type {kind}")
-        print(*render(f["slug"], w, h, doc, out, FINAL.get(kind)))
+        dest, size = render(f["slug"], w, h, doc, out, FINAL.get(kind), tmp)
+        rendered.append(dest)
+        print(dest, size)
+    if rendered:
+        print("contact sheet:", contact_sheet(rendered, spec_path.parent / "_build" / f"sheet-{out.name}.png"))
+
+
+def contact_sheet(files, dest, height=600, gap=16):
+    images = [Image.open(f).convert("RGB") for f in files]
+    images = [im.resize((int(im.width * height / im.height), height)) for im in images]
+    sheet = Image.new("RGB", (sum(im.width for im in images) + gap * (len(images) + 1), height + 2 * gap), (40, 44, 52))
+    x = gap
+    for im in images:
+        sheet.paste(im, (x, gap))
+        x += im.width + gap
+    sheet.save(dest)
+    return dest
 
 
 if __name__ == "__main__":

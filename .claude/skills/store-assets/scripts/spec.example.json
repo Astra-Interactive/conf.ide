@@ -25,8 +25,8 @@
       "sub": "Subtitle.",
       "chips": [
         [
-          "水",
-          "water",
+          "Card title",
+          "card caption",
           "left:22px;top:330px"
         ]
       ],
@@ -48,18 +48,19 @@
       "slug": "phone/01-home",
       "type": "phone",
       "img": [
-        "home-phone"
+        "home-device"
       ],
       "eyebrow": "APP NAME",
       "title": "Two-line<br>headline",
       "sub": "Subtitle<br>in two lines.",
       "chips": [
         [
-          "山",
-          "mountain",
+          "Card title",
+          "card caption",
           "right:22px;top:900px"
         ]
-      ]
+      ],
+      "title_px": 0
     },
     {
       "slug": "foldable/01-unfolded-1x1",

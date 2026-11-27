@@ -1,3 +1,4 @@
+// Moves the pointer to screen point (x, y) without clicking. Usage: move <x> <y>.
 import Foundation
 import CoreGraphics
 let a = CommandLine.arguments

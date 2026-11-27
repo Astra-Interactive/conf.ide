@@ -1,3 +1,4 @@
+// Clicks once at screen point (x, y). Usage: click <x> <y>. Needs Accessibility for the host process.
 import Foundation
 import CoreGraphics
 let a = CommandLine.arguments
